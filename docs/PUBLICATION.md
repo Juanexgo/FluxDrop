@@ -1,6 +1,6 @@
 # Publicación independiente de ChatGPT
 
-App y web viven juntas en el repositorio FluxDrop. La app está en apps/macos y la web estática en apps/web. El código se conserva privado inicialmente. No se suben instaladores ni claves al árbol Git. Un release futuro de GitHub puede alojar el DMG, checksum y notas; la publicación estable exige antes firma Developer ID y notarización verificadas.
+App y web viven juntas en el repositorio FluxDrop. La app está en apps/macos y la web estática en apps/web. El código se conserva privado inicialmente. No se suben claves al árbol Git. Excepción explícita para esta entrega: el DMG de desarrollo verificado se versiona en apps/web/public/downloads para servirlo desde Vercel sin exponer el repositorio privado. Su checksum y estado ad hoc/sin notarizar se validan en cada build. El canal estable sigue separado. Un release futuro de GitHub puede alojar el DMG, checksum y notas; la publicación estable exige antes firma Developer ID y notarización verificadas.
 
 ## Vercel
 
@@ -10,10 +10,12 @@ Importar Juanexgo/FluxDrop, con Root Directory `apps/web`, framework Astro, Node
 
 La integración Git de Vercel permite reconstruir desde main y crear previews desde ramas. Los permisos de esa integración se autorizan en la cuenta del titular. No poner tokens en el repositorio. Las credenciales de firma Apple no se necesitan para alojar la web.
 
-## Estado y bloqueo de acceso
+## Publicación verificada
 
-Repositorio creado y fuente subida: https://github.com/Juanexgo/FluxDrop (privado), rama main. El snapshot inicial es 81cfd1560f43c30535360ecebf2b6e8f9aa277dc. Incluye app, web, scripts, fixtures, documentación y workflow Web checks. La web local pasó Astro check sin errores/advertencias, build estático de 9 páginas y comprobación de enlaces/manifiesto. La conexión Vercel devuelve 403 al acceder al equipo `juanexgos-projects` (team_AceprCWSAdzqMKKOkdCEIYig). El titular debe reconectar Vercel con acceso a ese equipo. No hay CLI de Vercel autenticada localmente como alternativa. No se declara el nuevo sitio publicado hasta recibir READY y verificar HTTP real.
+Repositorio privado: https://github.com/Juanexgo/FluxDrop , rama main. Incluye app, web, scripts, fixtures, documentación y workflow Web checks. El workflow pasó en GitHub Actions.
 
-La web de ChatGPT anterior sigue disponible mientras se completa la nueva publicación. El manifiesto estable sigue release:null y no ofrece una descarga ficticia.
+Web pública: https://fluxdrop-ruby.vercel.app . Proyecto `fluxdrop` del equipo `juanexgos-projects`. Importación mediante la sesión web autorizada del titular; el conector API todavía devuelve 403 y no se han ampliado sus permisos. La primera publicación desde fa94bf4919f2f57c21412fb406d858706989ae6b completó; se verificaron HTTP 200 de ocho páginas y formats.js, canonical del nuevo dominio, CSP/nosniff, búsqueda FLAC con una fila y estado de descarga estable.
+
+La descarga de desarrollo usa un manifiesto separado `development.json`: archivo real, tamaño, SHA-256, arquitectura y estado de firma explícitos. El build falla si el binario falta o su tamaño/hash difiere. No se activa stable.json para esta entrega ad hoc. Las actualizaciones de main se despliegan por la integración Git de Vercel.
 
 Documentación oficial: https://docs.astro.build/en/guides/deploy/vercel/ y https://vercel.com/docs/monorepos .

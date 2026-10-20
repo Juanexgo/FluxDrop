@@ -1,5 +1,7 @@
 # FluxDrop
 
+Web pública: https://fluxdrop-ruby.vercel.app · [Descarga de desarrollo](https://fluxdrop-ruby.vercel.app/descarga/). Firma ad hoc, sin notarización de Apple; macOS puede bloquear la apertura.
+
 Utilidad nativa de macOS para transformar archivos localmente. SwiftUI/AppKit, motores Apple, libarchive del sistema y FFmpeg compilado desde fuente. Web estática Astro/TypeScript; nunca recibe archivos.
 
 Estado: versión de desarrollo 0.1.0. El estado de validación se encuentra en `docs/TEST-RESULTS.md` cuando termina la comprobación final. No equivale a una versión firmada y notarizada para distribución pública.

@@ -1,0 +1,10 @@
+{
+  "project": "fluxdrop",
+  "team": "juanexgos-projects",
+  "productionURL": "https://fluxdrop-ruby.vercel.app",
+  "initialDeploymentID": "dpl_HnyAwQ5BHM7KhUnobMRbLvxaP12J",
+  "initialCommit": "fa94bf4919f2f57c21412fb406d858706989ae6b",
+  "repository": "https://github.com/Juanexgo/FluxDrop",
+  "method": "authorized browser session with Git import",
+  "stableRelease": null
+}

@@ -1,7 +1,7 @@
 import {readFile,readdir,stat} from 'node:fs/promises';
 import {join,resolve} from 'node:path';
 import assert from 'node:assert/strict';
-import {validateManifest} from '../packages/release-manifest/validate.mjs';
+import {validateManifest,validateDevelopmentDownload} from '../packages/release-manifest/validate.mjs';
 const root=resolve(process.argv[2]??'apps/web/dist');
 async function files(dir){const out=[];for(const e of await readdir(dir,{withFileTypes:true})){const p=join(dir,e.name);out.push(...(e.isDirectory()?await files(p):[p]));}return out;}
 let count=0;
@@ -14,3 +14,13 @@ assert.throws(()=>validateManifest({schemaVersion:1,channel:'beta',release:null}
 assert.throws(()=>validateManifest({schemaVersion:1,channel:'stable',release:{version:'fake'}}));
 validateManifest(JSON.parse(await readFile(new URL('../packages/release-manifest/stable.json',import.meta.url),'utf8')));
 console.log(`${count} HTML pages: local links, language, titles, viewport and manifest checks passed.`);
+
+const development=JSON.parse(await readFile(new URL('../packages/release-manifest/development.json',import.meta.url),'utf8'));
+const dev=validateDevelopmentDownload(development).download;
+assert.throws(()=>validateDevelopmentDownload({...development,download:{...dev,notarized:true}}));
+assert.throws(()=>validateDevelopmentDownload({...development,download:{...dev,installerPath:'/downloads/../bad.dmg'}}));
+assert.throws(()=>validateDevelopmentDownload({...development,download:{...dev,sha256:'bad'}}));
+const downloadPage=await readFile(join(root,'descarga/index.html'),'utf8');
+assert.ok(downloadPage.includes(dev.installerPath) && downloadPage.includes('download') && downloadPage.includes(dev.sha256));
+assert.equal((await stat(join(root,dev.installerPath))).size,dev.size);
+console.log('Development download schema, artifact size and page link checks passed.');

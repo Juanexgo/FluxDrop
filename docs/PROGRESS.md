@@ -12,3 +12,5 @@
 - Comprobación de esta revisión: Release completo y DMG generado/verificado; 25 XCTest sin fallos (8.993 s). Recorrido manual de conversión de la ventana y arrastre de resultados completado antes de la última sustitución del panel. El controlador de pantalla perdió conexión después; el gesto global y los ajustes visuales finales siguen pendientes de prueba manual.
 
 - Publicación independiente: app y web subidas al repositorio privado Juanexgo/FluxDrop en main. Añadido workflow web con acciones fijadas a commits y permisos mínimos, configuración Vercel y política de cabeceras. El build de nueve páginas y la validación local pasaron. Despliegue Vercel pendiente por 403 de acceso al equipo juanexgos-projects, solicitado al titular reconectar la integración.
+
+- Vercel publicado desde la sesión web autorizada: https://fluxdrop-ruby.vercel.app . Verificación HTTP, cabeceras, canonical, búsqueda de formatos y página de descarga completada. Se añadió descarga de desarrollo real, separada del canal estable, con comprobación de tamaño y SHA-256 durante build. No se afirma firma Developer ID ni notarización.
