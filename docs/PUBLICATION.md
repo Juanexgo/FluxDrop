@@ -12,7 +12,7 @@ La integración Git de Vercel permite reconstruir desde main y crear previews de
 
 ## Estado y bloqueo de acceso
 
-La conexión GitHub está disponible. La conexión Vercel devuelve 403 al acceder al equipo `juanexgos-projects` (team_AceprCWSAdzqMKKOkdCEIYig). El titular debe reconectar Vercel con acceso a ese equipo. No hay CLI de Vercel autenticada localmente como alternativa. No se declara el nuevo sitio publicado hasta recibir READY y verificar HTTP real.
+Repositorio creado y fuente subida: https://github.com/Juanexgo/FluxDrop (privado), rama main. El snapshot inicial es 81cfd1560f43c30535360ecebf2b6e8f9aa277dc. Incluye app, web, scripts, fixtures, documentación y workflow Web checks. La web local pasó Astro check sin errores/advertencias, build estático de 9 páginas y comprobación de enlaces/manifiesto. La conexión Vercel devuelve 403 al acceder al equipo `juanexgos-projects` (team_AceprCWSAdzqMKKOkdCEIYig). El titular debe reconectar Vercel con acceso a ese equipo. No hay CLI de Vercel autenticada localmente como alternativa. No se declara el nuevo sitio publicado hasta recibir READY y verificar HTTP real.
 
 La web de ChatGPT anterior sigue disponible mientras se completa la nueva publicación. El manifiesto estable sigue release:null y no ofrece una descarga ficticia.
 

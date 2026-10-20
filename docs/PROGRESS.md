@@ -10,3 +10,5 @@
 
 - Widget configurable: sustituido el panel rectangular por rueda flotante compacta. Ajustes de tamaño, tema, acento, opacidad, etiquetas, pista, favoritos y cierre; persistencia versionada local. Activación global opcional con botón derecho solo/Opción/Control mediante API pública. Estado real de permisos y desactivación accesible desde menú.
 - Comprobación de esta revisión: Release completo y DMG generado/verificado; 25 XCTest sin fallos (8.993 s). Recorrido manual de conversión de la ventana y arrastre de resultados completado antes de la última sustitución del panel. El controlador de pantalla perdió conexión después; el gesto global y los ajustes visuales finales siguen pendientes de prueba manual.
+
+- Publicación independiente: app y web subidas al repositorio privado Juanexgo/FluxDrop en main. Añadido workflow web con acciones fijadas a commits y permisos mínimos, configuración Vercel y política de cabeceras. El build de nueve páginas y la validación local pasaron. Despliegue Vercel pendiente por 403 de acceso al equipo juanexgos-projects, solicitado al titular reconectar la integración.
