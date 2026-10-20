@@ -14,3 +14,5 @@
 - Publicación independiente: app y web subidas al repositorio privado Juanexgo/FluxDrop en main. Añadido workflow web con acciones fijadas a commits y permisos mínimos, configuración Vercel y política de cabeceras. El build de nueve páginas y la validación local pasaron. Despliegue Vercel pendiente por 403 de acceso al equipo juanexgos-projects, solicitado al titular reconectar la integración.
 
 - Vercel publicado desde la sesión web autorizada: https://fluxdrop-ruby.vercel.app . Verificación HTTP, cabeceras, canonical, búsqueda de formatos y página de descarga completada. Se añadió descarga de desarrollo real, separada del canal estable, con comprobación de tamaño y SHA-256 durante build. No se afirma firma Developer ID ni notarización.
+
+- Descarga pública de desarrollo comprobada desde Vercel: DMG completo de 35 719 951 bytes y SHA-256 coincidente con el local. Página actualizada y observada con botón activo, versión 0.1.0-dev, requisitos y estado ad hoc/sin notarizar. La versión estable no se ha activado.

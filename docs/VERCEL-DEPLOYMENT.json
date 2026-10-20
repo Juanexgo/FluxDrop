@@ -6,5 +6,9 @@
   "initialCommit": "fa94bf4919f2f57c21412fb406d858706989ae6b",
   "repository": "https://github.com/Juanexgo/FluxDrop",
   "method": "authorized browser session with Git import",
-  "stableRelease": null
+  "stableRelease": null,
+  "downloadCommit": "c433e8d35462d182037fbdabb27751d83144e0e9",
+  "downloadDeploymentURL": "https://vercel.com/juanexgos-projects/fluxdrop/DJJVUXXx1wjWiKti3bFtMMKu9DoM",
+  "downloadDeploymentState": "success",
+  "downloadVerification": "reports/public-download.json"
 }

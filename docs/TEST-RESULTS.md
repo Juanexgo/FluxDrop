@@ -34,3 +34,7 @@ No se probó un Mac físicamente sin red, macOS 14, Intel, un volumen sin permis
 Firma ad hoc validada. No hay certificado Developer ID Application disponible (solo identidad Apple Development). No se sometió a notarización. Gatekeeper se comprobó con spctl y devolvió rejected para esta firma ad hoc. El DMG de desarrollo no es el canal estable. stable.json conserva release:null. No se ejecutó una descarga pública del instalador estable porque todavía no existe.
 
 Logs adjuntos: reports/native-tests.log, release-build.log, sign-check.log, dmg-verify.log y web-build.log. Los límites conocidos y pasos externos constan en LIMITATIONS.md y EXTERNAL-STEPS.md.
+
+## Publicación independiente y descarga real
+
+La web se publicó en https://fluxdrop-ruby.vercel.app desde GitHub. La revisión de desarrollo pasó Astro check, build de nueve páginas, enlaces, manifiestos y validación del binario durante build. GitHub Actions Web checks completó correctamente para f89e636. El despliegue de c433e8d figura como completado en Vercel. Se verificaron en el navegador el botón real de descarga, metadatos, SHA-256 y advertencia de firma ad hoc/sin notarización. Se descargó por HTTPS el DMG público: 35 719 951 bytes, SHA-256 efb28378da68a3e7ef3e365dc0d13bfb6bce6a7e8e72d9b3398524119eb9872b; coinciden exactamente con el manifiesto y el artefacto local verificado. Ver reports/public-download.json. stable.json permanece release:null.
