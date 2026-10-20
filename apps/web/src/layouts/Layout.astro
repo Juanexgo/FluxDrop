@@ -1,0 +1,10 @@
+---
+import '../styles.css';
+interface Props { title: string; description?: string }
+const {title,description='FluxDrop convierte y transforma archivos localmente en tu Mac. Un panel rápido, recetas y una cola que conserva tus originales.'}=Astro.props;
+const path=Astro.url.pathname;
+const links=[['/funciones/','Funciones'],['/formatos/','Formatos'],['/ayuda/','Ayuda']];
+---
+<!doctype html><html lang="es"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><meta name="description" content={description}/><meta name="theme-color" content="#f8f7f3"/><title>{title} · FluxDrop</title><link rel="icon" href="/mark.svg" type="image/svg+xml"/><meta property="og:title" content={title+' · FluxDrop'}/><meta property="og:description" content={description}/><meta property="og:type" content="website"/><meta property="og:image" content={Astro.site ? new URL("/social.svg", Astro.site).href : "/social.svg"}/>{Astro.site && <link rel="canonical" href={new URL(path,Astro.site)}/>}</head>
+<body><a class="skip" href="#main">Saltar al contenido</a><header><a class="brand" href="/" aria-label="FluxDrop, inicio"><img src="/mark.svg" width="34" height="34" alt=""/>FluxDrop</a><nav aria-label="Principal">{links.map(([url,label])=><a href={url} aria-current={path===url?'page':undefined}>{label}</a>)}</nav><a class="button small" href="/descarga/">Descargar para Mac <span aria-hidden="true">↗</span></a></header>
+<main id="main"><slot/></main><footer><div><a class="brand" href="/"><img src="/mark.svg" width="28" height="28" alt=""/>FluxDrop</a><p>Menos pasos. Más control sobre tus archivos.</p></div><nav aria-label="Información"><a href="/novedades/">Novedades</a><a href="/ayuda/">Ayuda</a><a href="/privacidad/">Privacidad</a><a href="/licencias/">Licencias</a></nav><small>Hecho para macOS. Procesamiento local.</small></footer></body></html>

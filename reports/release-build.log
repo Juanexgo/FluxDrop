@@ -1,0 +1,13 @@
+[0/1] Planning build
+Building for production...
+[0/5] Write sources
+[2/5] Write swift-version--58304C5D6DBC2206.txt
+[4/6] Compiling FluxCore ArchiveEngine.swift
+[5/7] Compiling FluxDrop AppModel.swift
+[5/7] Write Objects.LinkFileList
+[6/7] Linking FluxDrop
+Build complete! (14.89s)
+/private/tmp/fluxdrop-package/FluxDrop.app/Contents/Helpers/ffmpeg: replacing existing signature
+/private/tmp/fluxdrop-package/FluxDrop.app/Contents/Helpers/ffprobe: replacing existing signature
+/private/tmp/fluxdrop-package/FluxDrop.app: replacing existing signature
+/private/tmp/fluxdrop-package/FluxDrop.app

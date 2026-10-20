@@ -1,0 +1,10 @@
+
+> fluxdrop-web@0.1.0 check
+> astro check
+
+16:11:49 [types] Generated 26ms
+16:11:49 [check] Getting diagnostics for Astro files in /private/tmp/fluxdrop-web-source...
+Result (12 files):
+- 0 errors
+- 0 warnings
+- 0 hints

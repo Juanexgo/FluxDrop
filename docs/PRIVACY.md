@@ -1,0 +1,11 @@
+# Privacidad
+
+Las conversiones se ejecutan localmente. La app no sube archivos, no tiene cuenta, analítica, modelos descargables ni cliente de actualización automática en esta versión. FFmpeg se compila sin red. El uso de Finder, notificaciones o el inicio de sesión lo presta macOS. Las notificaciones son opcionales y omiten el nombre del archivo.
+
+La cola guarda rutas, opciones, destino y estado en Application Support/FluxDrop, no contenido de documentos. Las recetas y reglas de carpetas incluyen las rutas elegidas. El historial puede desactivarse y borrarse; las tareas pendientes conservan lo necesario para identificar interrupciones. Las contraseñas PDF solo se mantienen en memoria durante el trabajo y no se guardan en las recetas. Los temporales se borran tras finalización o error; un cierre forzado puede dejar carpetas ocultas .fluxdrop-UUID en el destino. Revisarlas antes de borrarlas; no se borran carpetas desconocidas automáticamente.
+
+La web es estática y no tiene formulario de subida, cookies de analítica ni procesamiento de archivos. El proveedor de alojamiento puede registrar solicitudes HTTP (por ejemplo IP y navegador) para operar el servicio. Descargar el instalador o visitar ayuda sí utiliza red. La descarga de dependencias durante la compilación no forma parte del funcionamiento de la app instalada.
+
+Si se añade un actualizador en el futuro, su comprobación de red deberá ser separada, opcional y descrita aquí. No se promete que el sistema operativo o el proveedor de alojamiento no establezcan conexiones propias.
+
+El clic derecho global es opcional y está desactivado inicialmente. Al activarlo se instala un CGEvent tap de sesión limitado a rightMouseDown/rightMouseUp. Solo se comprueban el gesto y sus modificadores para abrir o cerrar el widget; no se registran pulsaciones del teclado, clics, coordenadas ni contenido de otras apps. Los ajustes visuales y el gesto se guardan localmente en UserDefaults. Si macOS impide crear el tap, el botón de permisos solicita Monitorización de entrada o Accesibilidad de forma incremental; el usuario conserva el control en Ajustes del Sistema. El atajo de teclado y el arrastre normal al widget no necesitan esos permisos.

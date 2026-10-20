@@ -1,0 +1,6 @@
+--prepared:/private/tmp/fluxdrop-package/FluxDrop.app/Contents/Helpers/ffmpeg
+--validated:/private/tmp/fluxdrop-package/FluxDrop.app/Contents/Helpers/ffmpeg
+--prepared:/private/tmp/fluxdrop-package/FluxDrop.app/Contents/Helpers/ffprobe
+--validated:/private/tmp/fluxdrop-package/FluxDrop.app/Contents/Helpers/ffprobe
+/private/tmp/fluxdrop-package/FluxDrop.app: valid on disk
+/private/tmp/fluxdrop-package/FluxDrop.app: satisfies its Designated Requirement

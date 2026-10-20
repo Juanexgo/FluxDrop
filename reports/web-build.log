@@ -1,0 +1,30 @@
+
+> fluxdrop-web@0.1.0 build
+> node scripts/sync-data.mjs && astro build
+
+16:11:51 [types] Generated 21ms
+16:11:51 [build] output: "static"
+16:11:51 [build] mode: "static"
+16:11:51 [build] directory: /private/tmp/fluxdrop-web-source/dist/
+16:11:51 [build] Collecting build info...
+16:11:51 [build] ✓ Completed in 31ms.
+16:11:51 [build] Building static entrypoints...
+16:11:52 [vite] ✓ built in 445ms
+16:11:52 [vite] ✓ built in 6ms
+16:11:52 [build] Rearranging server assets...
+
+ generating static routes
+16:11:52   ├─ /404.html (+4ms)
+16:11:52   ├─ /descarga/index.html (+1ms)
+16:11:52   ├─ /formatos/index.html (+2ms)
+16:11:52   ├─ /funciones/index.html (+1ms)
+16:11:52   ├─ /novedades/index.html (+1ms)
+16:11:52   ├─ /ayuda/index.html (+1ms)
+16:11:52   ├─ /privacidad/index.html (+1ms)
+16:11:52   ├─ /licencias/index.html (+1ms)
+16:11:52   ├─ /index.html (+1ms)
+16:11:52 ✓ Completed in 19ms.
+
+16:11:52 [build] ✓ Completed in 499ms.
+16:11:52 [build] 9 page(s) built in 534ms
+16:11:52 [build] Complete!
