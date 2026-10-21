@@ -1,8 +1,63 @@
 {
-  "url": "https://fluxdrop-ruby.vercel.app/downloads/FluxDrop-0.1.0-arm64-dev.dmg",
-  "bytes": 35719951,
-  "sha256": "efb28378da68a3e7ef3e365dc0d13bfb6bce6a7e8e72d9b3398524119eb9872b",
-  "status": "downloaded and verified",
-  "signing": "ad-hoc",
-  "notarized": false
+  "version": "0.2.0-dev",
+  "url": "https://fluxdrop-ruby.vercel.app/downloads/FluxDrop-0.2.0-arm64-dev.dmg",
+  "size": 36133923,
+  "sha256": "2ae419fd930cd9cc84917d4f79c1ea003e276be253ee3dbbf5e05ad8a057238e",
+  "matchesManifest": true,
+  "pages": [
+    {
+      "path": "/",
+      "status": 200,
+      "csp": "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self'; base-uri 'self'; frame-ancestors 'none'; form-action 'none'",
+      "nosniff": "nosniff"
+    },
+    {
+      "path": "/funciones/",
+      "status": 200,
+      "csp": "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self'; base-uri 'self'; frame-ancestors 'none'; form-action 'none'",
+      "nosniff": "nosniff"
+    },
+    {
+      "path": "/formatos/",
+      "status": 200,
+      "csp": "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self'; base-uri 'self'; frame-ancestors 'none'; form-action 'none'",
+      "nosniff": "nosniff"
+    },
+    {
+      "path": "/descarga/",
+      "status": 200,
+      "csp": "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self'; base-uri 'self'; frame-ancestors 'none'; form-action 'none'",
+      "nosniff": "nosniff"
+    },
+    {
+      "path": "/novedades/",
+      "status": 200,
+      "csp": "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self'; base-uri 'self'; frame-ancestors 'none'; form-action 'none'",
+      "nosniff": "nosniff"
+    },
+    {
+      "path": "/ayuda/",
+      "status": 200,
+      "csp": "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self'; base-uri 'self'; frame-ancestors 'none'; form-action 'none'",
+      "nosniff": "nosniff"
+    },
+    {
+      "path": "/privacidad/",
+      "status": 200,
+      "csp": "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self'; base-uri 'self'; frame-ancestors 'none'; form-action 'none'",
+      "nosniff": "nosniff"
+    },
+    {
+      "path": "/licencias/",
+      "status": 200,
+      "csp": "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self'; base-uri 'self'; frame-ancestors 'none'; form-action 'none'",
+      "nosniff": "nosniff"
+    },
+    {
+      "path": "/formats.js",
+      "status": 200,
+      "csp": "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self'; base-uri 'self'; frame-ancestors 'none'; form-action 'none'",
+      "nosniff": "nosniff"
+    }
+  ]
 }

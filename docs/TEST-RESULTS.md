@@ -63,3 +63,7 @@ La web se publicó en https://fluxdrop-ruby.vercel.app desde GitHub. La revisió
 ## Web 0.2 — validación local
 
 Astro check: cero errores, advertencias o hints. Build de producción: nueve páginas. scripts/check-web.mjs: enlaces internos, manifiestos estable/desarrollo, enlace y tamaño de instalador, unicidad de rutas e inclusión de la matriz de cobertura correctos. El build calcula el SHA-256 del DMG real y lo compara con development.json.
+
+## Publicación 0.2 — comprobada
+
+GitHub main 1f13d71 publicado; Web checks 39540123486 terminó correctamente. Vercel completó el despliegue 511jkN7gVNzA5EskNscSvRfhcaKV. Nueve rutas públicas devolvieron HTTP 200 con cabeceras de seguridad. El navegador mostró la matriz de 36 rutas; la búsqueda FLAC dejó una operación visible y conservó la matriz de imágenes. Descarga HTTPS completa del instalador 0.2.0-dev: 36 133 923 bytes, SHA-256 2ae419fd930cd9cc84917d4f79c1ea003e276be253ee3dbbf5e05ad8a057238e, idéntico al manifiesto. Evidencia en reports/public-download.json. El canal estable sigue desactivado.
