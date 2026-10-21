@@ -154,4 +154,23 @@ extension ImageEngineTests {
         options.stripMetadata=false
         do {_=try await engine.convert(input:input,directory:dir,options:options);XCTFail("Unsupported WebP metadata preservation accepted")}catch{XCTAssertEqual(error as? EngineFailure,.invalidOptions)}
     }
+    func testIconSetAllTenSizesAndOriginalPreserved() async throws {
+        let directory = try workspace(), input = directory.appendingPathComponent("square ñ.png")
+        let context = try XCTUnwrap(CGContext(data:nil,width:1024,height:1024,bitsPerComponent:8,bytesPerRow:0,space:CGColorSpace(name:CGColorSpace.sRGB)!,bitmapInfo:CGImageAlphaInfo.premultipliedLast.rawValue))
+        context.setFillColor(CGColor(red:1,green:0.3,blue:0.1,alpha:1));context.fill(CGRect(x:0,y:0,width:1024,height:1024))
+        let destination = try XCTUnwrap(CGImageDestinationCreateWithURL(input as CFURL,"public.png" as CFString,1,nil))
+        CGImageDestinationAddImage(destination,try XCTUnwrap(context.makeImage()),nil);XCTAssertTrue(CGImageDestinationFinalize(destination))
+        let original = try Data(contentsOf:input)
+        let output = try await ImageEngine().icons(input:input,directory:directory)
+        XCTAssertEqual(try FileManager.default.contentsOfDirectory(atPath:output.path).count,10)
+        for size in [16,32,128,256,512] { for scale in [1,2] {
+            let name = "icon_\(size)x\(size)" + (scale==2 ? "@2x" : "") + ".png"
+            let url = output.appendingPathComponent(name), info = try ImageEngine.inspect(url)
+            XCTAssertEqual(info.width,size*scale);XCTAssertEqual(info.height,size*scale)
+            let source = try XCTUnwrap(CGImageSourceCreateWithURL(url as CFURL,nil))
+            XCTAssertNotNil(CGImageSourceCreateImageAtIndex(source,0,nil))
+        } }
+        XCTAssertEqual(try Data(contentsOf:input),original)
+    }
+
 }

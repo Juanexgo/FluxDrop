@@ -26,3 +26,5 @@ Completado build Release: tres modos del widget, activación opcional por modifi
 ## 20 octubre — revisión 0.3
 
 Implementados MP3/Opus desde fuentes oficiales, AVIF condicionado a ImageIO, paginación real de rueda, intercambio de teclas, decodificación completa de verificación y corrección de recorte de audio unido. 39 pruebas finales pasaron, ocho fixtures hostiles rechazados y 49 rutas de imagen comprobadas en macOS 26.3. Conversión AVIF manual desde rueda: Verificado, 640 × 360. El titular confirmó que no tiene membresía Apple Developer; no se realizaron pagos ni notarización. Pendientes las comprobaciones manuales globales y hardware/OS alternativos.
+
+Comprobación ampliada: 43 tests pasaron sobre el código de producción 0.3; iconset, PDF cifrado y operaciones PDF/datos/Markdown antes pendientes comprobadas. Estados y límites individuales de la matriz corregidos. Instalador y fuentes públicos descargados completos y checksum coincidente.

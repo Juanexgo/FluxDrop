@@ -1,0 +1,24 @@
+{
+  "version": "0.3.0",
+  "platform": "macOS 26.3 arm64",
+  "method": "Native UI automation plus sips inspection",
+  "flow": [
+    "Open file picker",
+    "Select Unicode PNG fixture",
+    "Open widget using toolbar",
+    "Select AVIF sector",
+    "Observe Verified queue result"
+  ],
+  "output": {
+    "format": "avif",
+    "width": 640,
+    "height": 360
+  },
+  "notVerified": [
+    "Settings interaction",
+    "Global right-click",
+    "Modifier during Finder drag",
+    "VoiceOver",
+    "Multiple monitors"
+  ]
+}

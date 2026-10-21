@@ -185,4 +185,56 @@ final class OperationTests: XCTestCase {
         }
     }
 
+    func testRemainingPDFOperationsReopenAndPreserveInputs() async throws {
+        let directory = try folder(), input = directory.appendingPathComponent("original.pdf")
+        try DataEngine.textPDF("FLUXDROP PDF TEXT",output:input)
+        let original = try Data(contentsOf:input), engine = PDFEngine()
+        let rotated = try await engine.execute(inputs:[input],step:ToolStep(tool:.pdfRotate),staging:try folder())[0]
+        XCTAssertEqual(PDFDocument(url:rotated)?.page(at:0)?.rotation,90)
+        let text = try await engine.execute(inputs:[input],step:ToolStep(tool:.pdfText),staging:try folder())[0]
+        XCTAssertTrue(try String(contentsOf:text,encoding:.utf8).contains("FLUXDROP PDF TEXT"))
+        let raster = try await engine.execute(inputs:[input],step:ToolStep(tool:.pdfImages),staging:try folder())[0]
+        let imagesPDF = try await engine.execute(inputs:[raster,raster],step:ToolStep(tool:.imagesPDF),staging:try folder())[0]
+        let document = try XCTUnwrap(PDFDocument(url:imagesPDF))
+        XCTAssertEqual(document.pageCount,2)
+        XCTAssertNotNil(document.page(at:1)?.thumbnail(of:CGSize(width:100,height:100),for:.mediaBox))
+        XCTAssertEqual(try Data(contentsOf:input),original)
+    }
+    func testEncryptedPDFRequiresCorrectPassword() async throws {
+        let directory = try folder(), source = directory.appendingPathComponent("plain.pdf"), encrypted = directory.appendingPathComponent("locked.pdf")
+        try DataEngine.textPDF("PRIVATE FIXTURE",output:source)
+        let document = try XCTUnwrap(PDFDocument(url:source))
+        XCTAssertTrue(document.write(to:encrypted,withOptions:[.ownerPasswordOption:"owner-fixture",.userPasswordOption:"user-fixture"]))
+        XCTAssertTrue(try XCTUnwrap(PDFDocument(url:encrypted)).isLocked)
+        let original = try Data(contentsOf:encrypted), engine = PDFEngine()
+        for password: String? in [nil,"wrong-fixture"] {
+            do { _ = try await engine.execute(inputs:[encrypted],step:ToolStep(tool:.pdfText),staging:try folder(),password:password);XCTFail("Accepted absent/wrong password") }
+            catch { XCTAssertEqual(error as? EngineFailure,.password) }
+        }
+        let output = try await engine.execute(inputs:[encrypted],step:ToolStep(tool:.pdfText),staging:try folder(),password:"owner-fixture")[0]
+        XCTAssertTrue(try String(contentsOf:output,encoding:.utf8).contains("PRIVATE FIXTURE"))
+        XCTAssertEqual(try Data(contentsOf:encrypted),original)
+    }
+    func testRemainingDataExportsRoundTripAndMarkdownRendering() async throws {
+        let directory = try folder(), engine = DataEngine()
+        let input = try text(#"{ "x": 1, "name": "ñ" }"#,directory,name:"original.json")
+        let original = try Data(contentsOf:input)
+        let compact = try await engine.execute(inputs:[input],step:ToolStep(tool:.jsonMinify),staging:try folder())[0]
+        let json = try JSONSerialization.jsonObject(with:Data(contentsOf:compact)) as! [String:Any]
+        XCTAssertEqual(json["name"] as? String,"ñ");XCTAssertFalse(try String(contentsOf:compact,encoding:.utf8).contains("\n"))
+        let csv = try text("name,note\r\nAna,\"a,b\"\r\n",directory,name:"original.csv")
+        let tsv = try await engine.execute(inputs:[csv],step:ToolStep(tool:.csvTSV),staging:try folder())[0]
+        let back = try await engine.execute(inputs:[tsv],step:ToolStep(tool:.tsvCSV),staging:try folder())[0]
+        XCTAssertEqual(try DataEngine.parseCSV(String(contentsOf:back,encoding:.utf8),delimiter:","),[["name","note"],["Ana","a,b"]])
+        let markdown = try text("# Visible heading\n\n- List item\n\n```\n<script>literal</script>\n```",directory,name:"document.md")
+        let html = try await engine.execute(inputs:[markdown],step:ToolStep(tool:.markdownHTML),staging:try folder())[0]
+        let contents = try String(contentsOf:html,encoding:.utf8)
+        XCTAssertTrue(contents.contains("<h1>Visible heading</h1>"));XCTAssertTrue(contents.contains("&lt;script&gt;"));XCTAssertFalse(contents.contains("<script>"))
+        let pdf = try await engine.execute(inputs:[markdown],step:ToolStep(tool:.markdownPDF),staging:try folder())[0]
+        let document = try XCTUnwrap(PDFDocument(url:pdf));XCTAssertEqual(document.pageCount,1)
+        let extracted = document.string ?? ""
+        XCTAssertTrue(extracted.contains("Visible heading"));XCTAssertFalse(extracted.contains("# Visible heading"));XCTAssertFalse(extracted.contains("```"))
+        XCTAssertEqual(try Data(contentsOf:input),original)
+    }
+
 }

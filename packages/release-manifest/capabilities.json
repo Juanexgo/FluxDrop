@@ -24,8 +24,9 @@
       "outputs": "Carpeta .iconset con PNG",
       "engine": "Image I/O + CoreGraphics",
       "progress": "Indeterminado por imagen",
-      "limits": "Máximo 100 MP y 32768 px por lado. JPEG: fondo blanco, sRGB. Iconos: imagen cuadrada ≥1024 px. Sin WebP/AVIF.",
-      "verification": "pending"
+      "limits": "Diez PNG en .iconset, de 16 a 1024 px. Entrada cuadrada de al menos 1024 px, un fotograma. No crea un .icns.",
+      "verification": "verified",
+      "verificationEvidence": "ImageEngineTests.testIconSetAllTenSizesAndOriginalPreserved"
     },
     {
       "id": "pdfMerge",
@@ -35,7 +36,7 @@
       "outputs": "PDF con páginas concatenadas",
       "engine": "PDFKit + Vision",
       "progress": "Por páginas",
-      "limits": "PDF cifrado requiere contraseña. OCR local ES/EN a texto. Compresión raster pierde vectores y texto; no garantiza reducir tamaño. Sin conversiones Office.",
+      "limits": "PDF con permisos de copia; contraseña si está bloqueado. Concatena páginas y permite rangos; máximo 10 000 páginas por entrada. No realiza OCR ni rasteriza páginas.",
       "verification": "verified"
     },
     {
@@ -46,7 +47,7 @@
       "outputs": "PDF con páginas seleccionadas en el orden indicado",
       "engine": "PDFKit + Vision",
       "progress": "Por páginas",
-      "limits": "PDF cifrado requiere contraseña. OCR local ES/EN a texto. Compresión raster pierde vectores y texto; no garantiza reducir tamaño. Sin conversiones Office. El editor visual admite reordenar, duplicar, quitar y rotar cada página (hasta 150 páginas en su vista previa).",
+      "limits": "Rangos ordenados de base 1; permite duplicar páginas y rotarlas individualmente. PDF con permisos de copia. Editor visual limitado a 150 páginas de vista previa.",
       "verification": "verified"
     },
     {
@@ -57,7 +58,7 @@
       "outputs": "Un PDF por página, dentro de una carpeta",
       "engine": "PDFKit + Vision",
       "progress": "Por páginas",
-      "limits": "PDF cifrado requiere contraseña. OCR local ES/EN a texto. Compresión raster pierde vectores y texto; no garantiza reducir tamaño. Sin conversiones Office.",
+      "limits": "Un PDF por página seleccionada. Requiere permisos de copia y contraseña si está bloqueado. Máximo 10 000 páginas por entrada.",
       "verification": "verified"
     },
     {
@@ -68,8 +69,9 @@
       "outputs": "PDF con páginas rotadas",
       "engine": "PDFKit + Vision",
       "progress": "Por páginas",
-      "limits": "PDF cifrado requiere contraseña. OCR local ES/EN a texto. Compresión raster pierde vectores y texto; no garantiza reducir tamaño. Sin conversiones Office.",
-      "verification": "pending"
+      "limits": "Ángulo múltiplo de 90°. Requiere permisos de copia y contraseña si está bloqueado. Conserva las páginas como PDF.",
+      "verification": "verified",
+      "verificationEvidence": "OperationTests.testRemainingPDFOperationsReopenAndPreserveInputs"
     },
     {
       "id": "pdfImages",
@@ -79,7 +81,7 @@
       "outputs": "PNG por página",
       "engine": "PDFKit + Vision",
       "progress": "Por páginas",
-      "limits": "PDF cifrado requiere contraseña. OCR local ES/EN a texto. Compresión raster pierde vectores y texto; no garantiza reducir tamaño. Sin conversiones Office.",
+      "limits": "PNG por página, fondo blanco, 36–300 DPI; cada render menor de 80 MP y 16 000 px por lado. PDF con permisos de copia.",
       "verification": "verified"
     },
     {
@@ -90,8 +92,9 @@
       "outputs": "PDF",
       "engine": "PDFKit + Vision",
       "progress": "Por páginas",
-      "limits": "PDF cifrado requiere contraseña. OCR local ES/EN a texto. Compresión raster pierde vectores y texto; no garantiza reducir tamaño. Sin conversiones Office.",
-      "verification": "pending"
+      "limits": "Una página por imagen raster decodificable, en el orden elegido. Entradas de un fotograma. No genera texto editable ni OCR.",
+      "verification": "verified",
+      "verificationEvidence": "OperationTests.testRemainingPDFOperationsReopenAndPreserveInputs"
     },
     {
       "id": "pdfText",
@@ -101,8 +104,9 @@
       "outputs": "TXT UTF-8",
       "engine": "PDFKit + Vision",
       "progress": "Por páginas",
-      "limits": "PDF cifrado requiere contraseña. OCR local ES/EN a texto. Compresión raster pierde vectores y texto; no garantiza reducir tamaño. Sin conversiones Office.",
-      "verification": "pending"
+      "limits": "Extrae únicamente el texto existente a UTF-8. Documentos escaneados sin texto necesitan la operación OCR. Requiere permisos de copia y contraseña si está bloqueado.",
+      "verification": "verified",
+      "verificationEvidence": "OperationTests.testRemainingPDFOperationsReopenAndPreserveInputs"
     },
     {
       "id": "pdfOCR",
@@ -112,7 +116,7 @@
       "outputs": "TXT UTF-8 reconocido por Vision",
       "engine": "PDFKit + Vision",
       "progress": "Por páginas",
-      "limits": "PDF cifrado requiere contraseña. OCR local ES/EN a texto. Compresión raster pierde vectores y texto; no garantiza reducir tamaño. Sin conversiones Office.",
+      "limits": "Vision local ES/EN; salida TXT, sin capa OCR en PDF. Render de 36–300 DPI y menor de 80 MP. No garantiza reconocimiento perfecto.",
       "verification": "verified"
     },
     {
@@ -123,7 +127,7 @@
       "outputs": "PDF rasterizado",
       "engine": "PDFKit + Vision",
       "progress": "Por páginas",
-      "limits": "PDF cifrado requiere contraseña. OCR local ES/EN a texto. Compresión raster pierde vectores y texto; no garantiza reducir tamaño. Sin conversiones Office.",
+      "limits": "Compresión raster con pérdida: 36–300 DPI y calidad JPEG elegida. Pierde texto seleccionable, vectores, formularios y enlaces. No garantiza menor tamaño.",
       "verification": "verified"
     },
     {
@@ -134,7 +138,7 @@
       "outputs": "JSON de streams y contenedor",
       "engine": "FFmpeg/ffprobe 9.0.2 integrado",
       "progress": "Tiempo codificado / duración; unión indeterminada",
-      "limits": "HDR rechazado. GIF ≤60 s / 960 px. MP4 VideoToolbox con alternativa software del sistema. SRT/VTT como pista mov_text. Objetivo de tamaño aproximado. Unión WAV estéreo 48 kHz.",
+      "limits": "JSON con streams, códecs, duración y contenedor detectados por ffprobe. No convierte el archivo; HDR puede inspeccionarse aunque las conversiones de vídeo HDR se rechazan.",
       "verification": "verified"
     },
     {
@@ -145,7 +149,7 @@
       "outputs": "MP4 H.264 con AAC opcional",
       "engine": "FFmpeg/ffprobe 9.0.2 integrado",
       "progress": "Tiempo codificado / duración; unión indeterminada",
-      "limits": "HDR rechazado. GIF ≤60 s / 960 px. MP4 VideoToolbox con alternativa software del sistema. SRT/VTT como pista mov_text. Objetivo de tamaño aproximado. Unión WAV estéreo 48 kHz.",
+      "limits": "Vídeo SDR H.264 VideoToolbox con software del sistema permitido; AAC opcional. HDR rechazado. Ancho hasta 8192 px; objetivo de tamaño aproximado, con informe final. Subtítulos SRT/VTT como pista mov_text.",
       "verification": "verified"
     },
     {
@@ -156,7 +160,7 @@
       "outputs": "MOV MPEG-4 con AAC opcional",
       "engine": "FFmpeg/ffprobe 9.0.2 integrado",
       "progress": "Tiempo codificado / duración; unión indeterminada",
-      "limits": "HDR rechazado. GIF ≤60 s / 960 px. MP4 VideoToolbox con alternativa software del sistema. SRT/VTT como pista mov_text. Objetivo de tamaño aproximado. Unión WAV estéreo 48 kHz.",
+      "limits": "Vídeo SDR MPEG-4 y AAC opcional en MOV. HDR rechazado. Ancho hasta 8192 px. Objetivo de tamaño aproximado; subtítulos SRT/VTT como pista mov_text.",
       "verification": "verified"
     },
     {
@@ -167,7 +171,7 @@
       "outputs": "GIF de paleta",
       "engine": "FFmpeg/ffprobe 9.0.2 integrado",
       "progress": "Tiempo codificado / duración; unión indeterminada",
-      "limits": "HDR rechazado. GIF ≤60 s / 960 px. MP4 VideoToolbox con alternativa software del sistema. SRT/VTT como pista mov_text. Objetivo de tamaño aproximado. Unión WAV estéreo 48 kHz.",
+      "limits": "Segmento de hasta 60 s, ancho máximo 960 px y 1–30 fps. Paleta GIF, sin audio; HDR rechazado.",
       "verification": "verified"
     },
     {
@@ -178,7 +182,7 @@
       "outputs": "M4A AAC",
       "engine": "FFmpeg/ffprobe 9.0.2 integrado",
       "progress": "Tiempo codificado / duración; unión indeterminada",
-      "limits": "HDR rechazado. GIF ≤60 s / 960 px. MP4 VideoToolbox con alternativa software del sistema. SRT/VTT como pista mov_text. Objetivo de tamaño aproximado. Unión WAV estéreo 48 kHz.",
+      "limits": "AAC en M4A, 32–320 kbps. Recorte temporal y normalización opcional single-pass loudnorm (-16 LUFS, -1.5 dBTP, LRA 11).",
       "verification": "verified"
     },
     {
@@ -189,7 +193,7 @@
       "outputs": "WAV PCM de 16 bits",
       "engine": "FFmpeg/ffprobe 9.0.2 integrado",
       "progress": "Tiempo codificado / duración; unión indeterminada",
-      "limits": "HDR rechazado. GIF ≤60 s / 960 px. MP4 VideoToolbox con alternativa software del sistema. SRT/VTT como pista mov_text. Objetivo de tamaño aproximado. Unión WAV estéreo 48 kHz.",
+      "limits": "PCM s16le en WAV. No recupera calidad perdida en una entrada con pérdida. Recorte y normalización opcionales.",
       "verification": "verified"
     },
     {
@@ -200,7 +204,7 @@
       "outputs": "FLAC",
       "engine": "FFmpeg/ffprobe 9.0.2 integrado",
       "progress": "Tiempo codificado / duración; unión indeterminada",
-      "limits": "HDR rechazado. GIF ≤60 s / 960 px. MP4 VideoToolbox con alternativa software del sistema. SRT/VTT como pista mov_text. Objetivo de tamaño aproximado. Unión WAV estéreo 48 kHz.",
+      "limits": "FLAC a partir del audio decodificado; no recupera calidad perdida en una entrada con pérdida. Recorte y normalización opcionales.",
       "verification": "verified"
     },
     {
@@ -211,7 +215,7 @@
       "outputs": "WAV PCM; recodifica a estéreo 48 kHz",
       "engine": "FFmpeg/ffprobe 9.0.2 integrado",
       "progress": "Tiempo codificado / duración; unión indeterminada",
-      "limits": "HDR rechazado. GIF ≤60 s / 960 px. MP4 VideoToolbox con alternativa software del sistema. SRT/VTT como pista mov_text. Objetivo de tamaño aproximado. Unión WAV estéreo 48 kHz.",
+      "limits": "2–32 entradas con audio válido; recodifica explícitamente a PCM WAV, estéreo a 48 kHz. El recorte se aplica a la secuencia concatenada.",
       "verification": "verified"
     },
     {
@@ -233,8 +237,9 @@
       "outputs": "JSON compacto",
       "engine": "Foundation + Yams + CoreText",
       "progress": "Indeterminado",
-      "limits": "Entrada ≤16 MB. CSV↔JSON: campos de texto, columnas uniformes. YAML sin alias, fechas, claves duplicadas/no textuales. HTML Markdown: títulos, párrafos, listas, código; no HTML activo.",
-      "verification": "pending"
+      "limits": "JSON válido de hasta 16 MB; rechaza claves duplicadas. Emite JSON compacto UTF-8; comprueba que la salida se puede leer.",
+      "verification": "verified",
+      "verificationEvidence": "OperationTests.testRemainingDataExportsRoundTripAndMarkdownRendering"
     },
     {
       "id": "jsonYAML",
@@ -288,8 +293,9 @@
       "outputs": "TSV",
       "engine": "Foundation + Yams + CoreText",
       "progress": "Indeterminado",
-      "limits": "Entrada ≤16 MB. CSV↔JSON: campos de texto, columnas uniformes. YAML sin alias, fechas, claves duplicadas/no textuales. HTML Markdown: títulos, párrafos, listas, código; no HTML activo.",
-      "verification": "pending"
+      "limits": "Entrada de hasta 16 MB, filas con igual número de campos. Conserva campos como texto y cita delimitadores, comillas y saltos de línea.",
+      "verification": "verified",
+      "verificationEvidence": "OperationTests.testRemainingDataExportsRoundTripAndMarkdownRendering"
     },
     {
       "id": "tsvCSV",
@@ -299,8 +305,9 @@
       "outputs": "CSV",
       "engine": "Foundation + Yams + CoreText",
       "progress": "Indeterminado",
-      "limits": "Entrada ≤16 MB. CSV↔JSON: campos de texto, columnas uniformes. YAML sin alias, fechas, claves duplicadas/no textuales. HTML Markdown: títulos, párrafos, listas, código; no HTML activo.",
-      "verification": "pending"
+      "limits": "TSV uniforme de hasta 16 MB; salida CSV UTF-8 con delimitador elegido y campos de texto conservados.",
+      "verification": "verified",
+      "verificationEvidence": "OperationTests.testRemainingDataExportsRoundTripAndMarkdownRendering"
     },
     {
       "id": "markdownHTML",
@@ -310,8 +317,9 @@
       "outputs": "HTML estático con texto escapado",
       "engine": "Foundation + Yams + CoreText",
       "progress": "Indeterminado",
-      "limits": "Entrada ≤16 MB. CSV↔JSON: campos de texto, columnas uniformes. YAML sin alias, fechas, claves duplicadas/no textuales. HTML Markdown: títulos, párrafos, listas, código; no HTML activo.",
-      "verification": "pending"
+      "limits": "Subconjunto: títulos, párrafos, listas y bloques de código. HTML literal escapado; no descarga recursos remotos. Entrada hasta 16 MB.",
+      "verification": "verified",
+      "verificationEvidence": "OperationTests.testRemainingDataExportsRoundTripAndMarkdownRendering"
     },
     {
       "id": "markdownPDF",
@@ -321,8 +329,9 @@
       "outputs": "PDF de texto",
       "engine": "Foundation + Yams + CoreText",
       "progress": "Indeterminado",
-      "limits": "Entrada ≤16 MB. CSV↔JSON: campos de texto, columnas uniformes. YAML sin alias, fechas, claves duplicadas/no textuales. HTML Markdown: títulos, párrafos, listas, código; no HTML activo.",
-      "verification": "pending"
+      "limits": "Subconjunto Foundation/CoreText a PDF. Reabre el resultado y comprueba páginas; no descarga recursos remotos. Sin promesa de reproducir CSS o maquetación web.",
+      "verification": "verified",
+      "verificationEvidence": "OperationTests.testRemainingDataExportsRoundTripAndMarkdownRendering"
     },
     {
       "id": "zipCreate",

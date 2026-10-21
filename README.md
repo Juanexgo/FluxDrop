@@ -46,3 +46,5 @@ Tres modos del widget: Convertir, Editar y Archivos. Recorte visual de imágenes
 ## Revisión 0.3
 
 MP3 y Opus con motores incluidos, AVIF condicionado a ImageIO disponible, paginación de acciones, intercambio de teclas, verificación multimedia completa y ocho fixtures de seguridad de comprimidos. 39 pruebas pasaron; 49 rutas de imagen verificadas en macOS 26.3. El titular no tiene membresía Apple Developer: firma Developer ID y notarización siguen pendientes. Ver docs/TEST-RESULTS.md.
+
+Comprobación final ampliada: 43 pruebas pasaron sobre el código 0.3; todas las operaciones registradas tienen cobertura representativa. No equivale a validar todos los archivos posibles ni los gestos globales pendientes.

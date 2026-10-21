@@ -1,6 +1,6 @@
 # Lo que falta para un lanzamiento profesional
 
-La compilación y 39 pruebas automatizadas no convierten esta entrega de desarrollo en un release estable.
+La compilación y 43 pruebas automatizadas no convierten esta entrega de desarrollo en un release estable.
 
 ## Antes de distribuir a clientes
 

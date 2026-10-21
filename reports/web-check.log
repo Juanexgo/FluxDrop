@@ -2,8 +2,8 @@
 > fluxdrop-web@0.3.0 check
 > astro check
 
-22:04:07 [types] Generated 28ms
-22:04:07 [check] Getting diagnostics for Astro files in /private/tmp/fluxdrop-github/apps/web...
+22:17:27 [types] Generated 26ms
+22:17:27 [check] Getting diagnostics for Astro files in /private/tmp/fluxdrop-github/apps/web...
 Result (12 files):
 - 0 errors
 - 0 warnings

@@ -3,7 +3,7 @@
 ## Implementado y comprobado
 
 - App Release compilada con Swift 6 estricto en macOS 26.3/arm64. Versión de app, DMG y scripts centralizada en build-info.json; corregida la ruta antigua del script de notarización.
-- 39 pruebas XCTest, cero fallos y cero omitidas; ejecución 13.061 segundos (no benchmark). El log reports/native-tests.log corresponde a los helpers definitivos con LAME/Opus incorporados.
+- 43 pruebas XCTest, cero fallos y cero omitidas; ejecución 9.604 segundos (no benchmark). El log reports/native-tests.log corresponde a los helpers definitivos con LAME/Opus incorporados.
 - 49 rutas de imagen de siete formatos: JPEG, PNG, TIFF, HEIC, BMP, WebP y AVIF. Las salidas se decodifican y se comprueban dimensiones/originales. AVIF depende de un codificador ImageIO disponible: probado aquí en macOS 26.3, no acredita soporte AVIF en macOS 14. Las 49 rutas incluyen reexportaciones al mismo formato y no equivalen a 49 herramientas.
 - MP3 con LAME 4.0 y Opus/Ogg con libopus 1.6.1, integrados desde fuente. Pruebas de conversión y códec real, inspección y decodificación completa. Mono/estéreo; se rechaza multicanal para evitar una mezcla implícita. Opus utiliza 48 kHz.
 - La verificación multimedia comprueba códec y duración y decodifica toda la salida con -xerror; ya no se limita al primer segundo. La unión inspecciona todas las entradas y permite un recorte posterior al primer clip. Pruebas de salida de 0.5 segundos y entrada secundaria corrupta.
@@ -97,3 +97,9 @@ GitHub main 1f13d71 publicado; Web checks 39540123486 terminó correctamente. Ve
 ## Web 0.3 — comprobación local
 
 Astro check: cero errores/advertencias/hints. Build estático de nueve páginas correcto. Enlaces internos, manifiestos, artefacto, tamaño/checksum y descarga de fuentes de motores verificados por scripts. El primer intento falló por espacio durante la copia de instaladores antiguos; tras limpiar solo temporales del proyecto el build completo terminó correctamente. Gatekeeper comprobado sobre 0.3: rejected; firma ad hoc, sin notarización.
+
+## Ampliación final de comprobaciones 0.3
+
+43 XCTest, cero fallos y cero omitidas; 9.604 segundos de ejecución (no benchmark), sobre el mismo código de producción del instalador 0.3. Se añadieron pruebas de los diez PNG del iconset (dimensiones y decodificación de cada uno), rotación y texto PDF, imágenes a PDF, PDF cifrado sin contraseña/con contraseña errónea/con contraseña correcta, JSON minificado, CSV↔TSV y exportaciones Markdown HTML/PDF con reapertura e inspección del contenido. Originales conservados. Estos resultados permiten marcar verificación representativa de las nueve operaciones antes pendientes; no acreditan todas sus opciones ni archivos posibles.
+
+Publicación d7c5845: GitHub Actions 39542595659 y Vercel CatFjqpPStNvPaACTZUR3MZWLGXJ completados. Nueve rutas públicas HTTP 200. Descargas HTTPS completas verificadas: DMG 48 921 681 bytes, SHA-256 2dab732a1cb8c294f624399666b6277bf9e1d256e296812e5d3731d5f456fa0b; fuentes de motores 24 040 107 bytes, SHA-256 7a218b8af5635047ff11d6bc91ad4f18244b0680cb96bb20cc0683956b67348f. Coinciden con los manifiestos. El navegador mostró la versión y matriz nuevas.
