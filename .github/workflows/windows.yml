@@ -46,7 +46,9 @@ jobs:
           dotnet list apps/windows/FluxDrop.Windows package --include-transitive
       - name: Windows processing and UI checks
         run: |
-          $process = Start-Process build/windows-publish/FluxDrop.exe -ArgumentList '--self-test','--test-output',"$env:GITHUB_WORKSPACE/build/windows-qa" -PassThru -Wait
+          $process = Start-Process build/windows-publish/FluxDrop.exe -ArgumentList '--self-test','--test-output',"$env:GITHUB_WORKSPACE/build/windows-qa" -PassThru
+          for ($i=0; $i -lt 36 -and !$process.HasExited; $i++) { Start-Sleep 5; if(Test-Path build/windows-qa/test-progress.log){Get-Content build/windows-qa/test-progress.log -Tail 3}; $process.Refresh() }
+          if(!$process.HasExited){ Stop-Process -Id $process.Id -Force; throw 'Windows checks timed out after 180 seconds' }
           Get-Content build/windows-qa/windows-results.json
           if ($process.ExitCode -ne 0) { throw "Windows tests failed: $($process.ExitCode)" }
       - name: Build per-user installer

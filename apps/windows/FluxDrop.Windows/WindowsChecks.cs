@@ -26,13 +26,25 @@ public static class WindowsChecks
         }
         void Test(string name, Action action)
         {
+            File.AppendAllText(
+                Path.Combine(root, "test-progress.log"),
+                "START " + name + Environment.NewLine
+            );
             try
             {
                 action();
+                File.AppendAllText(
+                    Path.Combine(root, "test-progress.log"),
+                    "PASS " + name + Environment.NewLine
+                );
                 results.Add(new { name, status = "passed" });
             }
             catch (Exception e)
             {
+                File.AppendAllText(
+                    Path.Combine(root, "test-progress.log"),
+                    "FAIL " + name + " " + e.Message + Environment.NewLine
+                );
                 failures++;
                 results.Add(
                     new
@@ -61,8 +73,7 @@ public static class WindowsChecks
         ImageEngine.Write(bitmap, input, "png", 100);
         string hash = SafeFiles.Hash(input, default).GetAwaiter().GetResult();
         Result Execute(string id, string[] files, Options? o = null) =>
-            engine
-                .ExecuteAsync(new(id, files, root, o ?? new()), null, default)
+            Task.Run(() => engine.ExecuteAsync(new(id, files, root, o ?? new()), null, default))
                 .GetAwaiter()
                 .GetResult();
         foreach (var format in new[] { "png", "jpg", "tiff", "bmp" })
@@ -194,7 +205,7 @@ public static class WindowsChecks
             "widget and main window render",
             () =>
             {
-                var main = new MainWindow();
+                var main = new MainWindow(selfTesting: true);
                 main.Add([input]);
                 main.Show();
                 main.UpdateLayout();

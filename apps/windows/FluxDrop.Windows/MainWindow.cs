@@ -49,7 +49,7 @@ public sealed class MainWindow : Window
     bool quitting;
     readonly TextBlock activity = UI.Text("");
 
-    public MainWindow()
+    public MainWindow(bool selfTesting = false)
     {
         L.Language = Preferences.Language;
         Title = "FluxDrop · Windows";
@@ -79,6 +79,8 @@ public sealed class MainWindow : Window
         };
         SourceInitialized += (_, _) =>
         {
+            if (selfTesting)
+                return;
             desktop = new DesktopIntegration(this, ShowWidget);
             if (!desktop.Configure(Preferences))
                 MessageBox.Show(L.T("Conflict"), "FluxDrop");
