@@ -1,0 +1,74 @@
+name: Windows build and verification
+on:
+  workflow_dispatch:
+    inputs:
+      engine_run:
+        description: 'Successful Windows engines workflow run ID'
+        required: true
+permissions:
+  contents: read
+  actions: read
+jobs:
+  windows:
+    runs-on: windows-2025
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9
+        with:
+          dotnet-version: '10.0.x'
+      - name: Download source-built engines
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ENGINE_RUN: ${{ inputs.engine_run }}
+        run: |
+          if ($env:ENGINE_RUN -notmatch '^\d+$') { throw 'Invalid run ID' }
+          gh run download $env:ENGINE_RUN --repo $env:GITHUB_REPOSITORY --name windows-engines-x64 --dir build/windows-engines
+          if ($LASTEXITCODE -ne 0) { throw 'Engine artifact unavailable' }
+      - name: Check core on Windows
+        run: dotnet run --project apps/windows/FluxDrop.Tests -c Release
+      - name: Publish self-contained Windows app
+        run: dotnet publish apps/windows/FluxDrop.Windows -c Release -r win-x64 --self-contained true -p:DebugType=embedded -o build/windows-publish
+      - name: Inspect bundled licenses
+        run: |
+          build/windows-publish/engines/ffmpeg.exe -version
+          build/windows-publish/engines/ffmpeg.exe -buildconf
+          build/windows-publish/engines/ffmpeg.exe -L
+          dotnet list apps/windows/FluxDrop.Windows package --include-transitive
+      - name: Windows processing and UI checks
+        run: |
+          $process = Start-Process build/windows-publish/FluxDrop.exe -ArgumentList '--self-test','--test-output',"$env:GITHUB_WORKSPACE/build/windows-qa" -PassThru -Wait
+          Get-Content build/windows-qa/windows-results.json
+          if ($process.ExitCode -ne 0) { throw "Windows tests failed: $($process.ExitCode)" }
+      - name: Build per-user installer
+        run: |
+          $compiler = 'C:/Program Files (x86)/Inno Setup 6/ISCC.exe'
+          if (!(Test-Path $compiler)) { throw 'Inno Setup 6 is required on the runner' }
+          & $compiler scripts/package-windows.iss
+          if ($LASTEXITCODE -ne 0) { throw 'Installer compiler failed' }
+      - name: Install, test installed app and uninstall
+        run: |
+          $setup = (Get-ChildItem build/windows-installer/*setup.exe).FullName
+          $target = "$env:RUNNER_TEMP/FluxDrop-Installed"
+          $p = Start-Process $setup -ArgumentList '/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART',"/DIR=$target" -PassThru -Wait
+          if ($p.ExitCode -ne 0) { throw 'Installer failed' }
+          $p = Start-Process "$target/FluxDrop.exe" -ArgumentList '--self-test','--test-output',"$env:GITHUB_WORKSPACE/build/installed-qa" -PassThru -Wait
+          if ($p.ExitCode -ne 0) { throw 'Installed app tests failed' }
+          $p = Start-Process "$target/unins000.exe" -ArgumentList '/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART' -PassThru -Wait
+          if ($p.ExitCode -ne 0) { throw 'Uninstall failed' }
+          Get-FileHash $setup -Algorithm SHA256 | Format-List
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: windows-qa
+          path: |
+            build/windows-qa
+            build/installed-qa
+          retention-days: 14
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: windows-installer-x64
+          path: build/windows-installer
+          retention-days: 14

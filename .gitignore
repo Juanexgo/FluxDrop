@@ -18,3 +18,10 @@ work/
 *.fluxdrop-delivery-tmp
 
 .openai/
+
+# Windows/.NET local output
+**/bin/
+**/obj/
+TestResults/
+*.user
+*.suo

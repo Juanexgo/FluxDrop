@@ -1,0 +1,6 @@
+using System.Diagnostics;
+using System.Text;
+namespace FluxDrop.Core;
+public static class ProcessRunner {
+ public static async Task<string> Run(string executable,IEnumerable<string> arguments,CancellationToken token,Action<string>? line=null){var info=new ProcessStartInfo(executable){UseShellExecute=false,CreateNoWindow=true,RedirectStandardOutput=true,RedirectStandardError=true};foreach(var arg in arguments)info.ArgumentList.Add(arg);using var p=new Process{StartInfo=info};if(!p.Start())throw new IOException("No se pudo iniciar el motor.");using var registration=token.Register(()=>{try{if(!p.HasExited)p.Kill(true);}catch(InvalidOperationException){}});var stdout=new StringBuilder();var stderr=new StringBuilder();async Task Drain(StreamReader reader,StringBuilder output){while(await reader.ReadLineAsync() is {} s){if(output.Length<1024*1024)output.AppendLine(s);line?.Invoke(s);}}var a=Drain(p.StandardOutput,stdout);var b=Drain(p.StandardError,stderr);await Task.WhenAll(a,b,p.WaitForExitAsync(CancellationToken.None));token.ThrowIfCancellationRequested();if(p.ExitCode!=0)throw new IOException("El motor rechazó el archivo o los ajustes (código "+p.ExitCode+"). Comprueba formato, permisos y espacio.");return stdout.ToString();}
+}
