@@ -1,20 +1,20 @@
-created: /private/tmp/fluxdrop-widget-release/FluxDrop-0.1.0-arm64.dmg
+created: /private/tmp/fluxdrop-0.2-release/FluxDrop-0.2.0-arm64.dmg
 Calculando suma de Protective Master Boot Record (MBR: 0)…
-Protective Master Boot Record (MBR: : verificado   CRC32 $A963CE62
+Protective Master Boot Record (MBR: : verificado   CRC32 $E80B5DDB
 Calculando suma de GPT Header (Primary GPT Header: 1)…
-  GPT Header (Primary GPT Header: 1): verificado   CRC32 $AB5B8D28
+  GPT Header (Primary GPT Header: 1): verificado   CRC32 $579D9DEF
 Calculando suma de GPT Partition Data (Primary GPT Table: 2)…
-GPT Partition Data (Primary GPT Tabl: verificado   CRC32 $9CE9A3EE
+GPT Partition Data (Primary GPT Tabl: verificado   CRC32 $E93EDB8B
 Calculando suma de  (Apple_Free: 3)…
                      (Apple_Free: 3): verificado   CRC32 $00000000
 Calculando suma de disk image (Apple_APFS: 4)…
-          disk image (Apple_APFS: 4): verificado   CRC32 $92A87B83
+          disk image (Apple_APFS: 4): verificado   CRC32 $C6A643CB
 Calculando suma de  (Apple_Free: 5)…
                      (Apple_Free: 5): verificado   CRC32 $00000000
 Calculando suma de GPT Partition Data (Backup GPT Table: 6)…
-GPT Partition Data (Backup GPT Table: verificado   CRC32 $9CE9A3EE
+GPT Partition Data (Backup GPT Table: verificado   CRC32 $E93EDB8B
 Calculando suma de GPT Header (Backup GPT Header: 7)…
-   GPT Header (Backup GPT Header: 7): verificado   CRC32 $9656A829
-verificado   CRC32 $DA24320B
-hdiutil: verify: checksum of "/private/tmp/fluxdrop-widget-release/FluxDrop-0.1.0-arm64.dmg" is VALID
-/private/tmp/fluxdrop-widget-release/FluxDrop-0.1.0-arm64.dmg
+   GPT Header (Backup GPT Header: 7): verificado   CRC32 $1A2F80F8
+verificado   CRC32 $5F4C2776
+hdiutil: verify: checksum of "/private/tmp/fluxdrop-0.2-release/FluxDrop-0.2.0-arm64.dmg" is VALID
+/private/tmp/fluxdrop-0.2-release/FluxDrop-0.2.0-arm64.dmg

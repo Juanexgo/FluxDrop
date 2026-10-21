@@ -24,3 +24,9 @@ const downloadPage=await readFile(join(root,'descarga/index.html'),'utf8');
 assert.ok(downloadPage.includes(dev.installerPath) && downloadPage.includes('download') && downloadPage.includes(dev.sha256));
 assert.equal((await stat(join(root,dev.installerPath))).size,dev.size);
 console.log('Development download schema, artifact size and page link checks passed.');
+
+const coverage=JSON.parse(await readFile(new URL('../packages/release-manifest/image-routes.json',import.meta.url),'utf8'));
+assert.equal(coverage.schemaVersion,1);assert.equal(new Set(coverage.routes.map(r=>r.input+'>'+r.output)).size,coverage.routes.length);
+assert.ok(coverage.routes.every(r=>r.verification==='representative-fixture'));
+const formatsPage=await readFile(join(root,'formatos/index.html'),'utf8');
+assert.ok(formatsPage.includes(`${coverage.routes.length} rutas de imagen comprobadas`));

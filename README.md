@@ -2,9 +2,9 @@
 
 Web pública: https://fluxdrop-ruby.vercel.app · [Descarga de desarrollo](https://fluxdrop-ruby.vercel.app/descarga/). Firma ad hoc, sin notarización de Apple; macOS puede bloquear la apertura.
 
-Utilidad nativa de macOS para transformar archivos localmente. SwiftUI/AppKit, motores Apple, libarchive del sistema y FFmpeg compilado desde fuente. Web estática Astro/TypeScript; nunca recibe archivos.
+Utilidad nativa de macOS para transformar archivos localmente. SwiftUI/AppKit, motores Apple, libwebp, libarchive del sistema y FFmpeg compilado desde fuente. Web estática Astro/TypeScript; nunca recibe archivos.
 
-Estado: versión de desarrollo 0.1.0. El estado de validación se encuentra en `docs/TEST-RESULTS.md` cuando termina la comprobación final. No equivale a una versión firmada y notarizada para distribución pública.
+Estado: versión de desarrollo 0.2.0. El estado de validación se encuentra en `docs/TEST-RESULTS.md` cuando termina la comprobación final. No equivale a una versión firmada y notarizada para distribución pública.
 
 ## Empezar
 
@@ -21,7 +21,7 @@ Abrir `apps/macos/Package.swift` en Xcode y seleccionar el esquema FluxDrop. El 
 
 En Ajustes → Widget puedes cambiar tamaño (240–400 pt), tema, color, transparencia, etiquetas, favoritos y cierre tras una acción. La activación global es opcional: clic derecho, ⌥ + clic derecho o ⌃ + clic derecho. Sustituye el menú contextual solo para el gesto elegido y puede desactivarse. La selección del Finder no se importa automáticamente. Consulta [Widget y activación](docs/WIDGET.md).
 
-El atajo inicial ⌃⌥D muestra el widget junto al cursor; también se abre desde la barra de menú. Arrastrar al sector de un formato o añadir archivos desde la ventana. Los resultados se guardan como copias con nombres únicos. Los originales se renombran solamente en la operación explícita de carpetas y los duplicados solo se envían a Papelera tras selección y confirmación.
+El atajo inicial ⌃⌥D muestra el widget junto al cursor; también se abre desde la barra de menú. Arrastrar al sector de un formato o añadir archivos desde la ventana. Los resultados se guardan como copias con nombres únicos. Los originales solo se mueven o renombran mediante acciones explícitas con revisión y los duplicados solo se envían a Papelera tras selección y confirmación.
 
 - [Desarrollo](docs/DEVELOPMENT.md)
 - [Arquitectura](docs/ARCHITECTURE.md)
@@ -38,3 +38,7 @@ El atajo inicial ⌃⌥D muestra el widget junto al cursor; también se abre des
 ## Publicación y lanzamiento
 
 [GitHub y alojamiento independiente](docs/PUBLICATION.md) · [Pendientes para un release profesional](docs/RELEASE-READINESS.md). El repositorio incluye app y web. El workflow Web checks ejecuta validación de tipos, build, enlaces y manifiesto.
+
+## Versión 0.2
+
+Tres modos del widget: Convertir, Editar y Archivos. Recorte visual de imágenes, montaje visual de páginas PDF, reproducción/recorte multimedia y acceso a compresión. Exportación JPEG/PNG/TIFF/HEIC/BMP/WebP: 36 rutas comprobadas con fixtures, incluyendo reexportaciones al mismo formato. Esto mide rutas de imagen, no herramientas ni todas las combinaciones posibles del producto. 34 pruebas XCTest pasaron; ver evidencia y límites en docs/TEST-RESULTS.md.

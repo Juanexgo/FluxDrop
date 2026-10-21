@@ -9,11 +9,11 @@
       "id": "image",
       "name": "Convertir y transformar imagen",
       "category": "image",
-      "inputs": "Imagen raster de un fotograma reconocida por ImageIO",
-      "outputs": "JPEG / PNG / TIFF / HEIC si el encoder existe",
-      "engine": "Image I/O + CoreGraphics",
+      "inputs": "JPEG / PNG / TIFF / HEIC / BMP / WebP de un fotograma",
+      "outputs": "JPEG / PNG / TIFF / HEIC si el encoder existe / BMP / WebP",
+      "engine": "Image I/O + CoreGraphics + libwebp 1.6.0",
       "progress": "Indeterminado por imagen",
-      "limits": "Máximo 100 MP y 32768 px por lado. JPEG: fondo blanco, sRGB. Iconos: imagen cuadrada ≥1024 px. Sin WebP/AVIF.",
+      "limits": "Máximo 100 MP y 32768 px por lado; WebP ≤16383 px. JPEG: fondo blanco y sRGB. WebP: sRGB, transparencia, opción sin pérdida, siempre sin metadatos. AVIF no disponible.",
       "verification": "verified"
     },
     {
@@ -46,7 +46,7 @@
       "outputs": "PDF con páginas seleccionadas en el orden indicado",
       "engine": "PDFKit + Vision",
       "progress": "Por páginas",
-      "limits": "PDF cifrado requiere contraseña. OCR local ES/EN a texto. Compresión raster pierde vectores y texto; no garantiza reducir tamaño. Sin conversiones Office.",
+      "limits": "PDF cifrado requiere contraseña. OCR local ES/EN a texto. Compresión raster pierde vectores y texto; no garantiza reducir tamaño. Sin conversiones Office. El editor visual admite reordenar, duplicar, quitar y rotar cada página (hasta 150 páginas en su vista previa).",
       "verification": "verified"
     },
     {

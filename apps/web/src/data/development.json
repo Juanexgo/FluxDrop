@@ -2,15 +2,15 @@
   "schemaVersion": 1,
   "status": "development",
   "download": {
-    "version": "0.1.0-dev",
+    "version": "0.2.0-dev",
     "date": "2026-10-20",
     "minimumMacOS": "14.0",
     "architectures": [
       "arm64"
     ],
-    "installerPath": "/downloads/FluxDrop-0.1.0-arm64-dev.dmg",
-    "size": 35719951,
-    "sha256": "efb28378da68a3e7ef3e365dc0d13bfb6bce6a7e8e72d9b3398524119eb9872b",
+    "installerPath": "/downloads/FluxDrop-0.2.0-arm64-dev.dmg",
+    "size": 36133923,
+    "sha256": "2ae419fd930cd9cc84917d4f79c1ea003e276be253ee3dbbf5e05ad8a057238e",
     "releaseNotesPath": "/novedades/",
     "signing": "ad-hoc",
     "notarized": false

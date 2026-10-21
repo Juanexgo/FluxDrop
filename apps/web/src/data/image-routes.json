@@ -1,0 +1,187 @@
+{
+  "fixture" : "generated 80x40 single-frame sRGB image; export 32x16; originals compared byte-for-byte",
+  "routes" : [
+    {
+      "input" : "jpeg",
+      "output" : "jpeg",
+      "verification" : "representative-fixture"
+    },
+    {
+      "input" : "jpeg",
+      "output" : "png",
+      "verification" : "representative-fixture"
+    },
+    {
+      "input" : "jpeg",
+      "output" : "tiff",
+      "verification" : "representative-fixture"
+    },
+    {
+      "input" : "jpeg",
+      "output" : "heic",
+      "verification" : "representative-fixture"
+    },
+    {
+      "input" : "jpeg",
+      "output" : "bmp",
+      "verification" : "representative-fixture"
+    },
+    {
+      "input" : "jpeg",
+      "output" : "webp",
+      "verification" : "representative-fixture"
+    },
+    {
+      "input" : "png",
+      "output" : "jpeg",
+      "verification" : "representative-fixture"
+    },
+    {
+      "input" : "png",
+      "output" : "png",
+      "verification" : "representative-fixture"
+    },
+    {
+      "input" : "png",
+      "output" : "tiff",
+      "verification" : "representative-fixture"
+    },
+    {
+      "input" : "png",
+      "output" : "heic",
+      "verification" : "representative-fixture"
+    },
+    {
+      "input" : "png",
+      "output" : "bmp",
+      "verification" : "representative-fixture"
+    },
+    {
+      "input" : "png",
+      "output" : "webp",
+      "verification" : "representative-fixture"
+    },
+    {
+      "input" : "tiff",
+      "output" : "jpeg",
+      "verification" : "representative-fixture"
+    },
+    {
+      "input" : "tiff",
+      "output" : "png",
+      "verification" : "representative-fixture"
+    },
+    {
+      "input" : "tiff",
+      "output" : "tiff",
+      "verification" : "representative-fixture"
+    },
+    {
+      "input" : "tiff",
+      "output" : "heic",
+      "verification" : "representative-fixture"
+    },
+    {
+      "input" : "tiff",
+      "output" : "bmp",
+      "verification" : "representative-fixture"
+    },
+    {
+      "input" : "tiff",
+      "output" : "webp",
+      "verification" : "representative-fixture"
+    },
+    {
+      "input" : "heic",
+      "output" : "jpeg",
+      "verification" : "representative-fixture"
+    },
+    {
+      "input" : "heic",
+      "output" : "png",
+      "verification" : "representative-fixture"
+    },
+    {
+      "input" : "heic",
+      "output" : "tiff",
+      "verification" : "representative-fixture"
+    },
+    {
+      "input" : "heic",
+      "output" : "heic",
+      "verification" : "representative-fixture"
+    },
+    {
+      "input" : "heic",
+      "output" : "bmp",
+      "verification" : "representative-fixture"
+    },
+    {
+      "input" : "heic",
+      "output" : "webp",
+      "verification" : "representative-fixture"
+    },
+    {
+      "input" : "bmp",
+      "output" : "jpeg",
+      "verification" : "representative-fixture"
+    },
+    {
+      "input" : "bmp",
+      "output" : "png",
+      "verification" : "representative-fixture"
+    },
+    {
+      "input" : "bmp",
+      "output" : "tiff",
+      "verification" : "representative-fixture"
+    },
+    {
+      "input" : "bmp",
+      "output" : "heic",
+      "verification" : "representative-fixture"
+    },
+    {
+      "input" : "bmp",
+      "output" : "bmp",
+      "verification" : "representative-fixture"
+    },
+    {
+      "input" : "bmp",
+      "output" : "webp",
+      "verification" : "representative-fixture"
+    },
+    {
+      "input" : "webp",
+      "output" : "jpeg",
+      "verification" : "representative-fixture"
+    },
+    {
+      "input" : "webp",
+      "output" : "png",
+      "verification" : "representative-fixture"
+    },
+    {
+      "input" : "webp",
+      "output" : "tiff",
+      "verification" : "representative-fixture"
+    },
+    {
+      "input" : "webp",
+      "output" : "heic",
+      "verification" : "representative-fixture"
+    },
+    {
+      "input" : "webp",
+      "output" : "bmp",
+      "verification" : "representative-fixture"
+    },
+    {
+      "input" : "webp",
+      "output" : "webp",
+      "verification" : "representative-fixture"
+    }
+  ],
+  "schemaVersion" : 1,
+  "scope" : "Includes same-format re-exports. This is not a count of independent tools and does not guarantee every file."
+}

@@ -1,6 +1,6 @@
 # Lo que falta para un lanzamiento profesional
 
-La compilación y 25 pruebas automatizadas no convierten esta entrega de desarrollo en un release estable.
+La compilación y 34 pruebas automatizadas no convierten esta entrega de desarrollo en un release estable.
 
 ## Antes de distribuir a clientes
 
@@ -13,6 +13,6 @@ La compilación y 25 pruebas automatizadas no convierten esta entrega de desarro
 
 ## Después del lanzamiento inicial
 
-Actualizador firmado (Sparkle evaluado, aún sin implementar) con prueba entre dos versiones, soporte y procedimiento de releases reproducible. Ampliar formatos solo con motor distribuible y pruebas representativas: WebP/AVIF de salida no forman parte del soporte actual. Revisar las restricciones de App Store por separado.
+Actualizador firmado (Sparkle evaluado, aún sin implementar) con prueba entre dos versiones, soporte y procedimiento de releases reproducible. Ampliar formatos solo con motor distribuible y pruebas representativas: AVIF de salida no forma parte del soporte actual. Revisar las restricciones de App Store por separado.
 
 CI web verifica tipos, build, enlaces y manifiesto. No sustituye pruebas manuales nativas ni firma/notarización.

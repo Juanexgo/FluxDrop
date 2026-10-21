@@ -9,3 +9,5 @@
 La compilación concreta de FFmpeg debe revisarse antes de venta: obligaciones LGPL, licencias de componentes y patentes de códecs dependen del uso y jurisdicción. No se afirma una autorización comercial universal. No se incluye x264/x265 ni una descarga binaria de terceros. [Criterios oficiales de FFmpeg](https://ffmpeg.org/legal.html).
 
 Marca, textos y panel de FluxDrop son propios. La referencia visual aportada se usó para la idea de interacción circular, sin reutilizar marca ni recursos de Tangerine.
+
+- libwebp 1.6.0, código C incorporado estáticamente. Fuente oficial fijada en commit `4fa21912338357f89e4fd51cf2368325b59e9bd9`; subconjunto y SHA-256 por archivo en `apps/macos/Vendor/WebP/UPSTREAM.json`. Licencia BSD y concesión de patentes originales en `third-party/WebP-{COPYING,PATENTS,AUTHORS}.txt`, también incluidas en el bundle. No requiere Homebrew ni descarga al convertir. Fuente: https://chromium.googlesource.com/webm/libwebp/

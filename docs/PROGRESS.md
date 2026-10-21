@@ -16,3 +16,7 @@
 - Vercel publicado desde la sesión web autorizada: https://fluxdrop-ruby.vercel.app . Verificación HTTP, cabeceras, canonical, búsqueda de formatos y página de descarga completada. Se añadió descarga de desarrollo real, separada del canal estable, con comprobación de tamaño y SHA-256 durante build. No se afirma firma Developer ID ni notarización.
 
 - Descarga pública de desarrollo comprobada desde Vercel: DMG completo de 35 719 951 bytes y SHA-256 coincidente con el local. Página actualizada y observada con botón activo, versión 0.1.0-dev, requisitos y estado ad hoc/sin notarizar. La versión estable no se ha activado.
+
+## 20 octubre — revisión 0.2
+
+Completado build Release: tres modos del widget, activación opcional por modificador durante arrastre con tap pasivo, seis acciones de archivo, estante de referencias, mover con revisión y rollback, editores visuales de imagen/PDF/multimedia/compresión, BMP y WebP real (libwebp 1.6.0 BSD incorporado). Matriz de 36 rutas de imagen obtenida de ejecuciones reales; 34 XCTest pasaron. Recorte manual exportó 320 × 180 y cola Verificado. DMG verificado y firmado ad hoc. No se habilita canal estable ni se promete paridad de 275 rutas. Persisten pruebas manuales de permisos/gestos, mínimo macOS y firma/notarización externas.

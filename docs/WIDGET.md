@@ -28,3 +28,9 @@ Los ajustes se validan y persisten como JSON versionado en UserDefaults (`widget
 Consulta TEST-RESULTS.md para separar compilación y pruebas de configuración de la validación visual y del evento global real. No se considera verificado un tap global solo porque compile o porque pase su máquina de estados.
 
 API oficial: [CGEvent.tapCreate](https://developer.apple.com/documentation/coregraphics/cgevent/tapcreate(tap:place:options:eventsofinterest:callback:userinfo:)).
+
+## Tres modos en 0.2
+
+Convertir muestra formatos/presets compatibles. Editar abre editores de imagen, PDF, multimedia, compresión o carpetas según las entradas. Archivos ofrece Compartir (selector nativo), estante temporal, copiar archivos, mover con revisión, copiar rutas y abrir las carpetas en Terminal sin ejecutar comandos construidos desde nombres de archivo.
+
+Activación durante arrastre opcional: Mayúsculas → Convertir, Comando → Editar, Control → Archivos de forma inicial; los tres modificadores son configurables y deben ser distintos. Solo se observa flagsChanged pasivamente mientras el botón izquierdo está pulsado. No captura la carga del arrastre global; hay que soltar los archivos sobre el panel. Si el sistema no autoriza el monitor, siguen disponibles el panel convencional y el atajo registrado. La prueba de la máquina de estados cubre activación única y modificadores; la autorización y el gesto real requieren comprobación manual.

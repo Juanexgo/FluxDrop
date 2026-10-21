@@ -2,7 +2,7 @@ import {readFile,writeFile,mkdir,access} from 'node:fs/promises';
 const root=new URL('../../../',import.meta.url);
 const shared=new URL('packages/release-manifest/',root);
 await mkdir(new URL('../src/data/',import.meta.url),{recursive:true});
-for (const name of ['stable.json','capabilities.json','development.json']) {
+for (const name of ['stable.json','capabilities.json','development.json','image-routes.json']) {
   try { const bytes=await readFile(new URL(name,shared)); await writeFile(new URL('../src/data/'+name,import.meta.url),bytes); }
   catch(error) { if(error.code!=='ENOENT') throw error; await access(new URL('../src/data/'+name,import.meta.url)); }
 }
