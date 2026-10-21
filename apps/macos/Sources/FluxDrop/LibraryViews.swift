@@ -33,7 +33,7 @@ struct RecipesView: View {
                     if presentFileDialog(panel) == .OK, let folder = panel.url {
                         do {
                             let files = try FileManager.default.contentsOfDirectory(at: folder, includingPropertiesForKeys: nil, options: [.skipsHiddenFiles])
-                            let images = files.filter { ["jpg","jpeg","png","heic","tif","tiff"].contains($0.pathExtension.lowercased()) }.sorted { $0.lastPathComponent.localizedStandardCompare($1.lastPathComponent) == .orderedAscending }
+                            let images = files.filter { ["jpg","jpeg","png","heic","tif","tiff","bmp","webp"].contains($0.pathExtension.lowercased()) }.sorted { $0.lastPathComponent.localizedStandardCompare($1.lastPathComponent) == .orderedAscending }
                             model.add(images); library.error = tr("folder.filtered") + " \(files.count-images.count)"
                         } catch { library.error = tr("error.unreadable") }
                     }

@@ -251,3 +251,56 @@
 "widget.disableRightClick" = "Disable global right-click";
 "widget.drop" = "Add\nfiles";
 "preferences.general" = "General";
+
+"wheel.mode" = "Wheel mode";
+"wheel.convert" = "Convert";
+"wheel.edit" = "Edit";
+"wheel.files" = "Files";
+"drag.title" = "Open during a drag";
+"drag.enabled" = "Detect modifiers while dragging";
+"drag.note" = "Tap an assigned modifier while holding the left mouse button. The wheel stays open after releasing the key. Assign three different keys; duplicates are rejected. No drag names or contents are read until dropped in FluxDrop.";
+"drag.active" = "Modifier detection active";
+"drag.inactive" = "Detection disabled";
+"drag.permission" = "macOS requires permission to detect this gesture";
+"drag.key.shift" = "⇧ Shift";
+"drag.key.option" = "⌥ Option";
+"drag.key.control" = "⌃ Control";
+"drag.key.command" = "⌘ Command";
+"action.share" = "Share";
+"action.shelf" = "Floating shelf";
+"action.copy" = "Copy files";
+"action.move" = "Move originals";
+"action.copyPaths" = "Copy paths";
+"action.terminal" = "Open Terminal";
+"action.pin" = "Pin to edge";
+"action.shelfNote" = "Drag from this shelf to Finder or another app. Up to 50 references; no file contents are copied or stored.";
+"action.moveReview" = "Review original file move";
+"action.moveNote" = "Originals will change folders. Existing destinations are never overwritten. Only atomic moves on the same volume are supported.";
+"action.failed" = "The action could not be completed. Check permissions and that the files still exist.";
+"action.terminalLimit" = "Select files from at most ten folders to open Terminal.";
+"studio.title" = "Visual studio";
+"studio.image" = "Crop image";
+"studio.pdf" = "PDF pages";
+"studio.media" = "Adjust media";
+"studio.compress" = "Compress copies";
+"studio.oneFile" = "Export applies only to the displayed file. Other inputs remain in the selection.";
+"studio.cropCanvas" = "Crop preview. Numeric fields are also available.";
+"studio.cropHint" = "Drag to select a crop. Coordinates are proportional (0–1).";
+"studio.resetCrop" = "Reset crop";
+"studio.transformNote" = "The selection shows the retained area before rotation or reflection. Other settings apply on export; preview does not simulate compression.";
+"studio.exportCopy" = "Export copy to queue";
+"studio.queued" = "Job added to the queue. Review its result there.";
+"studio.loadPages" = "Load pages";
+"studio.pdfLimit" = "Visual view is limited to 150 pages. Move, duplicate or remove cards; export creates a new PDF. Use Tools for larger documents.";
+"studio.duplicatePage" = "Duplicate page";
+"studio.mediaNote" = "Review with Quick Look and set the segment in seconds. Only the displayed file is exported; other inputs remain selected.";
+"studio.compressNote" = "Images: new JPEG copy with white background and chosen maximum side. PDF: lossy raster compression removes text and vectors. Video: approximate size target in MB. Audio: 192 kbps AAC. Incompatible files produce an explicit error.";
+"studio.launchNote" = "Crop and PDF pages offer visual previews. Media uses Quick Look and precise settings; compression explains tradeoffs for each type. All results are verified in the queue.";
+"files" = "Displayed file";
+
+"studio.previewUnavailable" = "AVFoundation preview is unavailable. Use Quick Look and export through the media engine; no invented duration is shown.";
+
+"drag.disable" = "Disable drag gesture";
+
+"webp.lossless" = "Lossless WebP";
+"webp.note" = "WebP: 8-bit sRGB, preserved transparency and removed metadata. Maximum 16383 px per side.";

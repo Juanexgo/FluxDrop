@@ -19,6 +19,7 @@ public enum ToolID: String, Codable, CaseIterable, Sendable {
 public struct ToolStep: Codable, Equatable, Sendable {
     public var tool: ToolID
     public var image = ImageOptions()
+    public var pageRotations: [Int]?
     public var pages = "" // one-based, ordered, e.g. 3,1-2
     public var rotation = 90
     public var dpi = 144

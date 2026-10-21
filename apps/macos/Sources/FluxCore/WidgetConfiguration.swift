@@ -25,9 +25,15 @@ public struct FluxWidgetConfiguration: Codable, Equatable, Sendable {
     public var closeAfterAction = true
     public var rightClickEnabled = false
     public var trigger: WidgetTrigger = .rightClick
+    public var dragActivation: DragActivationSettings?
+    public var dragSettings: DragActivationSettings {
+        get { dragActivation ?? DragActivationSettings() }
+        set { dragActivation = newValue }
+    }
     public init() {}
     public func validated() throws -> Self {
         guard version == 1, diameter.isFinite, (240...400).contains(diameter), opacity.isFinite, (0.85...1).contains(opacity) else { throw EngineFailure.invalidOptions }
+        _ = try dragSettings.validated()
         return self
     }
     public mutating func resetAppearance() {

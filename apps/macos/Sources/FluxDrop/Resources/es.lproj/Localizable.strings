@@ -251,3 +251,56 @@
 "widget.disableRightClick" = "Desactivar clic derecho global";
 "widget.drop" = "Añadir\narchivos";
 "preferences.general" = "General";
+
+"wheel.mode" = "Modo de rueda";
+"wheel.convert" = "Convertir";
+"wheel.edit" = "Editar";
+"wheel.files" = "Archivos";
+"drag.title" = "Abrir durante un arrastre";
+"drag.enabled" = "Detectar modificadores mientras arrastro";
+"drag.note" = "Pulsa una tecla asignada mientras mantienes pulsado el botón izquierdo. La rueda permanece abierta al soltar la tecla. Usa tres teclas distintas; las combinaciones duplicadas se rechazan. No se leen nombres ni contenido del arrastre hasta soltar en FluxDrop.";
+"drag.active" = "Detección de modificadores activa";
+"drag.inactive" = "Detección desactivada";
+"drag.permission" = "macOS requiere autorización para detectar el gesto";
+"drag.key.shift" = "⇧ Mayúsculas";
+"drag.key.option" = "⌥ Opción";
+"drag.key.control" = "⌃ Control";
+"drag.key.command" = "⌘ Comando";
+"action.share" = "Compartir";
+"action.shelf" = "Estante flotante";
+"action.copy" = "Copiar archivos";
+"action.move" = "Mover originales";
+"action.copyPaths" = "Copiar rutas";
+"action.terminal" = "Abrir Terminal";
+"action.pin" = "Fijar al borde";
+"action.shelfNote" = "Arrastra desde este estante a Finder u otra app. Hasta 50 referencias; no duplica ni guarda contenido.";
+"action.moveReview" = "Revisar movimiento de originales";
+"action.moveNote" = "Los originales cambiarán de carpeta. No se sobrescriben destinos. Solo se admiten movimientos atómicos dentro del mismo volumen.";
+"action.failed" = "No se pudo completar la acción. Comprueba los permisos y que los archivos sigan disponibles.";
+"action.terminalLimit" = "Selecciona archivos de un máximo de diez carpetas para abrir Terminal.";
+"studio.title" = "Estudio visual";
+"studio.image" = "Recortar imagen";
+"studio.pdf" = "Páginas PDF";
+"studio.media" = "Ajustar multimedia";
+"studio.compress" = "Comprimir copias";
+"studio.oneFile" = "La exportación afecta solo al archivo mostrado. Las otras entradas permanecen en la selección.";
+"studio.cropCanvas" = "Vista previa del recorte. También puedes usar los campos numéricos.";
+"studio.cropHint" = "Arrastra para seleccionar el recorte. Las coordenadas son proporcionales (0–1).";
+"studio.resetCrop" = "Restablecer recorte";
+"studio.transformNote" = "La selección muestra el área que se conserva antes de rotar o reflejar. El resto de ajustes se aplica al exportar; la vista previa no simula la compresión.";
+"studio.exportCopy" = "Exportar copia a la cola";
+"studio.queued" = "Trabajo añadido a la cola. Revisa allí su resultado.";
+"studio.loadPages" = "Cargar páginas";
+"studio.pdfLimit" = "Vista visual limitada a 150 páginas. Mueve, duplica o quita tarjetas; se exporta un PDF nuevo. Los documentos grandes se manejan en Herramientas.";
+"studio.duplicatePage" = "Duplicar página";
+"studio.mediaNote" = "Revisa el archivo con Vista rápida y configura el segmento en segundos. Se exporta solo el archivo mostrado; las otras entradas permanecen seleccionadas.";
+"studio.compressNote" = "Imágenes: nueva copia JPEG con fondo blanco y lado máximo elegido. PDF: compresión raster con pérdida de texto y vectores. Video: objetivo aproximado en MB. Audio: AAC a 192 kbps. Un archivo incompatible genera un error explícito.";
+"studio.launchNote" = "El recorte y las páginas PDF tienen vista previa visual. Multimedia usa Vista rápida y ajustes precisos; la compresión informa de los compromisos de cada tipo. Todos los resultados se verifican en la cola.";
+"files" = "Archivo mostrado";
+
+"studio.previewUnavailable" = "Vista previa no disponible con AVFoundation. Puedes usar Vista rápida y exportar con el motor multimedia; no se muestra una duración inventada.";
+
+"drag.disable" = "Desactivar gesto durante arrastre";
+
+"webp.lossless" = "WebP sin pérdida";
+"webp.note" = "WebP: sRGB de 8 bits, transparencia conservada y metadatos eliminados. Máximo 16383 px por lado.";

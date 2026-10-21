@@ -2,18 +2,19 @@ import Foundation
 import ImageIO
 import CoreGraphics
 import CoreText
+import CWebP
 import UniformTypeIdentifiers
 
 public enum ImageFormat: String, Codable, CaseIterable, Sendable {
-    case jpeg, png, tiff, heic
+    case jpeg, png, tiff, heic, bmp, webp
     public var identifier: String {
         switch self { case .jpeg: UTType.jpeg.identifier; case .png: UTType.png.identifier
-        case .tiff: UTType.tiff.identifier; case .heic: UTType.heic.identifier }
+        case .tiff: UTType.tiff.identifier; case .heic: UTType.heic.identifier; case .bmp: UTType.bmp.identifier; case .webp: UTType.webP.identifier }
     }
     public var fileExtension: String { self == .jpeg ? "jpg" : rawValue }
     public static var available: [Self] {
         let types = CGImageDestinationCopyTypeIdentifiers() as! [String]
-        return allCases.filter { types.contains($0.identifier) }
+        return allCases.filter { $0 == .webp || types.contains($0.identifier) }
     }
 }
 
@@ -32,10 +33,12 @@ public struct ImageOptions: Codable, Equatable, Sendable {
     public var stripMetadata = true
     public var watermark = ""
     public var watermarkImage: URL?
-    enum CodingKeys: String, CodingKey { case format, maxPixel, quality, rotation, flipHorizontal, flipVertical, cropX, cropY, cropWidth, cropHeight, stripMetadata, watermark, watermarkImage }
+    public var webPLossless = false
+    enum CodingKeys: String, CodingKey { case webPLossless, format, maxPixel, quality, rotation, flipHorizontal, flipVertical, cropX, cropY, cropWidth, cropHeight, stripMetadata, watermark, watermarkImage }
     public init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
         format = try c.decode(ImageFormat.self, forKey: .format); maxPixel = try c.decode(Int.self, forKey: .maxPixel); quality = try c.decode(Double.self, forKey: .quality)
+        webPLossless = try c.decodeIfPresent(Bool.self, forKey: .webPLossless) ?? false
         rotation = try c.decodeIfPresent(Int.self, forKey: .rotation) ?? 0
         flipHorizontal = try c.decodeIfPresent(Bool.self, forKey: .flipHorizontal) ?? false
         flipVertical = try c.decodeIfPresent(Bool.self, forKey: .flipVertical) ?? false
@@ -110,6 +113,16 @@ public actor ImageEngine {
         try fm.createDirectory(at: staging, withIntermediateDirectories: false, attributes: [.posixPermissions: 0o700])
         defer { try? fm.removeItem(at: staging) }
         let temp = staging.appendingPathComponent("output." + options.format.fileExtension)
+        if options.format == .webp {
+            guard options.stripMetadata else { throw EngineFailure.invalidOptions }
+            guard image.width <= 16383, image.height <= 16383 else { throw EngineFailure.tooLarge }
+            try Self.writeWebP(image,to:temp,quality:options.quality,lossless:options.webPLossless)
+            try Task.checkCancellation()
+            let check = try Self.inspect(temp)
+            guard check.width == image.width, check.height == image.height,
+                  let read = CGImageSourceCreateWithURL(temp as CFURL,nil), CGImageSourceCreateImageAtIndex(read,0,nil) != nil else { throw EngineFailure.verify }
+            return try SafeOutput.publish(temp,directory:directory,name:input.lastPathComponent)
+        }
         guard let dest = CGImageDestinationCreateWithURL(temp as CFURL, options.format.identifier as CFString, 1, nil) else { throw EngineFailure.encode }
         // Fresh raster export: EXIF/IPTC/GPS are deliberately not copied; color comes from the CGImage.
         var properties: [CFString: Any] = options.stripMetadata ? [:] : (CGImageSourceCopyPropertiesAtIndex(source, 0, nil) as? [CFString: Any] ?? [:])
@@ -185,6 +198,22 @@ public actor ImageEngine {
             }
         }
         return folder
+    }
+
+    private static func writeWebP(_ image: CGImage,to url: URL,quality: Double,lossless: Bool) throws {
+        let rowBytes = image.width*4
+        guard let context=CGContext(data:nil,width:image.width,height:image.height,bitsPerComponent:8,bytesPerRow:rowBytes,space:CGColorSpace(name:CGColorSpace.sRGB)!,bitmapInfo:CGImageAlphaInfo.premultipliedLast.rawValue|CGBitmapInfo.byteOrder32Big.rawValue),let storage=context.data else {throw EngineFailure.encode}
+        context.draw(image,in:CGRect(x:0,y:0,width:image.width,height:image.height))
+        let pixels=storage.assumingMemoryBound(to:UInt8.self)
+        for i in stride(from:0,to:rowBytes*image.height,by:4) {
+            let alpha=Int(pixels[i+3])
+            if alpha==0 {pixels[i]=0;pixels[i+1]=0;pixels[i+2]=0}
+            else if alpha<255 {for channel in 0..<3 {pixels[i+channel]=UInt8(min(255,(Int(pixels[i+channel])*255+alpha/2)/alpha))}}
+        }
+        var output: UnsafeMutablePointer<UInt8>?
+        let size=lossless ? WebPEncodeLosslessRGBA(pixels,Int32(image.width),Int32(image.height),Int32(rowBytes),&output) : WebPEncodeRGBA(pixels,Int32(image.width),Int32(image.height),Int32(rowBytes),Float(quality*100),&output)
+        guard size>0,let output else{throw EngineFailure.encode};defer{WebPFree(output)}
+        try Data(bytes:output,count:size).write(to:url,options:.atomic)
     }
 
 }

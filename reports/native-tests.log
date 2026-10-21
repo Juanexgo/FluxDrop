@@ -1,79 +1,15 @@
-Building for debugging...
-[0/22] Write sources
-[1/22] /private/tmp/fluxdrop-swift-build/arm64-apple-macosx/debug/FluxDropPackageTests.derived/runner.swift
-[2/22] Copying Localizable.strings
-[2/22] Copying Info.plist
-[2/22] Write sources
-[7/22] Write FluxDrop-entitlement.plist
-[7/22] Write sources
-[10/22] Write swift-version--58304C5D6DBC2206.txt
-[11/22] Compiling writer.c
-[12/22] Compiling api.c
-[13/22] Compiling emitter.c
-[14/22] Compiling scanner.c
-[15/22] Compiling parser.c
-[16/22] Compiling reader.c
-[18/42] Compiling Yams Mark.swift
-[19/42] Compiling Yams Node.Alias.swift
-[20/42] Compiling Yams Node.Mapping.swift
-[21/42] Compiling Yams Tag.swift
-[22/42] Compiling Yams YamlAnchorProviding.swift
-[23/44] Compiling Yams YamlError.swift
-[24/44] Compiling Yams YamlTagProviding.swift
-[25/44] Compiling Yams Resolver.swift
-[26/44] Compiling Yams String+Yams.swift
-[27/44] Compiling Yams Parser.swift
-[28/44] Compiling Yams RedundancyAliasingStrategy.swift
-[29/44] Compiling Yams Representer.swift
-[30/44] Compiling Yams Decoder.swift
-[31/44] Compiling Yams Emitter.swift
-[32/44] Compiling Yams Encoder.swift
-[33/44] Compiling Yams Node.Scalar.swift
-[34/44] Compiling Yams Node.Sequence.swift
-[35/44] Compiling Yams Node.swift
-[36/44] Emitting module Yams
-[37/44] Compiling Yams AliasDereferencingStrategy.swift
-[38/44] Compiling Yams Anchor.swift
-[39/44] Compiling Yams Constructor.swift
-[40/55] Compiling FluxCore Operations.swift
-[41/55] Compiling FluxCore WatchScanner.swift
-[42/55] Compiling FluxCore PDFEngine.swift
-[43/55] Compiling FluxCore WidgetConfiguration.swift
-[44/55] Compiling FluxCore FolderEngine.swift
-[45/55] Compiling FluxCore ImageEngine.swift
-[46/55] Compiling FluxCore ArchiveEngine.swift
-[47/55] Compiling FluxCore DataEngine.swift
-[48/55] Compiling FluxCore JobQueue.swift
-[49/55] Compiling FluxCore MediaEngine.swift
-[50/55] Emitting module FluxCore
-[51/56] Compiling FluxCore WorkflowEngine.swift
-[52/71] Compiling FluxDrop WorkspaceView.swift
-[53/71] Compiling FluxDrop GlobalRightClick.swift
-[54/71] Compiling FluxDrop LibraryStore.swift
-[55/71] Compiling FluxDrop Views.swift
-[56/71] Compiling FluxDrop WidgetPreferences.swift
-[57/71] Compiling FluxDrop AppModel.swift
-[58/71] Compiling FluxDrop DropTarget.swift
-[59/72] Compiling FluxDrop LibraryViews.swift
-[60/72] Compiling FluxDrop RadialPanel.swift
-[61/72] Emitting module FluxDrop
-[62/72] Compiling FluxDrop WidgetView.swift
-[63/72] Compiling FluxDrop resource_bundle_accessor.swift
-[63/72] Write Objects.LinkFileList
-[64/72] Linking FluxDrop
-[65/72] Applying FluxDrop
-[67/72] Emitting module FluxCoreTests
-[68/72] Compiling FluxCoreTests WidgetConfigurationTests.swift
-[69/72] Compiling FluxCoreTests OperationTests.swift
-[70/72] Compiling FluxCoreTests ImageEngineTests.swift
-[71/74] Emitting module FluxDropPackageTests
-[72/74] Compiling FluxDropPackageTests runner.swift
-[72/74] Write Objects.LinkFileList
-[73/74] Linking FluxDropPackageTests
-Build complete! (23.06s)
-Test Suite 'All tests' started at 2026-10-20 16:38:16.031.
-Test Suite 'FluxDropPackageTests.xctest' started at 2026-10-20 16:38:16.034.
-Test Suite 'FluxWidgetConfigurationTests' started at 2026-10-20 16:38:16.034.
+[0/1] Planning build
+Building for production...
+[0/4] Write sources
+[1/4] Write swift-version--58304C5D6DBC2206.txt
+[3/4] Compiling FluxCoreTests ImageEngineTests.swift
+[4/6] Compiling FluxDropPackageTests runner.swift
+[4/6] Write Objects.LinkFileList
+[5/6] Linking FluxDropPackageTests
+Build complete! (4.54s)
+Test Suite 'All tests' started at 2026-10-20 21:35:49.091.
+Test Suite 'FluxDropPackageTests.xctest' started at 2026-10-20 21:35:49.095.
+Test Suite 'FluxWidgetConfigurationTests' started at 2026-10-20 21:35:49.095.
 Test Case '-[FluxCoreTests.FluxWidgetConfigurationTests testAppearanceResetKeepsActivationChoice]' started.
 Test Case '-[FluxCoreTests.FluxWidgetConfigurationTests testAppearanceResetKeepsActivationChoice]' passed (0.002 seconds).
 Test Case '-[FluxCoreTests.FluxWidgetConfigurationTests testConfigurationRoundTripAndInvalidValues]' started.
@@ -82,61 +18,82 @@ Test Case '-[FluxCoreTests.FluxWidgetConfigurationTests testDownUpPairAndWidgetE
 Test Case '-[FluxCoreTests.FluxWidgetConfigurationTests testDownUpPairAndWidgetExclusion]' passed (0.000 seconds).
 Test Case '-[FluxCoreTests.FluxWidgetConfigurationTests testGestureDoesNotConsumeOtherModifiers]' started.
 Test Case '-[FluxCoreTests.FluxWidgetConfigurationTests testGestureDoesNotConsumeOtherModifiers]' passed (0.000 seconds).
-Test Suite 'FluxWidgetConfigurationTests' passed at 2026-10-20 16:38:16.038.
-	 Executed 4 tests, with 0 failures (0 unexpected) in 0.004 (0.004) seconds
-Test Suite 'ImageEngineTests' started at 2026-10-20 16:38:16.038.
+Test Suite 'FluxWidgetConfigurationTests' passed at 2026-10-20 21:35:49.098.
+	 Executed 4 tests, with 0 failures (0 unexpected) in 0.002 (0.003) seconds
+Test Suite 'ImageEngineTests' started at 2026-10-20 21:35:49.098.
+Test Case '-[FluxCoreTests.ImageEngineTests testAllImageExportRoutesAndOriginals]' started.
+Test Case '-[FluxCoreTests.ImageEngineTests testAllImageExportRoutesAndOriginals]' passed (0.647 seconds).
 Test Case '-[FluxCoreTests.ImageEngineTests testCancellationBeforeProcessing]' started.
-Test Case '-[FluxCoreTests.ImageEngineTests testCancellationBeforeProcessing]' passed (0.075 seconds).
+Test Case '-[FluxCoreTests.ImageEngineTests testCancellationBeforeProcessing]' passed (0.001 seconds).
 Test Case '-[FluxCoreTests.ImageEngineTests testCollisionDoesNotOverwrite]' started.
-Test Case '-[FluxCoreTests.ImageEngineTests testCollisionDoesNotOverwrite]' passed (0.045 seconds).
+Test Case '-[FluxCoreTests.ImageEngineTests testCollisionDoesNotOverwrite]' passed (0.012 seconds).
 Test Case '-[FluxCoreTests.ImageEngineTests testCorruptEmptyAndUnsupported]' started.
 Test Case '-[FluxCoreTests.ImageEngineTests testCorruptEmptyAndUnsupported]' passed (0.001 seconds).
 Test Case '-[FluxCoreTests.ImageEngineTests testCropRotateAndWatermarkOutputDimensions]' started.
-Test Case '-[FluxCoreTests.ImageEngineTests testCropRotateAndWatermarkOutputDimensions]' passed (0.035 seconds).
+Test Case '-[FluxCoreTests.ImageEngineTests testCropRotateAndWatermarkOutputDimensions]' passed (0.031 seconds).
 Test Case '-[FluxCoreTests.ImageEngineTests testDetectionUsesContentNotExtension]' started.
 Test Case '-[FluxCoreTests.ImageEngineTests testDetectionUsesContentNotExtension]' passed (0.002 seconds).
 Test Case '-[FluxCoreTests.ImageEngineTests testEveryAvailableEncoderRoundTripAndOriginalPreserved]' started.
-Test Case '-[FluxCoreTests.ImageEngineTests testEveryAvailableEncoderRoundTripAndOriginalPreserved]' passed (0.308 seconds).
+Test Case '-[FluxCoreTests.ImageEngineTests testEveryAvailableEncoderRoundTripAndOriginalPreserved]' passed (0.058 seconds).
 Test Case '-[FluxCoreTests.ImageEngineTests testInvalidOptionsAndDestination]' started.
 Test Case '-[FluxCoreTests.ImageEngineTests testInvalidOptionsAndDestination]' passed (0.002 seconds).
 Test Case '-[FluxCoreTests.ImageEngineTests testJPEGAlphaIsWhite]' started.
 Test Case '-[FluxCoreTests.ImageEngineTests testJPEGAlphaIsWhite]' passed (0.010 seconds).
 Test Case '-[FluxCoreTests.ImageEngineTests testMultiplePagesRejected]' started.
-Test Case '-[FluxCoreTests.ImageEngineTests testMultiplePagesRejected]' passed (0.002 seconds).
+Test Case '-[FluxCoreTests.ImageEngineTests testMultiplePagesRejected]' passed (0.003 seconds).
 Test Case '-[FluxCoreTests.ImageEngineTests testOrientationAndNoUpscaling]' started.
 Test Case '-[FluxCoreTests.ImageEngineTests testOrientationAndNoUpscaling]' passed (0.010 seconds).
 Test Case '-[FluxCoreTests.ImageEngineTests testQueuePauseMixedBatchRetryAndRecovery]' started.
 Test Case '-[FluxCoreTests.ImageEngineTests testQueuePauseMixedBatchRetryAndRecovery]' passed (0.031 seconds).
-Test Suite 'ImageEngineTests' passed at 2026-10-20 16:38:16.560.
-	 Executed 11 tests, with 0 failures (0 unexpected) in 0.521 (0.522) seconds
-Test Suite 'OperationTests' started at 2026-10-20 16:38:16.560.
+Test Case '-[FluxCoreTests.ImageEngineTests testWebPLosslessTransparencyAndMetadataRestriction]' started.
+Test Case '-[FluxCoreTests.ImageEngineTests testWebPLosslessTransparencyAndMetadataRestriction]' passed (0.013 seconds).
+Test Suite 'ImageEngineTests' passed at 2026-10-20 21:35:49.919.
+	 Executed 13 tests, with 0 failures (0 unexpected) in 0.820 (0.821) seconds
+Test Suite 'OperationTests' started at 2026-10-20 21:35:49.919.
 Test Case '-[FluxCoreTests.OperationTests testArchivesRoundTripAndPaths]' started.
 Test Case '-[FluxCoreTests.OperationTests testArchivesRoundTripAndPaths]' passed (0.013 seconds).
 Test Case '-[FluxCoreTests.OperationTests testCSVQuotedNewlinesAndLossRejection]' started.
 Test Case '-[FluxCoreTests.OperationTests testCSVQuotedNewlinesAndLossRejection]' passed (0.001 seconds).
 Test Case '-[FluxCoreTests.OperationTests testDataRoundTrips]' started.
-Test Case '-[FluxCoreTests.OperationTests testDataRoundTrips]' passed (0.006 seconds).
+Test Case '-[FluxCoreTests.OperationTests testDataRoundTrips]' passed (0.004 seconds).
 Test Case '-[FluxCoreTests.OperationTests testExternalProcessCancellation]' started.
-Test Case '-[FluxCoreTests.OperationTests testExternalProcessCancellation]' passed (0.310 seconds).
+Test Case '-[FluxCoreTests.OperationTests testExternalProcessCancellation]' passed (0.305 seconds).
 Test Case '-[FluxCoreTests.OperationTests testMediaEmbeddedEngine]' started.
-Test Case '-[FluxCoreTests.OperationTests testMediaEmbeddedEngine]' passed (5.102 seconds).
+Test Case '-[FluxCoreTests.OperationTests testMediaEmbeddedEngine]' passed (4.409 seconds).
 Test Case '-[FluxCoreTests.OperationTests testPDFPagesTextRasterAndOCR]' started.
 CoreGraphics PDF has logged an error. Set environment variable "CG_PDF_VERBOSE" to learn more.
-Test Case '-[FluxCoreTests.OperationTests testPDFPagesTextRasterAndOCR]' passed (2.981 seconds).
+Test Case '-[FluxCoreTests.OperationTests testPDFPagesTextRasterAndOCR]' passed (1.505 seconds).
 Test Case '-[FluxCoreTests.OperationTests testRecipeCompositionAndAtomicMultiOutput]' started.
-Test Case '-[FluxCoreTests.OperationTests testRecipeCompositionAndAtomicMultiOutput]' passed (0.029 seconds).
+Test Case '-[FluxCoreTests.OperationTests testRecipeCompositionAndAtomicMultiOutput]' passed (0.010 seconds).
 Test Case '-[FluxCoreTests.OperationTests testRenameCollisionDuplicatesAndWatchQuietPeriod]' started.
-Test Case '-[FluxCoreTests.OperationTests testRenameCollisionDuplicatesAndWatchQuietPeriod]' passed (0.013 seconds).
+Test Case '-[FluxCoreTests.OperationTests testRenameCollisionDuplicatesAndWatchQuietPeriod]' passed (0.006 seconds).
 Test Case '-[FluxCoreTests.OperationTests testRenameRecipeAndAtomicFailure]' started.
 Test Case '-[FluxCoreTests.OperationTests testRenameRecipeAndAtomicFailure]' passed (0.011 seconds).
 Test Case '-[FluxCoreTests.OperationTests testYAMLRejectsUnsupportedTypesAndAliases]' started.
-Test Case '-[FluxCoreTests.OperationTests testYAMLRejectsUnsupportedTypesAndAliases]' passed (0.003 seconds).
-Test Suite 'OperationTests' passed at 2026-10-20 16:38:25.029.
-	 Executed 10 tests, with 0 failures (0 unexpected) in 8.468 (8.469) seconds
-Test Suite 'FluxDropPackageTests.xctest' passed at 2026-10-20 16:38:25.029.
-	 Executed 25 tests, with 0 failures (0 unexpected) in 8.993 (8.995) seconds
-Test Suite 'All tests' passed at 2026-10-20 16:38:25.029.
-	 Executed 25 tests, with 0 failures (0 unexpected) in 8.993 (8.998) seconds
+Test Case '-[FluxCoreTests.OperationTests testYAMLRejectsUnsupportedTypesAndAliases]' passed (0.002 seconds).
+Test Suite 'OperationTests' passed at 2026-10-20 21:35:56.186.
+	 Executed 10 tests, with 0 failures (0 unexpected) in 6.266 (6.268) seconds
+Test Suite 'WheelWorkflowTests' started at 2026-10-20 21:35:56.186.
+Test Case '-[FluxCoreTests.WheelWorkflowTests testCropSelectionClampsReversedDragAndRejectsEmptyOrOutside]' started.
+Test Case '-[FluxCoreTests.WheelWorkflowTests testCropSelectionClampsReversedDragAndRejectsEmptyOrOutside]' passed (0.000 seconds).
+Test Case '-[FluxCoreTests.WheelWorkflowTests testDragGateRequiresButtonAndSingleModifierAndKeepsModesSeparate]' started.
+Test Case '-[FluxCoreTests.WheelWorkflowTests testDragGateRequiresButtonAndSingleModifierAndKeepsModesSeparate]' passed (0.000 seconds).
+Test Case '-[FluxCoreTests.WheelWorkflowTests testLegacyWidgetConfigurationAndDistinctDragKeys]' started.
+Test Case '-[FluxCoreTests.WheelWorkflowTests testLegacyWidgetConfigurationAndDistinctDragKeys]' passed (0.000 seconds).
+Test Case '-[FluxCoreTests.WheelWorkflowTests testMovePreflightPreservesCollisionsAndMovesUnicodeFile]' started.
+Test Case '-[FluxCoreTests.WheelWorkflowTests testMovePreflightPreservesCollisionsAndMovesUnicodeFile]' passed (0.001 seconds).
+Test Case '-[FluxCoreTests.WheelWorkflowTests testMoveRollbackWhenDestinationAppearsAfterReview]' started.
+Test Case '-[FluxCoreTests.WheelWorkflowTests testMoveRollbackWhenDestinationAppearsAfterReview]' passed (0.001 seconds).
+Test Case '-[FluxCoreTests.WheelWorkflowTests testPDFVisualPlanDuplicateRotationAndOriginalIntegrity]' started.
+Test Case '-[FluxCoreTests.WheelWorkflowTests testPDFVisualPlanDuplicateRotationAndOriginalIntegrity]' passed (0.003 seconds).
+Test Case '-[FluxCoreTests.WheelWorkflowTests testVisualTopCropKeepsTopPixelsAndOriginal]' started.
+Test Case '-[FluxCoreTests.WheelWorkflowTests testVisualTopCropKeepsTopPixelsAndOriginal]' passed (0.009 seconds).
+Test Suite 'WheelWorkflowTests' passed at 2026-10-20 21:35:56.202.
+	 Executed 7 tests, with 0 failures (0 unexpected) in 0.016 (0.016) seconds
+Test Suite 'FluxDropPackageTests.xctest' passed at 2026-10-20 21:35:56.202.
+	 Executed 34 tests, with 0 failures (0 unexpected) in 7.105 (7.108) seconds
+Test Suite 'All tests' passed at 2026-10-20 21:35:56.203.
+	 Executed 34 tests, with 0 failures (0 unexpected) in 7.105 (7.111) seconds
 ◇ Test run started.
 ↳ Testing Library Version: 1902
 ↳ Target Platform: arm64e-apple-macos14.0

@@ -10,6 +10,7 @@ import FluxCore
             if let data = try? JSONEncoder().encode(configuration) { UserDefaults.standard.set(data, forKey: "widget.settings.v1") }
             PanelController.shared.refresh(configuration)
             GlobalRightClick.shared.configure(configuration)
+            DragActivation.shared.configure(configuration.dragSettings)
         }
     }
     private init() {
@@ -33,6 +34,7 @@ extension WidgetAccent {
 struct WidgetSettingsView: View {
     @Bindable var preferences = WidgetPreferences.shared
     @Bindable var mouse = GlobalRightClick.shared
+    @Bindable var drag = DragActivation.shared
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
             Text(tr("widget.title")).font(.title2.bold())
@@ -61,6 +63,18 @@ struct WidgetSettingsView: View {
                     if mouse.status == .unavailable { Button(tr("widget.retry")) { mouse.configure(preferences.configuration) } }
                 }.padding(8)
             }
+            GroupBox(tr("drag.title")) {
+                VStack(alignment: .leading, spacing: 10) {
+                    Toggle(tr("drag.enabled"), isOn: $preferences.configuration.dragSettings.enabled)
+                    dragPicker(.convert, $preferences.configuration.dragSettings.convertKey)
+                    dragPicker(.edit, $preferences.configuration.dragSettings.editKey)
+                    dragPicker(.files, $preferences.configuration.dragSettings.filesKey)
+                    Text(tr("drag.note")).font(.caption).foregroundStyle(.secondary)
+                    Label(tr(drag.active ? "drag.active" : (drag.permissionRequired ? "drag.permission" : "drag.inactive")), systemImage: drag.active ? "checkmark.circle" : "info.circle").font(.caption)
+                    if drag.permissionRequired { Button(tr("widget.requestPermission")) { drag.requestPermission() } }
+                    Button(tr("widget.retry")) { drag.configure(preferences.configuration.dragSettings) }
+                }.padding(8)
+            }
             Toggle(tr("widget.favoritesFirst"), isOn: $preferences.configuration.favoritesFirst)
             Toggle(tr("widget.closeAfterAction"), isOn: $preferences.configuration.closeAfterAction)
             HStack {
@@ -69,5 +83,10 @@ struct WidgetSettingsView: View {
             }
             Text(tr("widget.selectionNote")).font(.caption).foregroundStyle(.secondary)
         }
+    }
+    private func dragPicker(_ mode: WheelMode,_ value: Binding<DragKey>) -> some View {
+        Picker(tr("wheel." + mode.rawValue),selection: value) {
+            ForEach(DragKey.allCases,id: \.self) { key in Text(tr("drag.key." + key.rawValue)).tag(key) }
+        }.onChange(of: value.wrappedValue) { if !drag.active && preferences.configuration.dragSettings.enabled { drag.configure(preferences.configuration.dragSettings) } }
     }
 }

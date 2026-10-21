@@ -55,9 +55,14 @@ public actor PDFEngine {
         for (fileIndex, input) in inputs.enumerated() {
             let doc = try document(input, password: password)
             let indices = try Self.pageIndices(step.pages, count: doc.pageCount)
+            if let rotations = step.pageRotations {
+                guard inputs.count == 1, step.tool == .pdfExtract, rotations.count == indices.count,
+                      rotations.allSatisfy({ [0,90,180,270].contains($0) }) else { throw EngineFailure.invalidOptions }
+            }
             for (index, pageIndex) in indices.enumerated() {
                 try Task.checkCancellation()
                 guard let original = doc.page(at: pageIndex), let page = original.copy() as? PDFPage else { throw EngineFailure.unreadable }
+                if let rotations = step.pageRotations { page.rotation = (page.rotation + rotations[index]) % 360 }
                 let name = "\(fileIndex+1)-page-\(index+1)"
                 switch step.tool {
                 case .pdfText: texts.append(page.string ?? "")

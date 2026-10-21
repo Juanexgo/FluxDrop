@@ -24,7 +24,7 @@ func tr(_ key: String) -> String { NSLocalizedString(key, bundle: localizedBundl
         catch { message = tr("error.destination") }
     }
     func addFiles() {
-        let panel = NSOpenPanel(); panel.canChooseFiles = true; panel.canChooseDirectories = false; panel.allowsMultipleSelection = true; panel.allowedContentTypes = []; panel.allowsOtherFileTypes = true
+        let panel = NSOpenPanel(); panel.canChooseFiles = true; panel.canChooseDirectories = false; panel.allowsMultipleSelection = true; panel.allowedContentTypes = [.item]; panel.allowsOtherFileTypes = true
         if presentFileDialog(panel) == .OK { add(panel.urls) }
     }
     func add(_ urls: [URL]) {
@@ -96,20 +96,20 @@ final class QuickPanel: NSPanel {
         guard let panel else { return }
         panel.alphaValue = configuration.opacity
         panel.appearance = configuration.theme == .system ? nil : NSAppearance(named: configuration.theme == .dark ? .darkAqua : .aqua)
-        panel.setContentSize(NSSize(width: configuration.diameter + 24, height: configuration.diameter + 72 + (configuration.showTriggerHint ? 24 : 0)))
+        panel.setContentSize(NSSize(width: configuration.diameter + 24, height: configuration.diameter + 108 + (configuration.showTriggerHint ? 24 : 0)))
     }
     func hide() { panel?.orderOut(nil) }
     func toggle(activate: Bool) { if panel?.isVisible == true { hide() } else { show(activate: activate) } }
 }
 
 @MainActor final class AppDelegate: NSObject, NSApplicationDelegate {
-    func applicationDidFinishLaunching(_ notification: Notification) { ShortcutController.shared.install(choice: AppModel.shared.shortcut); LibraryStore.shared.startWatching(queue: AppModel.shared.queue); AppModel.shared.queue.onCompletion = CompletionNotification.post; GlobalRightClick.shared.configure(WidgetPreferences.shared.configuration) }
+    func applicationDidFinishLaunching(_ notification: Notification) { ShortcutController.shared.install(choice: AppModel.shared.shortcut); LibraryStore.shared.startWatching(queue: AppModel.shared.queue); AppModel.shared.queue.onCompletion = CompletionNotification.post; GlobalRightClick.shared.configure(WidgetPreferences.shared.configuration); DragActivation.shared.configure(WidgetPreferences.shared.configuration.dragSettings) }
     func application(_ sender: NSApplication, openFiles filenames: [String]) {
         AppModel.shared.add(filenames.map { URL(fileURLWithPath: $0) }); PanelController.shared.show()
         sender.reply(toOpenOrPrint: .success)
     }
     func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
-        GlobalRightClick.shared.stop(); AppModel.shared.queue.cancelAll(); return .terminateNow
+        GlobalRightClick.shared.stop(); DragActivation.shared.stop(); AppModel.shared.queue.cancelAll(); return .terminateNow
     }
 }
 

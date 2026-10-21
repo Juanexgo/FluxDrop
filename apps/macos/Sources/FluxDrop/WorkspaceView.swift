@@ -9,6 +9,7 @@ struct WorkspaceView: View {
     @Bindable var model: AppModel
     var body: some View {
         TabView {
+            VisualStudioLauncher(model: model).tabItem { Label(tr("studio.title"), systemImage: "viewfinder") }
             MainView(model: model).tabItem { Label(tr("category.image"), systemImage: "photo") }
             ToolsView(model: model).tabItem { Label(tr("tools"), systemImage: "slider.horizontal.3") }
             RecipesView(model: model, library: .shared).tabItem { Label(tr("recipes"), systemImage: "square.stack.3d.up") }
@@ -136,28 +137,35 @@ struct StepOptions: View {
             if step.tool.category == "archive" { Text(tr("archive.note")).font(.caption) }
         }
     }
-    private func chooseSubtitle() { let panel = NSOpenPanel(); panel.canChooseFiles = true; panel.canChooseDirectories = false; panel.allowsMultipleSelection = false; panel.allowedContentTypes = []; panel.allowsOtherFileTypes = true; if presentFileDialog(panel) == .OK { step.subtitle = panel.url } }
+    private func chooseSubtitle() { let panel = NSOpenPanel(); panel.canChooseFiles = true; panel.canChooseDirectories = false; panel.allowsMultipleSelection = false; panel.allowedContentTypes = [.item]; panel.allowsOtherFileTypes = true; if presentFileDialog(panel) == .OK { step.subtitle = panel.url } }
 }
 struct ImageEditOptions: View {
     @Binding var options: ImageOptions
+    var showCropFields = true
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             Picker(tr("format"), selection: $options.format) { ForEach(ImageFormat.available, id: \.self) { Text($0.rawValue.uppercased()).tag($0) } }
+            if options.format == .webp {
+                Toggle(tr("webp.lossless"),isOn:$options.webPLossless)
+                Text(tr("webp.note")).font(.caption).foregroundStyle(.secondary)
+            }
             TextField(tr("resize.zero"), value: $options.maxPixel, format: .number)
             Slider(value: $options.quality, in: 0.1...1).accessibilityLabel(tr("quality"))
             Picker(tr("rotation"), selection: $options.rotation) { ForEach([0,90,180,270], id: \.self) { Text("\($0)°").tag($0) } }
             Toggle(tr("flip.horizontal"), isOn: $options.flipHorizontal); Toggle(tr("flip.vertical"), isOn: $options.flipVertical)
+            if showCropFields {
             Text(tr("crop.note")).font(.caption)
             HStack { TextField("X", value: $options.cropX, format: .number); TextField("Y", value: $options.cropY, format: .number) }
             HStack { TextField(tr("crop.width"), value: $options.cropWidth, format: .number); TextField(tr("crop.height"), value: $options.cropHeight, format: .number) }
-            Toggle(tr("metadata.strip"), isOn: $options.stripMetadata)
+            }
+            Toggle(tr("metadata.strip"), isOn: $options.stripMetadata).disabled(options.format == .webp)
             TextField(tr("watermark.text"), text: $options.watermark)
             HStack {
                 Button(tr("watermark.image")) { let p = NSOpenPanel(); p.canChooseFiles = true; p.canChooseDirectories = false; p.allowsMultipleSelection = false; p.allowedContentTypes = [.image]; p.allowsOtherFileTypes = false; if presentFileDialog(p) == .OK { options.watermarkImage = p.url } }
                 if options.watermarkImage != nil { Button(tr("remove")) { options.watermarkImage = nil } }
             }
             if let url = options.watermarkImage { Text(url.lastPathComponent).font(.caption) }
-        }
+        }.onChange(of: options.format) { if options.format == .webp { options.stripMetadata = true } }
     }
 }
 @MainActor final class PreviewController: NSObject, @MainActor QLPreviewPanelDataSource {

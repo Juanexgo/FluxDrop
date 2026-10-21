@@ -6,11 +6,14 @@ struct RadialPanel: NSViewRepresentable {
     let model: AppModel
     var configuration = FluxWidgetConfiguration()
     var favorites: [Recipe] = []
+    var mode: WheelMode = .convert
     func makeNSView(context: Context) -> RadialDropView { RadialDropView(model: model) }
-    func updateNSView(_ view: RadialDropView, context: Context) { view.configuration = configuration; view.favorites = favorites; view.configure(model.files) }
+    func updateNSView(_ view: RadialDropView, context: Context) { view.configuration = configuration; view.favorites = favorites; view.mode = mode; view.refreshSelection() }
 }
 @MainActor final class RadialDropView: NSView {
-    struct Action { let title: String; let recipe: Recipe; let extensions: Set<String> }
+    enum Command { case recipe(Recipe), editor(EditorController.Kind), file(FileAction) }
+    struct Action { let title: String; let command: Command; let extensions: Set<String> }
+    var mode: WheelMode = .convert
     var configuration = FluxWidgetConfiguration()
     var favorites: [Recipe] = []
     private var tracking: NSTrackingArea?
@@ -22,16 +25,17 @@ struct RadialPanel: NSViewRepresentable {
     init(model: AppModel) { self.model = model; super.init(frame: NSRect(x: 0,y: 0,width: 320,height: 320)); registerForDraggedTypes([.fileURL]); configure([]) }
     required init?(coder: NSCoder) { nil }
     override var acceptsFirstResponder: Bool { true }
+    func refreshSelection() { configure(dragged.isEmpty ? model.files : dragged) }
     func configure(_ urls: [URL]) {
-        let image: Set<String> = ["jpg","jpeg","png","heic","tif","tiff"], pdf: Set<String> = ["pdf"]
+        let image: Set<String> = ["jpg","jpeg","png","heic","tif","tiff","bmp","webp"], pdf: Set<String> = ["pdf"]
         let video: Set<String> = ["mp4","mov","mkv","avi","webm","m4v"], audio: Set<String> = ["mp3","m4a","wav","flac","aiff","aac","ogg","opus"]
         let exts = Set(urls.map { $0.pathExtension.lowercased() })
-        func action(_ tool: ToolID, _ extensions: Set<String>) -> Action { Action(title: tr("tool." + tool.rawValue), recipe: Recipe(name: tr("tool." + tool.rawValue), steps: [ToolStep(tool: tool)]), extensions: extensions) }
+        func action(_ tool: ToolID, _ extensions: Set<String>) -> Action { Action(title: tr("tool." + tool.rawValue), command: .recipe(Recipe(name: tr("tool." + tool.rawValue), steps: [ToolStep(tool: tool)])), extensions: extensions) }
         var next: [Action] = []
         if urls.isEmpty || !exts.isDisjoint(with: image) {
             next += ImageFormat.available.map { format in
                 var step = ToolStep(tool: .image); step.image = model.options; step.image.format = format
-                return Action(title: format.rawValue.uppercased(), recipe: Recipe(name: format.rawValue.uppercased(), steps: [step]), extensions: image)
+                return Action(title: format.rawValue.uppercased(), command: .recipe(Recipe(name: format.rawValue.uppercased(), steps: [step])), extensions: image)
             }
         }
         if !exts.isDisjoint(with: pdf) { next += [.pdfText, .pdfImages, .pdfSplit, .pdfCompress].map { action($0, pdf) } }
@@ -40,8 +44,20 @@ struct RadialPanel: NSViewRepresentable {
         if exts.contains("json") { next += [.jsonPretty, .jsonMinify, .jsonYAML, .jsonCSV].map { action($0, ["json"]) } }
         if exts.contains("csv") { next += [.csvJSON, .csvTSV].map { action($0, ["csv"]) } }
         if exts.contains("zip") { next.append(action(.zipExtract, ["zip"])) }
+        if exts.contains("yaml") || exts.contains("yml") { next.append(action(.yamlJSON, ["yaml","yml"])) }
+        if exts.contains("tsv") { next.append(action(.tsvCSV, ["tsv"])) }
+        if exts.contains("md") || exts.contains("markdown") { next += [.markdownHTML,.markdownPDF].map { action($0,["md","markdown"]) } }
         if next.isEmpty { next = [action(.zipCreate, exts), action(.tarCreate, exts)] }
-        if configuration.favoritesFirst {
+        if mode == .edit {
+            next = []
+            if urls.isEmpty || !exts.isDisjoint(with: image) { next.append(Action(title: tr("studio.image"), command: .editor(.image), extensions: image)) }
+            if urls.isEmpty || !exts.isDisjoint(with: pdf) { next.append(Action(title: tr("studio.pdf"), command: .editor(.pdf), extensions: pdf)) }
+            if urls.isEmpty || !exts.isDisjoint(with: video.union(audio)) { next.append(Action(title: tr("studio.media"), command: .editor(.media), extensions: video.union(audio))) }
+            if urls.isEmpty || !exts.isDisjoint(with: image.union(pdf).union(video).union(audio)) { next.append(Action(title: tr("studio.compress"), command: .editor(.compress), extensions: image.union(pdf).union(video).union(audio))) }
+            next.append(Action(title:tr("rename"),command:.editor(.folders),extensions:exts))
+        }
+        if mode == .files { next = FileAction.allCases.map { Action(title: tr("action." + $0.rawValue), command: .file($0), extensions: exts) } }
+        if configuration.favoritesFirst && mode == .convert {
             let categories = Set(exts.map { ext -> String in
                 if image.contains(ext) { return "image" }; if pdf.contains(ext) { return "pdf" }
                 if video.contains(ext) { return "video" }; if audio.contains(ext) { return "audio" }
@@ -52,7 +68,7 @@ struct RadialPanel: NSViewRepresentable {
             let matching = favorites.filter { recipe in
                 guard let first = recipe.steps.first else { return false }
                 return urls.isEmpty || categories.isSubset(of: OperationRegistry.inputs(first.tool))
-            }.map { Action(title: $0.name, recipe: $0, extensions: exts) }
+            }.map { Action(title: $0.name, command: .recipe($0), extensions: exts) }
             next = matching + next
         }
         actions = Array(next.prefix(6)); selected = min(selected, actions.count-1)
@@ -127,11 +143,21 @@ struct RadialPanel: NSViewRepresentable {
     private func execute(_ index: Int, files: [URL]) {
         guard !files.isEmpty, actions.indices.contains(index) else { return }
         let action = actions[index]
-        // No silent omission: each file gets a job and an explicit failure if its real content is incompatible.
-        if action.recipe.steps.contains(where: { [.zipCreate,.tarCreate,.pdfMerge,.imagesPDF,.audioJoin].contains($0.tool) }) { model.queue.enqueue(files,directory:model.directory,recipe:action.recipe) }
-        else { for file in files { model.queue.enqueue([file],directory:model.directory,recipe:action.recipe) } }
-        model.files = []
-        if configuration.closeAfterAction { PanelController.shared.hide() }
+        switch action.command {
+        case .file(let operation):
+            FileActionController.shared.execute(operation, files: files, anchor: self)
+            // Sharing picker and move review need their source panel to remain alive.
+            if configuration.closeAfterAction && [.copy,.copyPaths,.shelf,.terminal].contains(operation) { PanelController.shared.hide() }
+        case .editor(let kind):
+            // The editor shows the exact input and explicitly applies to the displayed file.
+            model.add(files); EditorController.shared.show(kind, files: files)
+        case .recipe(let recipe):
+            if recipe.steps.contains(where: { [.zipCreate,.tarCreate,.pdfMerge,.imagesPDF,.audioJoin].contains($0.tool) }) { model.queue.enqueue(files,directory:model.directory,recipe:recipe) }
+            else { for file in files { model.queue.enqueue([file],directory:model.directory,recipe:recipe) } }
+            model.files = []
+            if configuration.closeAfterAction { PanelController.shared.hide() }
+        }
+
     }
 }
 @MainActor final class RadialAccessibilityButton: NSAccessibilityElement {

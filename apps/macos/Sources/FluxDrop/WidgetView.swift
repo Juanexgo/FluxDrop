@@ -6,13 +6,16 @@ struct WidgetView: View {
     @Bindable var model: AppModel
     @Bindable var preferences = WidgetPreferences.shared
     @Bindable var library = LibraryStore.shared
+    @Bindable var session = WheelSession.shared
     @Environment(\.openWindow) private var openWindow
     @State private var searchOpen = false
     @State private var query = ""
     var body: some View {
         let configuration = preferences.configuration
         VStack(spacing: 8) {
-            RadialPanel(model: model, configuration: configuration, favorites: library.recipes.filter(\.favorite))
+            Picker(tr("wheel.mode"), selection: $session.mode) { ForEach(WheelMode.allCases,id: \.self) { Text(tr("wheel." + $0.rawValue)).tag($0) } }
+                .pickerStyle(.segmented).frame(width: configuration.diameter).accessibilityLabel(tr("wheel.mode"))
+            RadialPanel(model: model, configuration: configuration, favorites: library.recipes.filter(\.favorite), mode: session.mode)
                 .frame(width: configuration.diameter, height: configuration.diameter)
             HStack(spacing: 14) {
                 Button { model.addFiles(); PanelController.shared.show(activate: true) } label: { Image(systemName: "plus") }.help(tr("files.add")).accessibilityLabel(tr("files.add"))
@@ -26,7 +29,8 @@ struct WidgetView: View {
                 Button { PanelController.shared.hide() } label: { Image(systemName: "xmark") }.help(tr("widget.hide")).accessibilityLabel(tr("widget.hide"))
             }.buttonStyle(.plain).font(.system(size: 12, weight: .semibold)).padding(.horizontal, 14).padding(.vertical, 10).background(.regularMaterial, in: Capsule())
             if configuration.showTriggerHint { Text(preferences.hint).font(.system(size: 10, weight: .medium)).padding(.horizontal, 12).padding(.vertical, 5).background(.regularMaterial, in: Capsule()).accessibilityLabel(tr("widget.gesture") + ": " + preferences.hint) }
-        }.padding(12).frame(width: configuration.diameter + 24, height: configuration.diameter + 72 + (configuration.showTriggerHint ? 24 : 0))
+        }.padding(12).frame(width: configuration.diameter + 24, height: configuration.diameter + 108 + (configuration.showTriggerHint ? 24 : 0))
+            .alert(tr("notice"), isPresented: Binding(get: { model.message != nil }, set: { if !$0 { model.message = nil } })) { Button("OK") { model.message = nil } } message: { Text(model.message ?? "") }
             .tint(Color(configuration.accent.nsColor)).onExitCommand { PanelController.shared.hide() }
     }
     private var search: some View {

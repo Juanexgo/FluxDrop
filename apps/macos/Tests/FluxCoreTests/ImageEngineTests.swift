@@ -120,3 +120,38 @@ final class ImageEngineTests: XCTestCase {
         queue.clearFinished(); XCTAssertTrue(queue.jobs.isEmpty)
     }
 }
+
+extension ImageEngineTests {
+    func testAllImageExportRoutesAndOriginals() async throws {
+        let dir=try workspace(), source=try fixture(dir), engine=ImageEngine()
+        var routes:[[String:String]]=[]
+        for inputFormat in ImageFormat.available {
+            let input=try await engine.convert(input:source,directory:dir,options:.init(format:inputFormat,maxPixel:0))
+            let original=try Data(contentsOf:input)
+            for outputFormat in ImageFormat.available {
+                let out=try await engine.convert(input:input,directory:dir,options:.init(format:outputFormat,maxPixel:32))
+                let info=try ImageEngine.inspect(out)
+                XCTAssertEqual(info.width,32);XCTAssertEqual(info.height,16);XCTAssertEqual(info.type,outputFormat.identifier)
+                XCTAssertEqual(try Data(contentsOf:input),original)
+                let imageSource=try XCTUnwrap(CGImageSourceCreateWithURL(out as CFURL,nil));XCTAssertNotNil(CGImageSourceCreateImageAtIndex(imageSource,0,nil))
+                routes.append(["input":inputFormat.rawValue,"output":outputFormat.rawValue,"verification":"representative-fixture"])
+            }
+        }
+        XCTAssertEqual(routes.count,ImageFormat.available.count*ImageFormat.available.count)
+        if let path=ProcessInfo.processInfo.environment["FLUXDROP_ROUTE_REPORT"] {
+            let report:[String:Any]=["schemaVersion":1,"fixture":"generated 80x40 single-frame sRGB image; export 32x16; originals compared byte-for-byte","scope":"Includes same-format re-exports. This is not a count of independent tools and does not guarantee every file.","routes":routes]
+            try JSONSerialization.data(withJSONObject:report,options:[.prettyPrinted,.sortedKeys]).write(to:URL(fileURLWithPath:path),options:.atomic)
+        }
+    }
+    func testWebPLosslessTransparencyAndMetadataRestriction() async throws {
+        let dir=try workspace(),input=try fixture(dir),engine=ImageEngine()
+        var options=ImageOptions(format:.webp,maxPixel:0);options.webPLossless=true
+        let out=try await engine.convert(input:input,directory:dir,options:options),bytes=try Data(contentsOf:out)
+        XCTAssertEqual(String(data:bytes.prefix(4),encoding:.ascii),"RIFF");XCTAssertEqual(String(data:bytes[8..<12],encoding:.ascii),"WEBP")
+        XCTAssertNotNil(bytes.range(of:Data("VP8L".utf8)))
+        let source=try XCTUnwrap(CGImageSourceCreateWithURL(out as CFURL,nil)),image=try XCTUnwrap(CGImageSourceCreateImageAtIndex(source,0,nil))
+        XCTAssertTrue([CGImageAlphaInfo.first,.last,.premultipliedFirst,.premultipliedLast].contains(image.alphaInfo))
+        options.stripMetadata=false
+        do {_=try await engine.convert(input:input,directory:dir,options:options);XCTFail("Unsupported WebP metadata preservation accepted")}catch{XCTAssertEqual(error as? EngineFailure,.invalidOptions)}
+    }
+}

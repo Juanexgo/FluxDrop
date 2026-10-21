@@ -33,6 +33,7 @@ struct MenuContent: View {
         }
         SettingsLink { Text(tr("preferences")) }
         if WidgetPreferences.shared.configuration.rightClickEnabled { Button(tr("widget.disableRightClick")) { WidgetPreferences.shared.configuration.rightClickEnabled = false } }
+        if WidgetPreferences.shared.configuration.dragSettings.enabled { Button(tr("drag.disable")) { WidgetPreferences.shared.configuration.dragSettings.enabled = false } }
         Divider(); Button(tr("quit")) { NSApp.terminate(nil) }.keyboardShortcut("q")
     }
 }
@@ -129,7 +130,7 @@ struct PreferencesView: View {
                 Text(tr("privacy.note")).font(.caption)
             }.padding(24) }.tabItem { Label(tr("preferences.general"), systemImage: "gearshape") }
         }.frame(width: 560, height: 620).tint(.orange)
-        .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in GlobalRightClick.shared.configure(WidgetPreferences.shared.configuration) }
+        .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in GlobalRightClick.shared.configure(WidgetPreferences.shared.configuration); DragActivation.shared.configure(WidgetPreferences.shared.configuration.dragSettings) }
         .alert(tr("notice"), isPresented: Binding(get: { model.message != nil }, set: { if !$0 { model.message = nil } })) { Button("OK") { model.message = nil } } message: { Text(model.message ?? "") }
     }
 }
