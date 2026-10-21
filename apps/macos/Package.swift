@@ -9,6 +9,6 @@ let package = Package(
         .systemLibrary(name: "CArchive"),
         .target(name: "CWebP", path: "Vendor/WebP", exclude: ["COPYING","PATENTS","AUTHORS","UPSTREAM.json"], sources: ["src/dec","src/dsp","src/enc","src/utils","sharpyuv"], publicHeadersPath: "include", cSettings: [.headerSearchPath("."), .define("WEBP_USE_THREAD")]),
         .executableTarget(name: "FluxDrop", dependencies: ["FluxCore"], resources: [.process("Resources")]),
-        .testTarget(name: "FluxCoreTests", dependencies: ["FluxCore"])
+        .testTarget(name: "FluxCoreTests", dependencies: ["FluxCore"], resources: [.copy("Fixtures")])
     ], swiftLanguageModes: [.v6]
 )

@@ -11,9 +11,10 @@ struct RadialPanel: NSViewRepresentable {
     func updateNSView(_ view: RadialDropView, context: Context) { view.configuration = configuration; view.favorites = favorites; view.mode = mode; view.refreshSelection() }
 }
 @MainActor final class RadialDropView: NSView {
-    enum Command { case recipe(Recipe), editor(EditorController.Kind), file(FileAction) }
+    enum Command { case recipe(Recipe), editor(EditorController.Kind), file(FileAction), nextPage }
     struct Action { let title: String; let command: Command; let extensions: Set<String> }
-    var mode: WheelMode = .convert
+    var mode: WheelMode = .convert { didSet { if oldValue != mode { page = 0 } } }
+    private var page = 0
     var configuration = FluxWidgetConfiguration()
     var favorites: [Recipe] = []
     private var tracking: NSTrackingArea?
@@ -27,7 +28,7 @@ struct RadialPanel: NSViewRepresentable {
     override var acceptsFirstResponder: Bool { true }
     func refreshSelection() { configure(dragged.isEmpty ? model.files : dragged) }
     func configure(_ urls: [URL]) {
-        let image: Set<String> = ["jpg","jpeg","png","heic","tif","tiff","bmp","webp"], pdf: Set<String> = ["pdf"]
+        let image: Set<String> = ["jpg","jpeg","png","heic","tif","tiff","bmp","webp","avif"], pdf: Set<String> = ["pdf"]
         let video: Set<String> = ["mp4","mov","mkv","avi","webm","m4v"], audio: Set<String> = ["mp3","m4a","wav","flac","aiff","aac","ogg","opus"]
         let exts = Set(urls.map { $0.pathExtension.lowercased() })
         func action(_ tool: ToolID, _ extensions: Set<String>) -> Action { Action(title: tr("tool." + tool.rawValue), command: .recipe(Recipe(name: tr("tool." + tool.rawValue), steps: [ToolStep(tool: tool)])), extensions: extensions) }
@@ -40,7 +41,7 @@ struct RadialPanel: NSViewRepresentable {
         }
         if !exts.isDisjoint(with: pdf) { next += [.pdfText, .pdfImages, .pdfSplit, .pdfCompress].map { action($0, pdf) } }
         if !exts.isDisjoint(with: video) { next += [.videoMP4, .videoGIF, .audioM4A].map { action($0, video) } }
-        if !exts.isDisjoint(with: audio) { next += [.audioM4A, .audioWAV, .audioFLAC, .mediaInspect].map { action($0, audio) } }
+        if !exts.isDisjoint(with: audio) { next += [.audioMP3, .audioM4A, .audioOpus, .audioWAV, .audioFLAC, .mediaInspect].map { action($0, audio) } }
         if exts.contains("json") { next += [.jsonPretty, .jsonMinify, .jsonYAML, .jsonCSV].map { action($0, ["json"]) } }
         if exts.contains("csv") { next += [.csvJSON, .csvTSV].map { action($0, ["csv"]) } }
         if exts.contains("zip") { next.append(action(.zipExtract, ["zip"])) }
@@ -71,10 +72,15 @@ struct RadialPanel: NSViewRepresentable {
             }.map { Action(title: $0.name, command: .recipe($0), extensions: exts) }
             next = matching + next
         }
-        actions = Array(next.prefix(6)); selected = min(selected, actions.count-1)
+        let pagination = ActionPage(total: next.count, requested: page)
+        page = pagination.index
+        actions = Array(next[pagination.range])
+        if pagination.count > 1 { actions.append(Action(title: tr("wheel.more") + " \(page+1)/\(pagination.count)", command: .nextPage, extensions: exts)) }
+        selected = min(selected, actions.count-1)
         accessibilityButtons = actions.enumerated().map { i, item in
             let element = RadialAccessibilityButton { [weak self] in self?.execute(i, files: self?.model.files ?? []) }
-            element.setAccessibilityRole(.button); element.setAccessibilityLabel(item.title); element.setAccessibilityEnabled(!urls.isEmpty)
+            element.setAccessibilityRole(.button); element.setAccessibilityLabel(item.title); if case .nextPage = item.command { element.setAccessibilityEnabled(true) }
+            else { element.setAccessibilityEnabled(!urls.isEmpty) }
             element.setAccessibilityParent(self); return element
         }
         setAccessibilityElement(false); setAccessibilityChildren(accessibilityButtons); needsDisplay = true
@@ -134,6 +140,8 @@ struct RadialPanel: NSViewRepresentable {
     override func keyDown(with event: NSEvent) {
         switch event.keyCode {
         case 53: PanelController.shared.hide()
+        case 121: page += 1; refreshSelection()
+        case 116: page -= 1; refreshSelection()
         case 123,126: selected = (selected+actions.count-1)%actions.count; needsDisplay = true
         case 124,125: selected = (selected+1)%actions.count; needsDisplay = true
         case 36: execute(selected, files:model.files)
@@ -141,9 +149,15 @@ struct RadialPanel: NSViewRepresentable {
         }
     }
     private func execute(_ index: Int, files: [URL]) {
-        guard !files.isEmpty, actions.indices.contains(index) else { return }
+        guard actions.indices.contains(index) else { return }
         let action = actions[index]
+        if case .nextPage = action.command {
+            if !files.isEmpty { model.add(files) }
+            page += 1; refreshSelection(); return
+        }
+        guard !files.isEmpty else { return }
         switch action.command {
+        case .nextPage: break
         case .file(let operation):
             FileActionController.shared.execute(operation, files: files, anchor: self)
             // Sharing picker and move review need their source panel to remain alive.

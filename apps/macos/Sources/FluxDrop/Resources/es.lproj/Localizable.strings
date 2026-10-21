@@ -98,7 +98,7 @@
 "audio.bitrate" = "Bitrate AAC (kbps)";
 "media.normalize" = "Normalizar a −16 LUFS (EBU R128)";
 "metadata.strip" = "Quitar metadatos y ubicación";
-"media.note" = "MP4 usa H.264 VideoToolbox con alternativa software del sistema. MOV usa MPEG-4. HDR se rechaza para evitar alterar el color. Los subtítulos son pistas seleccionables. El tamaño objetivo es aproximado.";
+"media.note" = "MP3 y Opus admiten mono o estéreo; se rechaza multicanal para evitar una mezcla implícita. Opus usa 48 kHz. MP4 usa H.264 VideoToolbox con alternativa software del sistema. MOV usa MPEG-4. HDR se rechaza para evitar alterar el color. Los subtítulos son pistas seleccionables. El tamaño objetivo es aproximado.";
 "audio.join.note" = "Unión: recodifica a WAV PCM, estéreo, 48 kHz. No aplica recorte ni normalización.";
 "encoding" = "Codificación de entrada";
 "delimiter" = "Delimitador (un carácter)";
@@ -304,3 +304,10 @@
 
 "webp.lossless" = "WebP sin pérdida";
 "webp.note" = "WebP: sRGB de 8 bits, transparencia conservada y metadatos eliminados. Máximo 16383 px por lado.";
+
+"tool.audioMP3" = "Audio → MP3";
+"tool.audioOpus" = "Audio → Opus";
+"wheel.more" = "Más acciones";
+
+"licenses.summary" = "Incluye FFmpeg (LGPL 2.1+), LAME, Opus, libwebp y Yams. Las fuentes, versiones y avisos de licencia se incluyen con la app.";
+"licenses.open" = "Abrir fuentes y licencias incluidas";

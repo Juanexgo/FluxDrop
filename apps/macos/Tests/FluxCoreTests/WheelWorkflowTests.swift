@@ -3,6 +3,26 @@ import Foundation
 @testable import FluxCore
 
 final class WheelWorkflowTests: XCTestCase {
+    func testActionPaginationKeepsEveryActionReachable() {
+        let total = 23
+        let pages = (0..<4).map { ActionPage(total: total, requested: $0) }
+        XCTAssertEqual(pages.flatMap { Array($0.range) }, Array(0..<total))
+        XCTAssertEqual(ActionPage(total: total, requested: 4).index, 0)
+        XCTAssertEqual(ActionPage(total: total, requested: -1).index, 3)
+        XCTAssertEqual(ActionPage(total: 0, requested: 9).range, 0..<0)
+    }
+    func testModifierAssignmentSwapsRatherThanSilentlyRejecting() throws {
+        for mode in WheelMode.allCases {
+            for key in DragKey.allCases {
+                var settings = DragActivationSettings()
+                settings.assign(key, to: mode)
+                _ = try settings.validated()
+                settings.enabled = true
+                XCTAssertEqual(settings.mode(for: [key], dragging: true), mode)
+            }
+        }
+    }
+
     func testLegacyWidgetConfigurationAndDistinctDragKeys() throws {
         let original = FluxWidgetConfiguration()
         var old = try XCTUnwrap(JSONSerialization.jsonObject(with: JSONEncoder().encode(original)) as? [String:Any])

@@ -98,7 +98,7 @@
 "audio.bitrate" = "AAC bitrate (kbps)";
 "media.normalize" = "Normalize to −16 LUFS (EBU R128)";
 "metadata.strip" = "Remove metadata and location";
-"media.note" = "MP4 uses H.264 VideoToolbox with system software fallback. MOV uses MPEG-4. HDR is rejected to avoid color damage. Subtitles are selectable tracks. Target size is approximate.";
+"media.note" = "MP3 and Opus accept mono or stereo; multichannel inputs are rejected to avoid implicit downmixing. Opus uses 48 kHz. MP4 uses H.264 VideoToolbox with system software fallback. MOV uses MPEG-4. HDR is rejected to avoid color damage. Subtitles are selectable tracks. Target size is approximate.";
 "audio.join.note" = "Joining re-encodes to stereo 48 kHz PCM WAV. Trimming and normalization do not apply.";
 "encoding" = "Input encoding";
 "delimiter" = "Delimiter (one character)";
@@ -304,3 +304,10 @@
 
 "webp.lossless" = "Lossless WebP";
 "webp.note" = "WebP: 8-bit sRGB, preserved transparency and removed metadata. Maximum 16383 px per side.";
+
+"tool.audioMP3" = "Audio → MP3";
+"tool.audioOpus" = "Audio → Opus";
+"wheel.more" = "More actions";
+
+"licenses.summary" = "Includes FFmpeg (LGPL 2.1+), LAME, Opus, libwebp and Yams. Sources, versions and license notices are included.";
+"licenses.open" = "Open included sources and licenses";

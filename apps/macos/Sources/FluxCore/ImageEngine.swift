@@ -6,10 +6,10 @@ import CWebP
 import UniformTypeIdentifiers
 
 public enum ImageFormat: String, Codable, CaseIterable, Sendable {
-    case jpeg, png, tiff, heic, bmp, webp
+    case jpeg, png, tiff, heic, bmp, webp, avif
     public var identifier: String {
         switch self { case .jpeg: UTType.jpeg.identifier; case .png: UTType.png.identifier
-        case .tiff: UTType.tiff.identifier; case .heic: UTType.heic.identifier; case .bmp: UTType.bmp.identifier; case .webp: UTType.webP.identifier }
+        case .tiff: UTType.tiff.identifier; case .heic: UTType.heic.identifier; case .bmp: UTType.bmp.identifier; case .webp: UTType.webP.identifier; case .avif: "public.avif" }
     }
     public var fileExtension: String { self == .jpeg ? "jpg" : rawValue }
     public static var available: [Self] {

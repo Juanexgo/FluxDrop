@@ -31,10 +31,18 @@ cat > "$APP/Contents/Info.plist" <<'PLIST'
 <key>CFBundleDocumentTypes</key><array><dict><key>CFBundleTypeName</key><string>File</string><key>CFBundleTypeRole</key><string>Viewer</string><key>LSHandlerRank</key><string>Alternate</string><key>LSItemContentTypes</key><array><string>public.data</string></array></dict></array>
 </dict></plist>
 PLIST
+python3 - "$ROOT/packages/release-manifest/build-info.json" "$APP/Contents/Info.plist" <<'PYINFO'
+import json,plistlib,re,sys
+info=json.load(open(sys.argv[1]))
+assert info['schemaVersion']==1 and re.fullmatch(r'\d+\.\d+\.\d+',info['version']) and isinstance(info['build'],int) and info['build']>0
+with open(sys.argv[2],'rb') as f: data=plistlib.load(f)
+data.update(CFBundleShortVersionString=info['version'],CFBundleVersion=str(info['build']),LSMinimumSystemVersion=info['minimumMacOS'])
+with open(sys.argv[2],'wb') as f: plistlib.dump(data,f)
+PYINFO
 if [ -x "$ENGINE/ffmpeg" ] && [ -x "$ENGINE/ffprobe" ]; then
   mkdir -p "$APP/Contents/Helpers" "$APP/Contents/Resources/ThirdParty"
   cp "$ENGINE/ffmpeg" "$ENGINE/ffprobe" "$APP/Contents/Helpers/"
-  cp "$ENGINE/"*.txt "$ENGINE/"*.md "$ENGINE/COPYING.LGPLv2.1" "$ENGINE/"*.tar.xz "$APP/Contents/Resources/ThirdParty/"
+  cp "$ENGINE/"*.txt "$ENGINE/"*.md "$ENGINE/COPYING.LGPLv2.1" "$ENGINE/"*.tar.* "$APP/Contents/Resources/ThirdParty/"
 else
   echo 'Missing bundled engines: run scripts/build-ffmpeg.sh first.' >&2; exit 1
 fi
@@ -46,5 +54,5 @@ codesign --force --sign - "$APP/Contents/Helpers/ffprobe"
 codesign --force --sign - "$APP"
 codesign --verify --deep --strict "$APP"
 mkdir -p "$ROOT/build"
-if [ "$APP" != "$ROOT/build/FluxDrop.app" ]; then ditto --norsrc --noextattr "$APP" "$ROOT/build/FluxDrop.app"; fi
+if [ "${FLUXDROP_SKIP_WORKSPACE_COPY:-0}" != 1 ] && [ "$APP" != "$ROOT/build/FluxDrop.app" ]; then ditto --norsrc --noextattr "$APP" "$ROOT/build/FluxDrop.app"; fi
 echo "$APP"

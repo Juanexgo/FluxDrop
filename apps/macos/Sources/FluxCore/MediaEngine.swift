@@ -63,19 +63,33 @@ public actor MediaEngine {
         guard let root = try JSONSerialization.jsonObject(with: data) as? [String: Any], let streams = root["streams"] as? [[String: Any]], !streams.isEmpty else { throw EngineFailure.unsupported }
         if step.tool == .mediaInspect { let url = staging.appendingPathComponent("media.json"); try data.write(to: url); return [url] }
         let video = streams.first { $0["codec_type"] as? String == "video" }
-        let audio = streams.contains { $0["codec_type"] as? String == "audio" }
+        let audioTrack = streams.first { $0["codec_type"] as? String == "audio" }
+        let audio = audioTrack != nil
+        if [.audioMP3, .audioOpus].contains(step.tool) {
+            guard let channels = audioTrack?["channels"] as? Int, (1...2).contains(channels) else { throw EngineFailure.invalidOptions }
+        }
         let isVideo = [.videoMP4, .videoMOV, .videoGIF].contains(step.tool)
         guard isVideo ? video != nil : audio else { throw EngineFailure.unsupported }
         // Refuse HDR rather than silently clipping or mislabelling it as SDR.
         if let transfer = video?["color_transfer"] as? String, ["smpte2084", "arib-std-b67"].contains(transfer), isVideo { throw EngineFailure.hdr }
         let format = root["format"] as? [String: Any]
-        let total = Double(format?["duration"] as? String ?? "0") ?? 0
-        guard total > 0, step.start < total else { throw EngineFailure.invalidOptions }
+        var total = Double(format?["duration"] as? String ?? "0") ?? 0
+        if step.tool == .audioJoin {
+            guard inputs.count > 1, inputs.count <= 32 else { throw EngineFailure.invalidOptions }
+            for url in inputs.dropFirst() {
+                let next = try await inspect(url, staging: staging)
+                guard let metadata = try JSONSerialization.jsonObject(with: next) as? [String: Any],
+                      let tracks = metadata["streams"] as? [[String: Any]], tracks.contains(where: { $0["codec_type"] as? String == "audio" }),
+                      let info = metadata["format"] as? [String: Any], let length = Double(info["duration"] as? String ?? ""), length.isFinite, length > 0 else { throw EngineFailure.unsupported }
+                total += length
+            }
+        }
+        guard total.isFinite, total > 0, step.start < total else { throw EngineFailure.invalidOptions }
         let duration = step.duration > 0 ? min(step.duration, total - step.start) : total - step.start
         let ext: String
-        switch step.tool { case .videoMP4: ext = "mp4"; case .videoMOV: ext = "mov"; case .videoGIF: ext = "gif"; case .audioM4A: ext = "m4a"; case .audioFLAC: ext = "flac"; default: ext = "wav" }
+        switch step.tool { case .videoMP4: ext = "mp4"; case .videoMOV: ext = "mov"; case .videoGIF: ext = "gif"; case .audioM4A: ext = "m4a"; case .audioFLAC: ext = "flac"; case .audioMP3: ext = "mp3"; case .audioOpus: ext = "opus"; default: ext = "wav" }
         let output = staging.appendingPathComponent("media." + ext), progressURL = staging.appendingPathComponent("progress.txt")
-        var args = ["-hide_banner", "-loglevel", "error", "-nostdin", "-y", "-protocol_whitelist", "file,pipe", "-i", input.path]
+        var args = ["-hide_banner", "-loglevel", "error", "-xerror", "-nostdin", "-y", "-protocol_whitelist", "file,pipe", "-i", input.path]
         if step.tool == .audioJoin {
             guard inputs.count > 1, inputs.count <= 32 else { throw EngineFailure.invalidOptions }
             for url in inputs.dropFirst() { args += ["-protocol_whitelist", "file,pipe", "-i", url.path] }
@@ -104,7 +118,7 @@ public actor MediaEngine {
                 }
             } else {
                 args += ["-vn"]
-                switch step.tool { case .audioM4A: args += ["-c:a", "aac", "-b:a", "\(step.audioBitrate)k"]; case .audioFLAC: args += ["-c:a", "flac"]; default: args += ["-c:a", "pcm_s16le"] }
+                switch step.tool { case .audioM4A: args += ["-c:a", "aac", "-b:a", "\(step.audioBitrate)k"]; case .audioFLAC: args += ["-c:a", "flac"]; case .audioMP3: args += ["-c:a", "libmp3lame", "-b:a", "\(step.audioBitrate)k"]; case .audioOpus: args += ["-c:a", "libopus", "-b:a", "\(step.audioBitrate)k", "-ar", "48000"]; default: args += ["-c:a", "pcm_s16le"] }
             }
             if step.normalize && audio && !step.mute && step.tool != .videoGIF { args += ["-af", "loudnorm=I=-16:TP=-1.5:LRA=11"] }
         }
@@ -113,7 +127,23 @@ public actor MediaEngine {
         _ = try await runner.run(executable: tools.appendingPathComponent("ffmpeg"), arguments: args, directory: staging, progressFile: progressURL, duration: step.tool == .audioJoin ? 0 : duration, progress: progress)
         let verified = try await inspect(output, staging: staging)
         guard let result = try JSONSerialization.jsonObject(with: verified) as? [String: Any], let resultStreams = result["streams"] as? [[String: Any]], !resultStreams.isEmpty else { throw EngineFailure.verify }
-        _ = try await runner.run(executable: tools.appendingPathComponent("ffmpeg"), arguments: ["-v", "error", "-nostdin", "-protocol_whitelist", "file,pipe", "-i", output.path, "-t", "1", "-f", "null", "-"], directory: staging)
+        let resultFormat = result["format"] as? [String: Any]
+        guard let actualDuration = Double(resultFormat?["duration"] as? String ?? ""), actualDuration.isFinite, actualDuration > 0,
+              abs(actualDuration - duration) <= max(0.25, duration * 0.02) else { throw EngineFailure.verify }
+        let expectedCodec: String
+        switch step.tool {
+        case .videoMP4: expectedCodec = "h264"
+        case .videoMOV: expectedCodec = "mpeg4"
+        case .videoGIF: expectedCodec = "gif"
+        case .audioM4A: expectedCodec = "aac"
+        case .audioFLAC: expectedCodec = "flac"
+        case .audioMP3: expectedCodec = "mp3"
+        case .audioOpus: expectedCodec = "opus"
+        default: expectedCodec = "pcm_s16le"
+        }
+        guard resultStreams.contains(where: { $0["codec_name"] as? String == expectedCodec }) else { throw EngineFailure.verify }
+        // Decode every audio/video packet, including the tail. A valid first second is insufficient.
+        _ = try await runner.run(executable: tools.appendingPathComponent("ffmpeg"), arguments: ["-v", "error", "-xerror", "-err_detect", "explode", "-nostdin", "-protocol_whitelist", "file,pipe", "-i", output.path, "-map", "0:v?", "-map", "0:a?", "-f", "null", "-"], directory: staging)
         if step.targetMB > 0 && isVideo && step.tool != .videoGIF {
             let size = (try output.resourceValues(forKeys: [.fileSizeKey])).fileSize ?? 0
             let report = staging.appendingPathComponent("size-report.txt")

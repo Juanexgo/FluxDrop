@@ -128,6 +128,10 @@ struct PreferencesView: View {
                 Toggle(tr("history.keep"), isOn: Binding(get: { model.queue.keepHistory }, set: { model.queue.keepHistory = $0; UserDefaults.standard.set(!$0, forKey: "disableHistory") }))
                 SystemOptions()
                 Text(tr("privacy.note")).font(.caption)
+                Text(tr("licenses.summary")).font(.caption).foregroundStyle(.secondary)
+                Button(tr("licenses.open")) {
+                    if let resources = Bundle.main.resourceURL { NSWorkspace.shared.open(resources.appendingPathComponent("ThirdParty")) }
+                }
             }.padding(24) }.tabItem { Label(tr("preferences.general"), systemImage: "gearshape") }
         }.frame(width: 560, height: 620).tint(.orange)
         .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in GlobalRightClick.shared.configure(WidgetPreferences.shared.configuration); DragActivation.shared.configure(WidgetPreferences.shared.configuration.dragSettings) }

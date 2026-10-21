@@ -8,6 +8,14 @@ public struct DragActivationSettings: Codable, Equatable, Sendable {
     public var editKey: DragKey = .command
     public var filesKey: DragKey = .control
     public init() {}
+    public mutating func assign(_ key: DragKey, to target: WheelMode) {
+        let old: DragKey
+        switch target { case .convert: old = convertKey; case .edit: old = editKey; case .files: old = filesKey }
+        if convertKey == key { convertKey = old }
+        if editKey == key { editKey = old }
+        if filesKey == key { filesKey = old }
+        switch target { case .convert: convertKey = key; case .edit: editKey = key; case .files: filesKey = key }
+    }
     public func validated() throws -> Self {
         guard Set([convertKey,editKey,filesKey]).count == 3 else { throw EngineFailure.invalidOptions }
         return self
@@ -37,5 +45,19 @@ public struct CropSelection: Equatable, Sendable {
     public func apply(to options: inout ImageOptions) throws {
         guard [x,y,width,height].allSatisfy(\.isFinite), width > 0.001, height > 0.001, x >= 0, y >= 0, x+width <= 1.000001, y+height <= 1.000001 else { throw EngineFailure.invalidOptions }
         options.cropX = x; options.cropY = y; options.cropWidth = width; options.cropHeight = height
+    }
+}
+
+/// Keeps every compatible action reachable while limiting the radial surface.
+public struct ActionPage: Equatable, Sendable {
+    public let index: Int
+    public let count: Int
+    public let range: Range<Int>
+    public init(total: Int, requested: Int, size: Int = 7) {
+        let size = max(1, size), total = max(0, total)
+        count = max(1, (total + size - 1) / size)
+        index = ((requested % count) + count) % count
+        let start = min(total, index * size)
+        range = start..<min(total, start + size)
     }
 }

@@ -2,7 +2,7 @@ import Foundation
 
 public enum ToolID: String, Codable, CaseIterable, Sendable {
     case renameCopy, image, imageIcons, pdfMerge, pdfExtract, pdfSplit, pdfRotate, pdfImages, imagesPDF, pdfText, pdfOCR, pdfCompress
-    case mediaInspect, videoMP4, videoMOV, videoGIF, audioM4A, audioWAV, audioFLAC, audioJoin
+    case mediaInspect, videoMP4, videoMOV, videoGIF, audioM4A, audioWAV, audioFLAC, audioMP3, audioOpus, audioJoin
     case jsonPretty, jsonMinify, jsonYAML, yamlJSON, csvJSON, jsonCSV, csvTSV, tsvCSV, markdownHTML, markdownPDF
     case zipCreate, zipExtract, tarCreate, tarExtract, gzipCreate, gzipExtract
     public var category: String {
@@ -10,7 +10,7 @@ public enum ToolID: String, Codable, CaseIterable, Sendable {
         case .renameCopy: "files"
         case .image, .imageIcons: "image"
         case .pdfMerge, .pdfExtract, .pdfSplit, .pdfRotate, .pdfImages, .imagesPDF, .pdfText, .pdfOCR, .pdfCompress: "pdf"
-        case .mediaInspect, .videoMP4, .videoMOV, .videoGIF, .audioM4A, .audioWAV, .audioFLAC, .audioJoin: "media"
+        case .mediaInspect, .videoMP4, .videoMOV, .videoGIF, .audioM4A, .audioWAV, .audioFLAC, .audioMP3, .audioOpus, .audioJoin: "media"
         case .jsonPretty, .jsonMinify, .jsonYAML, .yamlJSON, .csvJSON, .jsonCSV, .csvTSV, .tsvCSV, .markdownHTML, .markdownPDF: "data"
         default: "archive"
         }
@@ -64,7 +64,7 @@ public enum OperationRegistry {
         case .pdfMerge, .pdfExtract, .pdfSplit, .pdfRotate, .pdfImages, .pdfText, .pdfOCR, .pdfCompress: ["pdf"]
         case .mediaInspect: ["video", "audio"]
         case .videoMP4, .videoMOV, .videoGIF: ["video"]
-        case .audioM4A, .audioWAV, .audioFLAC, .audioJoin: ["video", "audio"]
+        case .audioM4A, .audioWAV, .audioFLAC, .audioMP3, .audioOpus, .audioJoin: ["video", "audio"]
         case .jsonPretty, .jsonMinify, .jsonYAML, .jsonCSV: ["json"]
         case .yamlJSON: ["yaml"]
         case .csvJSON, .csvTSV: ["csv"]
@@ -82,7 +82,7 @@ public enum OperationRegistry {
         case .pdfMerge, .pdfExtract, .pdfSplit, .pdfRotate, .imagesPDF, .pdfCompress, .markdownPDF: ["pdf"]
         case .pdfText, .pdfOCR: ["text"]
         case .videoMP4, .videoMOV: ["video"]
-        case .audioM4A, .audioWAV, .audioFLAC, .audioJoin: ["audio"]
+        case .audioM4A, .audioWAV, .audioFLAC, .audioMP3, .audioOpus, .audioJoin: ["audio"]
         case .jsonPretty, .jsonMinify, .yamlJSON, .csvJSON, .mediaInspect: ["json"]
         case .jsonYAML: ["yaml"]
         case .jsonCSV, .tsvCSV: ["csv"]

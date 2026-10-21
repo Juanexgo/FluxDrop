@@ -122,7 +122,7 @@ final class OperationTests: XCTestCase {
         let runner=ProcessRunner()
         _=try await runner.run(executable:tools.appendingPathComponent("ffmpeg"),arguments:["-v","error","-f","lavfi","-i","testsrc=size=160x90:rate=10","-f","lavfi","-i","sine=frequency=440:sample_rate=48000","-t","1","-c:v","mpeg4","-pix_fmt","yuv420p","-c:a","aac",input.path],directory:dir)
         let engine=MediaEngine(tools:tools)
-        for tool in [ToolID.mediaInspect,.videoMP4,.videoMOV,.videoGIF,.audioM4A,.audioWAV,.audioFLAC] {
+        for tool in [ToolID.mediaInspect,.videoMP4,.videoMOV,.videoGIF,.audioM4A,.audioWAV,.audioFLAC,.audioMP3,.audioOpus] {
             let stage=try folder(); var step=ToolStep(tool:tool); step.width=80; step.start=0.1; step.duration=0.5
             let result=try await engine.execute(inputs:[input],step:step,staging:stage)
             XCTAssertFalse(result.isEmpty)
@@ -134,4 +134,55 @@ final class OperationTests: XCTestCase {
         let joined=try await engine.execute(inputs:[input,input],step:.init(tool:.audioJoin),staging:try folder())
         XCTAssertTrue(FileManager.default.fileExists(atPath:joined[0].path))
     }
+    func testAudioJoinTrimAfterFirstClipAndRejectNonAudio() async throws {
+        let tools = URL(fileURLWithPath: ProcessInfo.processInfo.environment["FLUXDROP_TEST_TOOLS"] ?? "/missing")
+        guard FileManager.default.isExecutableFile(atPath: tools.appendingPathComponent("ffmpeg").path) else { throw XCTSkip("Bundled engines missing") }
+        let stage = try folder(), runner = ProcessRunner(), engine = MediaEngine(tools: tools)
+        let input = stage.appendingPathComponent("audio ñ space.wav")
+        _ = try await runner.run(executable: tools.appendingPathComponent("ffmpeg"), arguments:["-v","error","-f","lavfi","-i","sine=frequency=440:duration=1","-c:a","pcm_s16le",input.path], directory:stage)
+        let original = try Data(contentsOf: input)
+        var step = ToolStep(tool:.audioJoin); step.start = 1.2; step.duration = 0.5
+        let outputs = try await engine.execute(inputs:[input,input],step:step,staging:try folder())
+        let data = try await engine.inspect(outputs[0],staging:stage)
+        let json = try JSONSerialization.jsonObject(with:data) as! [String:Any]
+        let format = json["format"] as! [String:Any]
+        XCTAssertEqual(Double(format["duration"] as! String)!, 0.5, accuracy:0.03)
+        XCTAssertEqual(try Data(contentsOf:input), original)
+        let bad = stage.appendingPathComponent("not audio.wav");try Data("broken".utf8).write(to:bad)
+        do { _ = try await engine.execute(inputs:[input,bad],step:step,staging:try folder()); XCTFail("Accepted corrupt second input") } catch { }
+    }
+
+    func testHostileArchivesNeverPublishOrEscape() async throws {
+        for name in ["traversal.zip","absolute.zip","case-collision.zip","symlink.zip","expansion.zip","hardlink.tar","symlink.tar","corrupt.zip"] {
+            let directory = try folder()
+            let source = try XCTUnwrap(Bundle.module.resourceURL?.appendingPathComponent("Fixtures/"+name))
+            let input = directory.appendingPathComponent(name)
+            try FileManager.default.copyItem(at:source,to:input)
+            let original = try Data(contentsOf:input)
+            let destination = directory.appendingPathComponent("results")
+            try FileManager.default.createDirectory(at:destination,withIntermediateDirectories:false)
+            let step = ToolStep(tool:name.hasSuffix(".tar") ? .tarExtract : .zipExtract)
+            do {
+                _ = try await WorkflowEngine(tools:directory).run(inputs:[input],recipe:Recipe(name:"Rejection fixture",steps:[step]),directory:destination)
+                XCTFail("Accepted hostile archive: \(name)")
+            } catch {
+                XCTAssertFalse(error is CancellationError)
+                XCTAssertEqual(try Data(contentsOf:input), original)
+                XCTAssertEqual(try FileManager.default.contentsOfDirectory(atPath:destination.path), [])
+                XCTAssertFalse(FileManager.default.fileExists(atPath:directory.appendingPathComponent("outside.txt").path))
+            }
+        }
+    }
+
+    func testMP3AndOpusRejectImplicitSurroundDownmix() async throws {
+        let tools = URL(fileURLWithPath: ProcessInfo.processInfo.environment["FLUXDROP_TEST_TOOLS"] ?? "/missing")
+        guard FileManager.default.isExecutableFile(atPath:tools.appendingPathComponent("ffmpeg").path) else { throw XCTSkip("Bundled engines missing") }
+        let stage = try folder(), input = stage.appendingPathComponent("surround.wav")
+        _ = try await ProcessRunner().run(executable:tools.appendingPathComponent("ffmpeg"),arguments:["-v","error","-f","lavfi","-i","anullsrc=r=48000:cl=5.1","-t","0.25",input.path],directory:stage)
+        for tool in [ToolID.audioMP3,.audioOpus] {
+            do { _ = try await MediaEngine(tools:tools).execute(inputs:[input],step:ToolStep(tool:tool),staging:try folder()); XCTFail("Implicit surround downmix") }
+            catch { XCTAssertEqual(error as? EngineFailure,.invalidOptions) }
+        }
+    }
+
 }

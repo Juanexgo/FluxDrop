@@ -225,7 +225,7 @@ struct CompressionStudio: View {
         for file in files {
             let ext=file.pathExtension.lowercased();var step:ToolStep
             if ext=="pdf" {step=ToolStep(tool:.pdfCompress);step.image.quality=quality}
-            else if ["jpg","jpeg","png","heic","tif","tiff","bmp","webp"].contains(ext) {step=ToolStep(tool:.image);step.image=ImageOptions(format:.jpeg,maxPixel:maxPixel,quality:quality)}
+            else if ["jpg","jpeg","png","heic","tif","tiff","bmp","webp","avif"].contains(ext) {step=ToolStep(tool:.image);step.image=ImageOptions(format:.jpeg,maxPixel:maxPixel,quality:quality)}
             else if ["mp3","m4a","wav","flac","aiff","aac","ogg","opus"].contains(ext) {step=ToolStep(tool:.audioM4A)}
             else {step=ToolStep(tool:.videoMP4);step.targetMB=targetMB}
             AppModel.shared.queue.enqueue([file],directory:AppModel.shared.directory,recipe:Recipe(name:tr("studio.compress"),steps:[step]))

@@ -85,7 +85,11 @@ struct WidgetSettingsView: View {
         }
     }
     private func dragPicker(_ mode: WheelMode,_ value: Binding<DragKey>) -> some View {
-        Picker(tr("wheel." + mode.rawValue),selection: value) {
+        Picker(tr("wheel." + mode.rawValue),selection: Binding(get: { value.wrappedValue }, set: { newValue in
+            var settings = preferences.configuration.dragSettings
+            settings.assign(newValue, to: mode)
+            preferences.configuration.dragSettings = settings
+        })) {
             ForEach(DragKey.allCases,id: \.self) { key in Text(tr("drag.key." + key.rawValue)).tag(key) }
         }.onChange(of: value.wrappedValue) { if !drag.active && preferences.configuration.dragSettings.enabled { drag.configure(preferences.configuration.dragSettings) } }
     }
