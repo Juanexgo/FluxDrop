@@ -22,6 +22,7 @@ public sealed class WidgetWindow : Window
         WindowStyle = WindowStyle.None;
         AllowsTransparency = true;
         Background = Brushes.Transparent;
+        Foreground = Brushes.White;
         Topmost = true;
         ShowInTaskbar = false;
         ResizeMode = ResizeMode.NoResize;

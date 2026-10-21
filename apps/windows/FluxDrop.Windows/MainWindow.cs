@@ -149,9 +149,42 @@ public sealed class MainWindow : Window
             light ? Color.FromRgb(248, 247, 243) : Color.FromRgb(29, 30, 33)
         );
         Foreground = light ? Brushes.Black : Brushes.White;
-        var textStyle = new Style(typeof(TextBlock));
-        textStyle.Setters.Add(new Setter(TextBlock.ForegroundProperty, Foreground));
-        Resources.Add(typeof(TextBlock), textStyle);
+        foreach (
+            var type in new[]
+            {
+                typeof(TabControl),
+                typeof(TabItem),
+                typeof(Button),
+                typeof(TextBox),
+                typeof(PasswordBox),
+                typeof(ListBox),
+                typeof(CheckBox),
+                typeof(Expander),
+            }
+        )
+        {
+            var style = new Style(type);
+            style.Setters.Add(new Setter(Control.ForegroundProperty, Foreground));
+            style.Setters.Add(
+                new Setter(
+                    Control.BackgroundProperty,
+                    type == typeof(Button)
+                        ? new SolidColorBrush(
+                            light ? Color.FromRgb(232, 231, 226) : Color.FromRgb(54, 55, 59)
+                        )
+                        : Background
+                )
+            );
+            style.Setters.Add(
+                new Setter(
+                    Control.BorderBrushProperty,
+                    new SolidColorBrush(
+                        light ? Color.FromRgb(208, 207, 201) : Color.FromRgb(88, 86, 82)
+                    )
+                )
+            );
+            Resources.Add(type, style);
+        }
     }
 
     void AddTab(string key, UIElement content)
