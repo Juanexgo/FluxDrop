@@ -1,5 +1,5 @@
-using System.Collections.Specialized;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.Globalization;
 using System.Text.Json;
 using System.Windows;
@@ -8,40 +8,1069 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using FluxDrop.Core;
+
 namespace FluxDrop.Windows;
-public sealed class MainWindow:Window {
- public Preferences Preferences {get;}=Preferences.Load();public WindowsEngine Engine {get;}=new();public JobQueue Queue {get;}public string[] Selection=>selected.Items.Cast<string>().ToArray();readonly ListBox selected=new(){MinHeight=130,MaxHeight=230,SelectionMode=SelectionMode.Extended};readonly ListBox actions=new(){MinHeight=120,MaxHeight=180};readonly ListBox jobs=new(){MinHeight=200,DisplayMemberPath="Display",SelectionMode=SelectionMode.Single};readonly ListBox recipes=new(){MinHeight=100,DisplayMemberPath="Name"};readonly ListBox watches=new(){MinHeight=100};readonly Image preview=new(){Height=120,Stretch=Stretch.Uniform,Margin=new Thickness(8)};readonly Dictionary<string,TextBox> fields=[];readonly Dictionary<string,CheckBox> toggles=[];readonly PasswordBox password=new(){Margin=new Thickness(4)};readonly TabControl tabs=new();WidgetWindow? widget;DesktopIntegration? desktop;WatchService? watch;System.Windows.Forms.NotifyIcon? tray;bool quitting;readonly TextBlock activity=UI.Text("");
- public MainWindow(){L.Language=Preferences.Language;Title="FluxDrop · Windows";Width=1000;Height=790;MinWidth=760;MinHeight=580;FontFamily=new FontFamily("Segoe UI");ApplyTheme();Queue=new JobQueue(Engine,Path.Combine(Preferences.Root,"jobs.json")){KeepHistory=Preferences.History,Concurrency=Preferences.Concurrency};Content=tabs;AddTab("Files",BuildFiles());AddTab("Queue",BuildQueue());AddTab("Recipes",BuildRecipes());AddTab("Watches",BuildWatches());AddTab("Settings",BuildSettings());AllowDrop=true;Drop+=(_,e)=>AcceptDrop(e);PreviewKeyDown+=(_,e)=>{if(e.Key==Key.Escape)widget?.Hide();};SourceInitialized+=(_,_)=>{desktop=new DesktopIntegration(this,ShowWidget);if(!desktop.Configure(Preferences))MessageBox.Show(L.T("Conflict"),"FluxDrop");SetupTray();StartWatches();};Closing+=(_,e)=>{if(!quitting){e.Cancel=true;Hide();tray?.ShowBalloonTip(1500,"FluxDrop",L.T("Widget"),System.Windows.Forms.ToolTipIcon.Info);}};Queue.Changed+=()=>{Dispatcher.Invoke(()=>{RefreshJobs();if(Preferences.Notify){var complete=Queue.Snapshot().LastOrDefault(j=>j.State is JobState.Complete or JobState.Failed);if(complete!=null&&complete.Id!=lastNotified){lastNotified=complete.Id;tray?.ShowBalloonTip(1500,"FluxDrop",complete.State.ToString(),System.Windows.Forms.ToolTipIcon.Info);}}});};RefreshJobs();}
- Guid lastNotified;
- void ApplyTheme(){bool light=Preferences.Theme=="light"||Preferences.Theme=="system"&&Microsoft.Win32.Registry.GetValue(@"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize","AppsUseLightTheme",1) is int n&&n!=0;if(SystemParameters.HighContrast){Background=SystemColors.WindowBrush;Foreground=SystemColors.WindowTextBrush;return;}Background=new SolidColorBrush(light?Color.FromRgb(248,247,243):Color.FromRgb(29,30,33));Foreground=light?Brushes.Black:Brushes.White;var textStyle=new Style(typeof(TextBlock));textStyle.Setters.Add(new Setter(TextBlock.ForegroundProperty,Foreground));Resources.Add(typeof(TextBlock),textStyle);}
- void AddTab(string key,UIElement content){tabs.Items.Add(new TabItem{Header=L.T(key),Content=new ScrollViewer{Content=content,VerticalScrollBarVisibility=ScrollBarVisibility.Auto,Padding=new Thickness(20)}});}
- StackPanel BuildFiles(){var panel=new StackPanel();panel.Children.Add(UI.Text("FluxDrop",30));panel.Children.Add(UI.Text(L.T("Drop")));panel.Children.Add(UI.Row(UI.Action(L.T("Add"),AddFiles),UI.Action(L.T("AddFolder"),()=>{if(UI.Folder() is {} dir)Add([dir]);}),UI.Action(L.T("Clear"),()=>{selected.Items.Clear();preview.Source=null;}),UI.Action(L.T("Widget"),ShowWidget)));panel.Children.Add(selected);selected.SelectionChanged+=(_,_)=>Preview();panel.Children.Add(preview);var search=UI.Field(panel,L.T("Search"));search.TextChanged+=(_,_)=>RefreshActions(search.Text);panel.Children.Add(actions);RefreshActions("");panel.Children.Add(UI.Row(UI.Action(L.T("Destination"),ChooseDestination),UI.Text(Preferences.Destination)));panel.Children.Add(UI.Row(UI.Action(L.T("Run"),()=>{var cap=actions.SelectedItem as ActionItem??throw new ArgumentException(L.T("Search"));Submit(cap.Id,ReadOptions());}),UI.Action(L.T("Preview"),()=>{MessageBox.Show(string.Join("\n",Selection.Zip(PortableEngine.RenamePreview(Selection,ReadOptions())).Select(p=>Path.GetFileName(p.First)+" → "+p.Second)),"FluxDrop");})));var advanced=new StackPanel();AddOptions(advanced);panel.Children.Add(new Expander{Header=L.T("Advanced"),Content=advanced,Margin=new Thickness(4,12,4,12)});panel.Children.Add(UI.Text(L.T("Status"),12));return panel;}
- void AddOptions(Panel p){void Field(string key,string value)=>fields[key]=UI.Field(p,L.T(key),value);void Toggle(string key,bool value)=>toggles[key]=UI.Toggle(p,L.T(key),value);var o=Preferences.Options;Field("Format",o.Format);Field("MaxSide",o.MaxSide.ToString());Field("Quality",o.Quality.ToString());Field("Rotate",o.Rotate.ToString());Toggle("Flip",o.Flip);Toggle("Metadata",o.StripMetadata);Field("Watermark",o.Watermark);Field("WatermarkImage",o.WatermarkImage);Field("Crop",$"{o.CropX},{o.CropY},{o.CropWidth},{o.CropHeight}");Field("Pages",o.Pages);p.Children.Add(UI.Text(L.T("Password")));p.Children.Add(password);System.Windows.Automation.AutomationProperties.SetName(password,L.T("Password"));Field("Dpi",o.Dpi.ToString());Field("OcrLanguage",o.OcrLanguage);Field("Start",o.Start.ToString(CultureInfo.InvariantCulture));Field("Duration",o.Duration.ToString(CultureInfo.InvariantCulture));Field("Bitrate",o.Bitrate.ToString());Field("VideoBitrate",o.VideoBitrate.ToString());Field("Target",o.TargetMB.ToString());Field("Subtitles",o.Subtitles);Toggle("NoAudio",o.RemoveAudio);Toggle("Normalize",o.Normalize);Toggle("Headers",o.Headers);Field("Delimiter",o.Delimiter.ToString());Field("Prefix",o.Prefix);Field("Suffix",o.Suffix);Field("Replace",o.Replace);Field("With",o.With);Toggle("Number",o.Number);p.Children.Add(UI.Action(L.T("Save"),()=>{Preferences.Options=ReadOptions() with{Password=""};Preferences.Save();}));}
- Options ReadOptions(){int Int(string key)=>int.Parse(fields[key].Text,CultureInfo.InvariantCulture);double Double(string key)=>double.Parse(fields[key].Text,CultureInfo.InvariantCulture);bool Bool(string key)=>toggles[key].IsChecked==true;var crop=fields["Crop"].Text.Split(',').Select(x=>int.Parse(x,CultureInfo.InvariantCulture)).ToArray();if(crop.Length!=4)throw new FormatException(L.T("Crop"));if(fields["Delimiter"].Text.Length!=1)throw new FormatException(L.T("Delimiter"));var o=new Options{Format=fields["Format"].Text.Trim().ToLowerInvariant(),MaxSide=Int("MaxSide"),Quality=Int("Quality"),Rotate=Int("Rotate"),Flip=Bool("Flip"),StripMetadata=Bool("Metadata"),Watermark=fields["Watermark"].Text,WatermarkImage=fields["WatermarkImage"].Text,CropX=crop[0],CropY=crop[1],CropWidth=crop[2],CropHeight=crop[3],Pages=fields["Pages"].Text,Password=password.Password,Dpi=Int("Dpi"),OcrLanguage=fields["OcrLanguage"].Text,Start=Double("Start"),Duration=Double("Duration"),Bitrate=Int("Bitrate"),VideoBitrate=Int("VideoBitrate"),TargetMB=Int("Target"),Subtitles=fields["Subtitles"].Text,RemoveAudio=Bool("NoAudio"),Normalize=Bool("Normalize"),Headers=Bool("Headers"),Delimiter=fields["Delimiter"].Text[0],Prefix=fields["Prefix"].Text,Suffix=fields["Suffix"].Text,Replace=fields["Replace"].Text,With=fields["With"].Text,Number=Bool("Number")};o.Validate();return o;}
- sealed record ActionItem(string Id,string Name){public override string ToString()=>Name;}
- void RefreshActions(string filter){actions.Items.Clear();foreach(var c in Engine.Capabilities.Where(c=>c.Id!="recipe"&&L.Operation(c.Id).Contains(filter,StringComparison.CurrentCultureIgnoreCase)))actions.Items.Add(new ActionItem(c.Id,L.Operation(c.Id)));if(actions.Items.Count>0)actions.SelectedIndex=0;}
- public void AddFiles(){var picker=new Microsoft.Win32.OpenFileDialog{Multiselect=true,Title=L.T("Add")};if(picker.ShowDialog()==true)Add(picker.FileNames);}
- public void Add(IEnumerable<string> files){foreach(var f in files){if(selected.Items.Count>=10000)throw new IOException("Máximo 10 000 entradas.");SafeFiles.Input(f);if(!selected.Items.Contains(f))selected.Items.Add(f);}if(selected.Items.Count>0)selected.SelectedIndex=0;}
- public void AcceptDrop(DragEventArgs e){if(e.Data.GetDataPresent(DataFormats.FileDrop)&&e.Data.GetData(DataFormats.FileDrop) is string[] paths)Add(paths);}
- void Preview(){try{preview.Source=selected.SelectedItem is string file&&File.Exists(file)&&new[]{".png",".jpg",".jpeg",".bmp",".tif",".tiff"}.Contains(Path.GetExtension(file).ToLowerInvariant())?ImageEngine.Read(file):null;}catch{preview.Source=null;}}
- void ChooseDestination(){if(UI.Folder() is {} dir){Preferences.Destination=dir;Preferences.Save();}}
- public void Submit(string id,Options options){if(Selection.Length==0)throw new ArgumentException(L.T("NoFiles"));var cap=Engine.Capabilities.First(c=>c.Id==id);var compatible=Selection.Where(p=>cap.Extensions.Length==0||File.Exists(p)&&cap.Extensions.Contains(Path.GetExtension(p).TrimStart('.'),StringComparer.OrdinalIgnoreCase)).ToArray();var skipped=Selection.Except(compatible).ToArray();if(skipped.Length>0&&(compatible.Length==0||MessageBox.Show(L.T("Incompatible")+string.Join("\n",skipped.Select(Path.GetFileName))+"\n"+L.T("ConfirmSkip"),"FluxDrop",MessageBoxButton.YesNo)!=MessageBoxResult.Yes))return;if(cap.Aggregate)Queue.Add(new(id,compatible,Preferences.Destination,options));else foreach(var input in compatible)Queue.Add(new(id,[input],Preferences.Destination,options));tabs.SelectedIndex=1;}
- public void QuickConvert(string format){var o=ReadOptions();if(new[]{"png","jpg","jpeg","tiff","bmp","webp"}.Contains(format))Submit("image",o with{Format=format});else Submit(format switch{"pdf"=>"imagesPDF","zip"=>"zipCreate","json"=>"jsonPretty","mp3"=>"audioMP3","opus"=>"audioOpus",_=>format},o);}
- StackPanel BuildQueue(){var p=new StackPanel();p.Children.Add(UI.Text(L.T("Queue"),26));p.Children.Add(UI.Row(UI.Action(L.T("Pause"),()=>Queue.PausePending(!Queue.Paused)),UI.Action(L.T("CancelAll"),Queue.CancelAll),UI.Action(L.T("ClearHistory"),Queue.ClearHistory)));p.Children.Add(jobs);p.Children.Add(UI.Row(UI.Action(L.T("Cancel"),()=>{if(jobs.SelectedItem is Job j)Queue.Cancel(j.Id);}),UI.Action(L.T("Retry"),()=>{if(jobs.SelectedItem is Job j)Queue.Retry(j.Id);}),UI.Action(L.T("Reveal"),()=>{if(jobs.SelectedItem is Job j&&j.Outputs.Length>0)DesktopIntegration.Reveal(j.Outputs[0]);})));jobs.PreviewMouseMove+=(_,e)=>{if(e.LeftButton==MouseButtonState.Pressed&&jobs.SelectedItem is Job j&&j.State==JobState.Complete){var paths=new StringCollection();paths.AddRange(j.Outputs.Where(p=>File.Exists(p)||Directory.Exists(p)).ToArray());if(paths.Count>0){var data=new DataObject();data.SetFileDropList(paths);DragDrop.DoDragDrop(jobs,data,DragDropEffects.Copy);}}};return p;}
- void RefreshJobs(){var current=jobs.SelectedItem;jobs.ItemsSource=Queue.Snapshot().Reverse().ToArray();if(current!=null)jobs.SelectedItem=current;}
- StackPanel BuildRecipes(){var p=new StackPanel();p.Children.Add(UI.Text(L.T("Recipes"),26));p.Children.Add(recipes);RefreshRecipes();var name=UI.Field(p,L.T("RecipeName"),"Imagen para compartir");var json=UI.Field(p,L.T("RecipeSteps"),JsonSerializer.Serialize(new[]{new Step("image",new Options{MaxSide=1920,Format="png"})},Config.Json));json.AcceptsReturn=true;json.MinHeight=180;json.TextWrapping=TextWrapping.Wrap;recipes.SelectionChanged+=(_,_)=>{if(recipes.SelectedItem is Recipe r){name.Text=r.Name;json.Text=JsonSerializer.Serialize(r.Steps,Config.Json);}};p.Children.Add(UI.Row(UI.Action(L.T("Save"),()=>{var recipe=new Recipe(1,name.Text,JsonSerializer.Deserialize<List<Step>>(json.Text,Config.Json)??[]);recipe.Validate(Engine.Capabilities.Where(c=>c.Id!="recipe").ToArray());Preferences.Recipes.RemoveAll(r=>r.Name==recipe.Name);Preferences.Recipes.Add(recipe);Preferences.Save();RefreshRecipes();}),UI.Action(L.T("Import"),()=>{var picker=new Microsoft.Win32.OpenFileDialog{Filter="FluxDrop recipe|*.json"};if(picker.ShowDialog()!=true)return;if(new FileInfo(picker.FileName).Length>1024*1024)throw new IOException("Receta demasiado grande.");var r=JsonSerializer.Deserialize<Recipe>(File.ReadAllText(picker.FileName),Config.Json)??throw new IOException("Receta no válida.");r.Validate(Engine.Capabilities.Where(c=>c.Id!="recipe").ToArray());Preferences.Recipes.Add(r);Preferences.Save();RefreshRecipes();}),UI.Action(L.T("Export"),()=>{if(recipes.SelectedItem is not Recipe r)return;var picker=new Microsoft.Win32.SaveFileDialog{Filter="FluxDrop recipe|*.json",FileName="recipe.json"};if(picker.ShowDialog()==true)Config.Write(picker.FileName,r);}),UI.Action(L.T("ExecuteRecipe"),()=>{if(recipes.SelectedItem is Recipe r)Submit("recipe",new Options{RecipeJson=JsonSerializer.Serialize(r,Config.Json)});})));p.Children.Add(UI.Text("JSON de recetas Windows schemaVersion 1. No importa recetas de Swift automáticamente; los IDs compatibles se validan antes de ejecutar."));return p;}
- void RefreshRecipes(){recipes.ItemsSource=null;recipes.ItemsSource=Preferences.Recipes;if(Preferences.Recipes.Count>0)recipes.SelectedIndex=0;}
- StackPanel BuildWatches(){var p=new StackPanel();p.Children.Add(UI.Text(L.T("Watches"),26));p.Children.Add(watches);RefreshWatches();p.Children.Add(UI.Row(UI.Action(L.T("NewWatch"),()=>{if(recipes.SelectedItem is not Recipe r)throw new IOException(L.T("Recipes"));var source=UI.Folder();if(source==null)return;var dest=UI.Folder();if(dest==null)return;if(SafeFiles.Within(dest,source)||Path.GetFullPath(dest)==Path.GetFullPath(source))throw new IOException("El destino debe estar fuera de la carpeta vigilada.");Preferences.Watches.Add(new(source,dest,r));Preferences.Save();StartWatches();RefreshWatches();}),UI.Action(L.T("ToggleWatch"),()=>{int i=watches.SelectedIndex;if(i<0)return;Preferences.Watches[i]=Preferences.Watches[i] with{Enabled=!Preferences.Watches[i].Enabled};Preferences.Save();StartWatches();RefreshWatches();}),UI.Action(L.T("RemoveWatch"),()=>{if(watches.SelectedIndex<0)return;Preferences.Watches.RemoveAt(watches.SelectedIndex);Preferences.Save();StartWatches();RefreshWatches();})));p.Children.Add(activity);return p;}
- void RefreshWatches(){watches.ItemsSource=null;watches.ItemsSource=Preferences.Watches.Select(r=>$"{(r.Enabled?"●":"○")} {r.Source} → {r.Destination} · {r.Recipe.Name}").ToArray();}
- void StartWatches(){watch?.Dispose();watch=new(Preferences.Watches,(file,rule)=>Dispatcher.Invoke(()=>{try{var first=Engine.Capabilities.First(c=>c.Id==rule.Recipe.Steps[0].Operation);if(first.Extensions.Length>0&&!first.Extensions.Contains(Path.GetExtension(file).TrimStart('.'),StringComparer.OrdinalIgnoreCase)){activity.Text="Omitido por formato: "+Path.GetFileName(file);return;}Queue.Add(new("recipe",[file],rule.Destination,new Options{RecipeJson=JsonSerializer.Serialize(rule.Recipe,Config.Json)}));activity.Text=Path.GetFileName(file);}catch(Exception ex){activity.Text=ex.Message;}}),error=>Dispatcher.Invoke(()=>activity.Text=error));}
- StackPanel BuildSettings(){var p=new StackPanel();p.Children.Add(UI.Text(L.T("Settings"),26));var language=UI.Field(p,L.T("Language"),Preferences.Language);var theme=UI.Field(p,L.T("Theme"),Preferences.Theme);var history=UI.Toggle(p,L.T("History"),Preferences.History);var notify=UI.Toggle(p,L.T("Notifications"),Preferences.Notify);var concurrency=UI.Field(p,L.T("Concurrency"),Preferences.Concurrency.ToString());var key=UI.Field(p,L.T("Hotkey"),Preferences.Hotkey==32?"Space":((char)Preferences.Hotkey).ToString());var modifiers=UI.Field(p,L.T("Modifiers"),Preferences.Modifiers.ToString());var right=UI.Field(p,L.T("RightClick"),Preferences.RightClick);p.Children.Add(UI.Text(L.T("RightHelp"),12));var size=UI.Field(p,L.T("Size"),Preferences.WidgetSize.ToString());var favorites=UI.Field(p,L.T("Favorites"),string.Join(',',Preferences.Favorites));bool starts=Microsoft.Win32.Registry.GetValue(@"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Run","FluxDrop",null)!=null;var login=UI.Toggle(p,L.T("Login"),starts);p.Children.Add(UI.Action(L.T("Save"),()=>{int count=int.Parse(concurrency.Text),widgetSize=int.Parse(size.Text);uint mods=uint.Parse(modifiers.Text);if(count is <1 or >4||widgetSize is <320 or >520||mods is <1 or >7||!new[]{"off","ctrl","always"}.Contains(right.Text)||!new[]{"system","light","dark"}.Contains(theme.Text)||!new[]{"es","en"}.Contains(language.Text))throw new ArgumentException("Configuración no válida.");int vk=key.Text=="Space"?32:key.Text.Length==1?char.ToUpperInvariant(key.Text[0]):0;if(vk!=32&&(vk<65||vk>90))throw new ArgumentException(L.T("Hotkey"));var fav=favorites.Text.Split(',').Select(s=>s.Trim()).ToArray();if(fav.Length is <3 or >8||fav.Any(s=>!new[]{"png","jpg","webp","tiff","bmp","pdf","zip","json","mp3","opus"}.Contains(s)))throw new ArgumentException(L.T("Favorites"));var old=Preferences.Load();Preferences.Hotkey=vk;Preferences.Modifiers=mods;Preferences.RightClick=right.Text;if(desktop?.Configure(Preferences)==false){Preferences.Hotkey=old.Hotkey;Preferences.Modifiers=old.Modifiers;Preferences.RightClick=old.RightClick;desktop.Configure(Preferences);throw new IOException(L.T("Conflict"));}Preferences.Language=language.Text;Preferences.Theme=theme.Text;Preferences.History=history.IsChecked==true;Preferences.Notify=notify.IsChecked==true;Preferences.Concurrency=count;Preferences.WidgetSize=widgetSize;Preferences.Favorites=fav;Queue.KeepHistory=Preferences.History;Queue.Concurrency=count;using var registry=Microsoft.Win32.Registry.CurrentUser.CreateSubKey(@"Software\Microsoft\Windows\CurrentVersion\Run");if(login.IsChecked==true)registry.SetValue("FluxDrop","\""+Environment.ProcessPath+"\"");else registry.DeleteValue("FluxDrop",false);Preferences.Save();MessageBox.Show(L.T("Saved"),"FluxDrop");}));p.Children.Add(UI.Action(L.T("Quit"),Quit));return p;}
- void SetupTray(){tray=new System.Windows.Forms.NotifyIcon{Text="FluxDrop",Icon=System.Drawing.Icon.ExtractAssociatedIcon(Environment.ProcessPath!),Visible=true};var menu=new System.Windows.Forms.ContextMenuStrip();menu.Items.Add(L.T("Widget"),null,(_,_)=>ShowWidget());menu.Items.Add(L.T("Add"),null,(_,_)=>{Show();AddFiles();});menu.Items.Add(L.T("Queue"),null,(_,_)=>{Show();tabs.SelectedIndex=1;});menu.Items.Add(L.T("Recipes"),null,(_,_)=>{Show();tabs.SelectedIndex=2;});menu.Items.Add(L.T("Settings"),null,(_,_)=>{Show();tabs.SelectedIndex=4;});menu.Items.Add(L.T("Pause"),null,(_,_)=>Queue.PausePending(!Queue.Paused));menu.Items.Add(L.T("Quit"),null,(_,_)=>Quit());tray.ContextMenuStrip=menu;tray.DoubleClick+=(_,_)=>{Show();Activate();};}
- public void ShowWidget(){widget??=new WidgetWindow(this);widget.NearCursor();}
- void RequireSelection(){if(Selection.Length==0)throw new ArgumentException(L.T("NoFiles"));}
- public void CopyFiles(){RequireSelection();var values=new StringCollection();values.AddRange(Selection);Clipboard.SetFileDropList(values);}
- public void CopyPaths(){RequireSelection();Clipboard.SetText(string.Join(Environment.NewLine,Selection));}
- public void ShowShelf(){RequireSelection();new ShelfWindow(Selection).Show();}
- public void OpenTerminal(){RequireSelection();DesktopIntegration.Terminal(Selection[0]);}
- public void MoveFiles(){RequireSelection();var destination=UI.Folder();if(destination==null)return;var plan=Selection.Select(p=>(Source:p,Target:Path.Combine(destination,Path.GetFileName(p)))).ToArray();foreach(var item in plan){SafeFiles.Input(item.Source);if(Path.GetPathRoot(item.Source)!=Path.GetPathRoot(destination))throw new IOException("Mover solo admite el mismo volumen; copia los archivos para cambiar de disco.");if(File.Exists(item.Target)||Directory.Exists(item.Target)||SafeFiles.Within(item.Target,item.Source))throw new IOException("Colisión o destino dentro del origen.");}if(MessageBox.Show(L.T("MoveConfirm")+"\n"+string.Join("\n",plan.Select(p=>p.Source+" → "+p.Target)),"FluxDrop",MessageBoxButton.YesNo)!=MessageBoxResult.Yes)return;var completed=new List<(string Source,string Target)>();try{foreach(var item in plan){if(Directory.Exists(item.Source))Directory.Move(item.Source,item.Target);else File.Move(item.Source,item.Target,false);completed.Add(item);}}catch{foreach(var item in completed.AsEnumerable().Reverse()){if(Directory.Exists(item.Target))Directory.Move(item.Target,item.Source);else File.Move(item.Target,item.Source,false);}throw;}selected.Items.Clear();Add(plan.Select(p=>p.Target));}
- void Quit(){if(Queue.Snapshot().Any(j=>j.State==JobState.Running)&&MessageBox.Show("Hay trabajos ejecutándose. ¿Cancelar y salir?","FluxDrop",MessageBoxButton.YesNo)!=MessageBoxResult.Yes)return;quitting=true;Queue.CancelAll();watch?.Dispose();desktop?.Dispose();tray?.Dispose();Application.Current.Shutdown();}
+
+public sealed class MainWindow : Window
+{
+    public Preferences Preferences { get; } = Preferences.Load();
+    public WindowsEngine Engine { get; } = new();
+    public JobQueue Queue { get; }
+    public string[] Selection => selected.Items.Cast<string>().ToArray();
+    readonly ListBox selected = new()
+    {
+        MinHeight = 130,
+        MaxHeight = 230,
+        SelectionMode = SelectionMode.Extended,
+    };
+    readonly ListBox actions = new() { MinHeight = 120, MaxHeight = 180 };
+    readonly ListBox jobs = new()
+    {
+        MinHeight = 200,
+        DisplayMemberPath = "Display",
+        SelectionMode = SelectionMode.Single,
+    };
+    readonly ListBox recipes = new() { MinHeight = 100, DisplayMemberPath = "Name" };
+    readonly ListBox watches = new() { MinHeight = 100 };
+    readonly Image preview = new()
+    {
+        Height = 120,
+        Stretch = Stretch.Uniform,
+        Margin = new Thickness(8),
+    };
+    readonly Dictionary<string, TextBox> fields = [];
+    readonly Dictionary<string, CheckBox> toggles = [];
+    readonly PasswordBox password = new() { Margin = new Thickness(4) };
+    readonly TabControl tabs = new();
+    WidgetWindow? widget;
+    DesktopIntegration? desktop;
+    WatchService? watch;
+    System.Windows.Forms.NotifyIcon? tray;
+    bool quitting;
+    readonly TextBlock activity = UI.Text("");
+
+    public MainWindow()
+    {
+        L.Language = Preferences.Language;
+        Title = "FluxDrop · Windows";
+        Width = 1000;
+        Height = 790;
+        MinWidth = 760;
+        MinHeight = 580;
+        FontFamily = new FontFamily("Segoe UI");
+        ApplyTheme();
+        Queue = new JobQueue(Engine, Path.Combine(Preferences.Root, "jobs.json"))
+        {
+            KeepHistory = Preferences.History,
+            Concurrency = Preferences.Concurrency,
+        };
+        Content = tabs;
+        AddTab("Files", BuildFiles());
+        AddTab("Queue", BuildQueue());
+        AddTab("Recipes", BuildRecipes());
+        AddTab("Watches", BuildWatches());
+        AddTab("Settings", BuildSettings());
+        AllowDrop = true;
+        Drop += (_, e) => AcceptDrop(e);
+        PreviewKeyDown += (_, e) =>
+        {
+            if (e.Key == Key.Escape)
+                widget?.Hide();
+        };
+        SourceInitialized += (_, _) =>
+        {
+            desktop = new DesktopIntegration(this, ShowWidget);
+            if (!desktop.Configure(Preferences))
+                MessageBox.Show(L.T("Conflict"), "FluxDrop");
+            SetupTray();
+            StartWatches();
+        };
+        Closing += (_, e) =>
+        {
+            if (!quitting)
+            {
+                e.Cancel = true;
+                Hide();
+                tray?.ShowBalloonTip(
+                    1500,
+                    "FluxDrop",
+                    L.T("Widget"),
+                    System.Windows.Forms.ToolTipIcon.Info
+                );
+            }
+        };
+        Queue.Changed += () =>
+        {
+            Dispatcher.Invoke(() =>
+            {
+                RefreshJobs();
+                if (Preferences.Notify)
+                {
+                    var complete = Queue
+                        .Snapshot()
+                        .LastOrDefault(j => j.State is JobState.Complete or JobState.Failed);
+                    if (complete != null && complete.Id != lastNotified)
+                    {
+                        lastNotified = complete.Id;
+                        tray?.ShowBalloonTip(
+                            1500,
+                            "FluxDrop",
+                            complete.State.ToString(),
+                            System.Windows.Forms.ToolTipIcon.Info
+                        );
+                    }
+                }
+            });
+        };
+        RefreshJobs();
+    }
+
+    Guid lastNotified;
+
+    void ApplyTheme()
+    {
+        bool light =
+            Preferences.Theme == "light"
+            || Preferences.Theme == "system"
+                && Microsoft.Win32.Registry.GetValue(
+                    @"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize",
+                    "AppsUseLightTheme",
+                    1
+                )
+                    is int n
+                && n != 0;
+        if (SystemParameters.HighContrast)
+        {
+            Background = SystemColors.WindowBrush;
+            Foreground = SystemColors.WindowTextBrush;
+            return;
+        }
+        Background = new SolidColorBrush(
+            light ? Color.FromRgb(248, 247, 243) : Color.FromRgb(29, 30, 33)
+        );
+        Foreground = light ? Brushes.Black : Brushes.White;
+        var textStyle = new Style(typeof(TextBlock));
+        textStyle.Setters.Add(new Setter(TextBlock.ForegroundProperty, Foreground));
+        Resources.Add(typeof(TextBlock), textStyle);
+    }
+
+    void AddTab(string key, UIElement content)
+    {
+        tabs.Items.Add(
+            new TabItem
+            {
+                Header = L.T(key),
+                Content = new ScrollViewer
+                {
+                    Content = content,
+                    VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
+                    Padding = new Thickness(20),
+                },
+            }
+        );
+    }
+
+    StackPanel BuildFiles()
+    {
+        var panel = new StackPanel();
+        panel.Children.Add(UI.Text("FluxDrop", 30));
+        panel.Children.Add(UI.Text(L.T("Drop")));
+        panel.Children.Add(
+            UI.Row(
+                UI.Action(L.T("Add"), AddFiles),
+                UI.Action(
+                    L.T("AddFolder"),
+                    () =>
+                    {
+                        if (UI.Folder() is { } dir)
+                            Add([dir]);
+                    }
+                ),
+                UI.Action(
+                    L.T("Clear"),
+                    () =>
+                    {
+                        selected.Items.Clear();
+                        preview.Source = null;
+                    }
+                ),
+                UI.Action(L.T("Widget"), ShowWidget)
+            )
+        );
+        panel.Children.Add(selected);
+        selected.SelectionChanged += (_, _) => Preview();
+        panel.Children.Add(preview);
+        var search = UI.Field(panel, L.T("Search"));
+        search.TextChanged += (_, _) => RefreshActions(search.Text);
+        panel.Children.Add(actions);
+        RefreshActions("");
+        panel.Children.Add(
+            UI.Row(
+                UI.Action(L.T("Destination"), ChooseDestination),
+                UI.Text(Preferences.Destination)
+            )
+        );
+        panel.Children.Add(
+            UI.Row(
+                UI.Action(
+                    L.T("Run"),
+                    () =>
+                    {
+                        var cap =
+                            actions.SelectedItem as ActionItem
+                            ?? throw new ArgumentException(L.T("Search"));
+                        Submit(cap.Id, ReadOptions());
+                    }
+                ),
+                UI.Action(
+                    L.T("Preview"),
+                    () =>
+                    {
+                        MessageBox.Show(
+                            string.Join(
+                                "\n",
+                                Selection
+                                    .Zip(PortableEngine.RenamePreview(Selection, ReadOptions()))
+                                    .Select(p => Path.GetFileName(p.First) + " → " + p.Second)
+                            ),
+                            "FluxDrop"
+                        );
+                    }
+                )
+            )
+        );
+        var advanced = new StackPanel();
+        AddOptions(advanced);
+        panel.Children.Add(
+            new Expander
+            {
+                Header = L.T("Advanced"),
+                Content = advanced,
+                Margin = new Thickness(4, 12, 4, 12),
+            }
+        );
+        panel.Children.Add(UI.Text(L.T("Status"), 12));
+        return panel;
+    }
+
+    void AddOptions(Panel p)
+    {
+        void Field(string key, string value) => fields[key] = UI.Field(p, L.T(key), value);
+        void Toggle(string key, bool value) => toggles[key] = UI.Toggle(p, L.T(key), value);
+        var o = Preferences.Options;
+        Field("Format", o.Format);
+        Field("MaxSide", o.MaxSide.ToString());
+        Field("Quality", o.Quality.ToString());
+        Field("Rotate", o.Rotate.ToString());
+        Toggle("Flip", o.Flip);
+        Toggle("Metadata", o.StripMetadata);
+        Field("Watermark", o.Watermark);
+        Field("WatermarkImage", o.WatermarkImage);
+        Field("Crop", $"{o.CropX},{o.CropY},{o.CropWidth},{o.CropHeight}");
+        Field("Pages", o.Pages);
+        p.Children.Add(UI.Text(L.T("Password")));
+        p.Children.Add(password);
+        System.Windows.Automation.AutomationProperties.SetName(password, L.T("Password"));
+        Field("Dpi", o.Dpi.ToString());
+        Field("OcrLanguage", o.OcrLanguage);
+        Field("Start", o.Start.ToString(CultureInfo.InvariantCulture));
+        Field("Duration", o.Duration.ToString(CultureInfo.InvariantCulture));
+        Field("Bitrate", o.Bitrate.ToString());
+        Field("VideoBitrate", o.VideoBitrate.ToString());
+        Field("Target", o.TargetMB.ToString());
+        Field("Subtitles", o.Subtitles);
+        Toggle("NoAudio", o.RemoveAudio);
+        Toggle("Normalize", o.Normalize);
+        Toggle("Headers", o.Headers);
+        Field("Delimiter", o.Delimiter.ToString());
+        Field("Prefix", o.Prefix);
+        Field("Suffix", o.Suffix);
+        Field("Replace", o.Replace);
+        Field("With", o.With);
+        Toggle("Number", o.Number);
+        p.Children.Add(
+            UI.Action(
+                L.T("Save"),
+                () =>
+                {
+                    Preferences.Options = ReadOptions() with { Password = "" };
+                    Preferences.Save();
+                }
+            )
+        );
+    }
+
+    Options ReadOptions()
+    {
+        int Int(string key) => int.Parse(fields[key].Text, CultureInfo.InvariantCulture);
+        double Double(string key) => double.Parse(fields[key].Text, CultureInfo.InvariantCulture);
+        bool Bool(string key) => toggles[key].IsChecked == true;
+        var crop = fields["Crop"]
+            .Text.Split(',')
+            .Select(x => int.Parse(x, CultureInfo.InvariantCulture))
+            .ToArray();
+        if (crop.Length != 4)
+            throw new FormatException(L.T("Crop"));
+        if (fields["Delimiter"].Text.Length != 1)
+            throw new FormatException(L.T("Delimiter"));
+        var o = new Options
+        {
+            Format = fields["Format"].Text.Trim().ToLowerInvariant(),
+            MaxSide = Int("MaxSide"),
+            Quality = Int("Quality"),
+            Rotate = Int("Rotate"),
+            Flip = Bool("Flip"),
+            StripMetadata = Bool("Metadata"),
+            Watermark = fields["Watermark"].Text,
+            WatermarkImage = fields["WatermarkImage"].Text,
+            CropX = crop[0],
+            CropY = crop[1],
+            CropWidth = crop[2],
+            CropHeight = crop[3],
+            Pages = fields["Pages"].Text,
+            Password = password.Password,
+            Dpi = Int("Dpi"),
+            OcrLanguage = fields["OcrLanguage"].Text,
+            Start = Double("Start"),
+            Duration = Double("Duration"),
+            Bitrate = Int("Bitrate"),
+            VideoBitrate = Int("VideoBitrate"),
+            TargetMB = Int("Target"),
+            Subtitles = fields["Subtitles"].Text,
+            RemoveAudio = Bool("NoAudio"),
+            Normalize = Bool("Normalize"),
+            Headers = Bool("Headers"),
+            Delimiter = fields["Delimiter"].Text[0],
+            Prefix = fields["Prefix"].Text,
+            Suffix = fields["Suffix"].Text,
+            Replace = fields["Replace"].Text,
+            With = fields["With"].Text,
+            Number = Bool("Number"),
+        };
+        o.Validate();
+        return o;
+    }
+
+    sealed record ActionItem(string Id, string Name)
+    {
+        public override string ToString() => Name;
+    }
+
+    void RefreshActions(string filter)
+    {
+        actions.Items.Clear();
+        foreach (
+            var c in Engine.Capabilities.Where(c =>
+                c.Id != "recipe"
+                && L.Operation(c.Id).Contains(filter, StringComparison.CurrentCultureIgnoreCase)
+            )
+        )
+            actions.Items.Add(new ActionItem(c.Id, L.Operation(c.Id)));
+        if (actions.Items.Count > 0)
+            actions.SelectedIndex = 0;
+    }
+
+    public void AddFiles()
+    {
+        var picker = new Microsoft.Win32.OpenFileDialog { Multiselect = true, Title = L.T("Add") };
+        if (picker.ShowDialog() == true)
+            Add(picker.FileNames);
+    }
+
+    public void Add(IEnumerable<string> files)
+    {
+        foreach (var f in files)
+        {
+            if (selected.Items.Count >= 10000)
+                throw new IOException("Máximo 10 000 entradas.");
+            SafeFiles.Input(f);
+            if (!selected.Items.Contains(f))
+                selected.Items.Add(f);
+        }
+        if (selected.Items.Count > 0)
+            selected.SelectedIndex = 0;
+    }
+
+    public void AcceptDrop(DragEventArgs e)
+    {
+        if (
+            e.Data.GetDataPresent(DataFormats.FileDrop)
+            && e.Data.GetData(DataFormats.FileDrop) is string[] paths
+        )
+            Add(paths);
+    }
+
+    void Preview()
+    {
+        try
+        {
+            preview.Source =
+                selected.SelectedItem is string file
+                && File.Exists(file)
+                && new[] { ".png", ".jpg", ".jpeg", ".bmp", ".tif", ".tiff" }.Contains(
+                    Path.GetExtension(file).ToLowerInvariant()
+                )
+                    ? ImageEngine.Read(file)
+                    : null;
+        }
+        catch
+        {
+            preview.Source = null;
+        }
+    }
+
+    void ChooseDestination()
+    {
+        if (UI.Folder() is { } dir)
+        {
+            Preferences.Destination = dir;
+            Preferences.Save();
+        }
+    }
+
+    public void Submit(string id, Options options)
+    {
+        if (Selection.Length == 0)
+            throw new ArgumentException(L.T("NoFiles"));
+        var cap = Engine.Capabilities.First(c => c.Id == id);
+        var compatible = Selection
+            .Where(p =>
+                cap.Extensions.Length == 0
+                || File.Exists(p)
+                    && cap.Extensions.Contains(
+                        Path.GetExtension(p).TrimStart('.'),
+                        StringComparer.OrdinalIgnoreCase
+                    )
+            )
+            .ToArray();
+        var skipped = Selection.Except(compatible).ToArray();
+        if (
+            skipped.Length > 0
+            && (
+                compatible.Length == 0
+                || MessageBox.Show(
+                    L.T("Incompatible")
+                        + string.Join("\n", skipped.Select(Path.GetFileName))
+                        + "\n"
+                        + L.T("ConfirmSkip"),
+                    "FluxDrop",
+                    MessageBoxButton.YesNo
+                ) != MessageBoxResult.Yes
+            )
+        )
+            return;
+        if (cap.Aggregate)
+            Queue.Add(new(id, compatible, Preferences.Destination, options));
+        else
+            foreach (var input in compatible)
+                Queue.Add(new(id, [input], Preferences.Destination, options));
+        tabs.SelectedIndex = 1;
+    }
+
+    public void QuickConvert(string format)
+    {
+        var o = ReadOptions();
+        if (new[] { "png", "jpg", "jpeg", "tiff", "bmp", "webp" }.Contains(format))
+            Submit("image", o with { Format = format });
+        else
+            Submit(
+                format switch
+                {
+                    "pdf" => "imagesPDF",
+                    "zip" => "zipCreate",
+                    "json" => "jsonPretty",
+                    "mp3" => "audioMP3",
+                    "opus" => "audioOpus",
+                    _ => format,
+                },
+                o
+            );
+    }
+
+    StackPanel BuildQueue()
+    {
+        var p = new StackPanel();
+        p.Children.Add(UI.Text(L.T("Queue"), 26));
+        p.Children.Add(
+            UI.Row(
+                UI.Action(L.T("Pause"), () => Queue.PausePending(!Queue.Paused)),
+                UI.Action(L.T("CancelAll"), Queue.CancelAll),
+                UI.Action(L.T("ClearHistory"), Queue.ClearHistory)
+            )
+        );
+        p.Children.Add(jobs);
+        p.Children.Add(
+            UI.Row(
+                UI.Action(
+                    L.T("Cancel"),
+                    () =>
+                    {
+                        if (jobs.SelectedItem is Job j)
+                            Queue.Cancel(j.Id);
+                    }
+                ),
+                UI.Action(
+                    L.T("Retry"),
+                    () =>
+                    {
+                        if (jobs.SelectedItem is Job j)
+                            Queue.Retry(j.Id);
+                    }
+                ),
+                UI.Action(
+                    L.T("Reveal"),
+                    () =>
+                    {
+                        if (jobs.SelectedItem is Job j && j.Outputs.Length > 0)
+                            DesktopIntegration.Reveal(j.Outputs[0]);
+                    }
+                )
+            )
+        );
+        jobs.PreviewMouseMove += (_, e) =>
+        {
+            if (
+                e.LeftButton == MouseButtonState.Pressed
+                && jobs.SelectedItem is Job j
+                && j.State == JobState.Complete
+            )
+            {
+                var paths = new StringCollection();
+                paths.AddRange(
+                    j.Outputs.Where(p => File.Exists(p) || Directory.Exists(p)).ToArray()
+                );
+                if (paths.Count > 0)
+                {
+                    var data = new DataObject();
+                    data.SetFileDropList(paths);
+                    DragDrop.DoDragDrop(jobs, data, DragDropEffects.Copy);
+                }
+            }
+        };
+        return p;
+    }
+
+    void RefreshJobs()
+    {
+        var current = jobs.SelectedItem;
+        jobs.ItemsSource = Queue.Snapshot().Reverse().ToArray();
+        if (current != null)
+            jobs.SelectedItem = current;
+    }
+
+    StackPanel BuildRecipes()
+    {
+        var p = new StackPanel();
+        p.Children.Add(UI.Text(L.T("Recipes"), 26));
+        p.Children.Add(recipes);
+        RefreshRecipes();
+        var name = UI.Field(p, L.T("RecipeName"), "Imagen para compartir");
+        var json = UI.Field(
+            p,
+            L.T("RecipeSteps"),
+            JsonSerializer.Serialize(
+                new[] { new Step("image", new Options { MaxSide = 1920, Format = "png" }) },
+                Config.Json
+            )
+        );
+        json.AcceptsReturn = true;
+        json.MinHeight = 180;
+        json.TextWrapping = TextWrapping.Wrap;
+        recipes.SelectionChanged += (_, _) =>
+        {
+            if (recipes.SelectedItem is Recipe r)
+            {
+                name.Text = r.Name;
+                json.Text = JsonSerializer.Serialize(r.Steps, Config.Json);
+            }
+        };
+        p.Children.Add(
+            UI.Row(
+                UI.Action(
+                    L.T("Save"),
+                    () =>
+                    {
+                        var recipe = new Recipe(
+                            1,
+                            name.Text,
+                            JsonSerializer.Deserialize<List<Step>>(json.Text, Config.Json) ?? []
+                        );
+                        recipe.Validate(Engine.Capabilities.Where(c => c.Id != "recipe").ToArray());
+                        Preferences.Recipes.RemoveAll(r => r.Name == recipe.Name);
+                        Preferences.Recipes.Add(recipe);
+                        Preferences.Save();
+                        RefreshRecipes();
+                    }
+                ),
+                UI.Action(
+                    L.T("Import"),
+                    () =>
+                    {
+                        var picker = new Microsoft.Win32.OpenFileDialog
+                        {
+                            Filter = "FluxDrop recipe|*.json",
+                        };
+                        if (picker.ShowDialog() != true)
+                            return;
+                        if (new FileInfo(picker.FileName).Length > 1024 * 1024)
+                            throw new IOException("Receta demasiado grande.");
+                        var r =
+                            JsonSerializer.Deserialize<Recipe>(
+                                File.ReadAllText(picker.FileName),
+                                Config.Json
+                            ) ?? throw new IOException("Receta no válida.");
+                        r.Validate(Engine.Capabilities.Where(c => c.Id != "recipe").ToArray());
+                        Preferences.Recipes.Add(r);
+                        Preferences.Save();
+                        RefreshRecipes();
+                    }
+                ),
+                UI.Action(
+                    L.T("Export"),
+                    () =>
+                    {
+                        if (recipes.SelectedItem is not Recipe r)
+                            return;
+                        var picker = new Microsoft.Win32.SaveFileDialog
+                        {
+                            Filter = "FluxDrop recipe|*.json",
+                            FileName = "recipe.json",
+                        };
+                        if (picker.ShowDialog() == true)
+                            Config.Write(picker.FileName, r);
+                    }
+                ),
+                UI.Action(
+                    L.T("ExecuteRecipe"),
+                    () =>
+                    {
+                        if (recipes.SelectedItem is Recipe r)
+                            Submit(
+                                "recipe",
+                                new Options
+                                {
+                                    RecipeJson = JsonSerializer.Serialize(r, Config.Json),
+                                }
+                            );
+                    }
+                )
+            )
+        );
+        p.Children.Add(
+            UI.Text(
+                "JSON de recetas Windows schemaVersion 1. No importa recetas de Swift automáticamente; los IDs compatibles se validan antes de ejecutar."
+            )
+        );
+        return p;
+    }
+
+    void RefreshRecipes()
+    {
+        recipes.ItemsSource = null;
+        recipes.ItemsSource = Preferences.Recipes;
+        if (Preferences.Recipes.Count > 0)
+            recipes.SelectedIndex = 0;
+    }
+
+    StackPanel BuildWatches()
+    {
+        var p = new StackPanel();
+        p.Children.Add(UI.Text(L.T("Watches"), 26));
+        p.Children.Add(watches);
+        RefreshWatches();
+        p.Children.Add(
+            UI.Row(
+                UI.Action(
+                    L.T("NewWatch"),
+                    () =>
+                    {
+                        if (recipes.SelectedItem is not Recipe r)
+                            throw new IOException(L.T("Recipes"));
+                        var source = UI.Folder();
+                        if (source == null)
+                            return;
+                        var dest = UI.Folder();
+                        if (dest == null)
+                            return;
+                        if (
+                            SafeFiles.Within(dest, source)
+                            || Path.GetFullPath(dest) == Path.GetFullPath(source)
+                        )
+                            throw new IOException(
+                                "El destino debe estar fuera de la carpeta vigilada."
+                            );
+                        Preferences.Watches.Add(new(source, dest, r));
+                        Preferences.Save();
+                        StartWatches();
+                        RefreshWatches();
+                    }
+                ),
+                UI.Action(
+                    L.T("ToggleWatch"),
+                    () =>
+                    {
+                        int i = watches.SelectedIndex;
+                        if (i < 0)
+                            return;
+                        Preferences.Watches[i] = Preferences.Watches[i] with
+                        {
+                            Enabled = !Preferences.Watches[i].Enabled,
+                        };
+                        Preferences.Save();
+                        StartWatches();
+                        RefreshWatches();
+                    }
+                ),
+                UI.Action(
+                    L.T("RemoveWatch"),
+                    () =>
+                    {
+                        if (watches.SelectedIndex < 0)
+                            return;
+                        Preferences.Watches.RemoveAt(watches.SelectedIndex);
+                        Preferences.Save();
+                        StartWatches();
+                        RefreshWatches();
+                    }
+                )
+            )
+        );
+        p.Children.Add(activity);
+        return p;
+    }
+
+    void RefreshWatches()
+    {
+        watches.ItemsSource = null;
+        watches.ItemsSource = Preferences
+            .Watches.Select(r =>
+                $"{(r.Enabled ? "●" : "○")} {r.Source} → {r.Destination} · {r.Recipe.Name}"
+            )
+            .ToArray();
+    }
+
+    void StartWatches()
+    {
+        watch?.Dispose();
+        watch = new(
+            Preferences.Watches,
+            (file, rule) =>
+                Dispatcher.Invoke(() =>
+                {
+                    try
+                    {
+                        var first = Engine.Capabilities.First(c =>
+                            c.Id == rule.Recipe.Steps[0].Operation
+                        );
+                        if (
+                            first.Extensions.Length > 0
+                            && !first.Extensions.Contains(
+                                Path.GetExtension(file).TrimStart('.'),
+                                StringComparer.OrdinalIgnoreCase
+                            )
+                        )
+                        {
+                            activity.Text = "Omitido por formato: " + Path.GetFileName(file);
+                            return;
+                        }
+                        Queue.Add(
+                            new(
+                                "recipe",
+                                [file],
+                                rule.Destination,
+                                new Options
+                                {
+                                    RecipeJson = JsonSerializer.Serialize(rule.Recipe, Config.Json),
+                                }
+                            )
+                        );
+                        activity.Text = Path.GetFileName(file);
+                    }
+                    catch (Exception ex)
+                    {
+                        activity.Text = ex.Message;
+                    }
+                }),
+            error => Dispatcher.Invoke(() => activity.Text = error)
+        );
+    }
+
+    StackPanel BuildSettings()
+    {
+        var p = new StackPanel();
+        p.Children.Add(UI.Text(L.T("Settings"), 26));
+        var language = UI.Field(p, L.T("Language"), Preferences.Language);
+        var theme = UI.Field(p, L.T("Theme"), Preferences.Theme);
+        var history = UI.Toggle(p, L.T("History"), Preferences.History);
+        var notify = UI.Toggle(p, L.T("Notifications"), Preferences.Notify);
+        var concurrency = UI.Field(p, L.T("Concurrency"), Preferences.Concurrency.ToString());
+        var key = UI.Field(
+            p,
+            L.T("Hotkey"),
+            Preferences.Hotkey == 32 ? "Space" : ((char)Preferences.Hotkey).ToString()
+        );
+        var modifiers = UI.Field(p, L.T("Modifiers"), Preferences.Modifiers.ToString());
+        var right = UI.Field(p, L.T("RightClick"), Preferences.RightClick);
+        p.Children.Add(UI.Text(L.T("RightHelp"), 12));
+        var size = UI.Field(p, L.T("Size"), Preferences.WidgetSize.ToString());
+        var favorites = UI.Field(p, L.T("Favorites"), string.Join(',', Preferences.Favorites));
+        bool starts =
+            Microsoft.Win32.Registry.GetValue(
+                @"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Run",
+                "FluxDrop",
+                null
+            ) != null;
+        var login = UI.Toggle(p, L.T("Login"), starts);
+        p.Children.Add(
+            UI.Action(
+                L.T("Save"),
+                () =>
+                {
+                    int count = int.Parse(concurrency.Text),
+                        widgetSize = int.Parse(size.Text);
+                    uint mods = uint.Parse(modifiers.Text);
+                    if (
+                        count is < 1 or > 4
+                        || widgetSize is < 320 or > 520
+                        || mods is < 1 or > 7
+                        || !new[] { "off", "ctrl", "always" }.Contains(right.Text)
+                        || !new[] { "system", "light", "dark" }.Contains(theme.Text)
+                        || !new[] { "es", "en" }.Contains(language.Text)
+                    )
+                        throw new ArgumentException("Configuración no válida.");
+                    int vk =
+                        key.Text == "Space" ? 32
+                        : key.Text.Length == 1 ? char.ToUpperInvariant(key.Text[0])
+                        : 0;
+                    if (vk != 32 && (vk < 65 || vk > 90))
+                        throw new ArgumentException(L.T("Hotkey"));
+                    var fav = favorites.Text.Split(',').Select(s => s.Trim()).ToArray();
+                    if (
+                        fav.Length is < 3 or > 8
+                        || fav.Any(s =>
+                            !new[]
+                            {
+                                "png",
+                                "jpg",
+                                "webp",
+                                "tiff",
+                                "bmp",
+                                "pdf",
+                                "zip",
+                                "json",
+                                "mp3",
+                                "opus",
+                            }.Contains(s)
+                        )
+                    )
+                        throw new ArgumentException(L.T("Favorites"));
+                    var old = Preferences.Load();
+                    Preferences.Hotkey = vk;
+                    Preferences.Modifiers = mods;
+                    Preferences.RightClick = right.Text;
+                    if (desktop?.Configure(Preferences) == false)
+                    {
+                        Preferences.Hotkey = old.Hotkey;
+                        Preferences.Modifiers = old.Modifiers;
+                        Preferences.RightClick = old.RightClick;
+                        desktop.Configure(Preferences);
+                        throw new IOException(L.T("Conflict"));
+                    }
+                    Preferences.Language = language.Text;
+                    Preferences.Theme = theme.Text;
+                    Preferences.History = history.IsChecked == true;
+                    Preferences.Notify = notify.IsChecked == true;
+                    Preferences.Concurrency = count;
+                    Preferences.WidgetSize = widgetSize;
+                    Preferences.Favorites = fav;
+                    Queue.KeepHistory = Preferences.History;
+                    Queue.Concurrency = count;
+                    using var registry = Microsoft.Win32.Registry.CurrentUser.CreateSubKey(
+                        @"Software\Microsoft\Windows\CurrentVersion\Run"
+                    );
+                    if (login.IsChecked == true)
+                        registry.SetValue("FluxDrop", "\"" + Environment.ProcessPath + "\"");
+                    else
+                        registry.DeleteValue("FluxDrop", false);
+                    Preferences.Save();
+                    MessageBox.Show(L.T("Saved"), "FluxDrop");
+                }
+            )
+        );
+        p.Children.Add(UI.Action(L.T("Quit"), Quit));
+        return p;
+    }
+
+    void SetupTray()
+    {
+        tray = new System.Windows.Forms.NotifyIcon
+        {
+            Text = "FluxDrop",
+            Icon = System.Drawing.Icon.ExtractAssociatedIcon(Environment.ProcessPath!),
+            Visible = true,
+        };
+        var menu = new System.Windows.Forms.ContextMenuStrip();
+        menu.Items.Add(L.T("Widget"), null, (_, _) => ShowWidget());
+        menu.Items.Add(
+            L.T("Add"),
+            null,
+            (_, _) =>
+            {
+                Show();
+                AddFiles();
+            }
+        );
+        menu.Items.Add(
+            L.T("Queue"),
+            null,
+            (_, _) =>
+            {
+                Show();
+                tabs.SelectedIndex = 1;
+            }
+        );
+        menu.Items.Add(
+            L.T("Recipes"),
+            null,
+            (_, _) =>
+            {
+                Show();
+                tabs.SelectedIndex = 2;
+            }
+        );
+        menu.Items.Add(
+            L.T("Settings"),
+            null,
+            (_, _) =>
+            {
+                Show();
+                tabs.SelectedIndex = 4;
+            }
+        );
+        menu.Items.Add(L.T("Pause"), null, (_, _) => Queue.PausePending(!Queue.Paused));
+        menu.Items.Add(L.T("Quit"), null, (_, _) => Quit());
+        tray.ContextMenuStrip = menu;
+        tray.DoubleClick += (_, _) =>
+        {
+            Show();
+            Activate();
+        };
+    }
+
+    public void ShowWidget()
+    {
+        widget ??= new WidgetWindow(this);
+        widget.NearCursor();
+    }
+
+    void RequireSelection()
+    {
+        if (Selection.Length == 0)
+            throw new ArgumentException(L.T("NoFiles"));
+    }
+
+    public void CopyFiles()
+    {
+        RequireSelection();
+        var values = new StringCollection();
+        values.AddRange(Selection);
+        Clipboard.SetFileDropList(values);
+    }
+
+    public void CopyPaths()
+    {
+        RequireSelection();
+        Clipboard.SetText(string.Join(Environment.NewLine, Selection));
+    }
+
+    public void ShowShelf()
+    {
+        RequireSelection();
+        new ShelfWindow(Selection).Show();
+    }
+
+    public void OpenTerminal()
+    {
+        RequireSelection();
+        DesktopIntegration.Terminal(Selection[0]);
+    }
+
+    public void MoveFiles()
+    {
+        RequireSelection();
+        var destination = UI.Folder();
+        if (destination == null)
+            return;
+        var plan = Selection
+            .Select(p => (Source: p, Target: Path.Combine(destination, Path.GetFileName(p))))
+            .ToArray();
+        foreach (var item in plan)
+        {
+            SafeFiles.Input(item.Source);
+            if (Path.GetPathRoot(item.Source) != Path.GetPathRoot(destination))
+                throw new IOException(
+                    "Mover solo admite el mismo volumen; copia los archivos para cambiar de disco."
+                );
+            if (
+                File.Exists(item.Target)
+                || Directory.Exists(item.Target)
+                || SafeFiles.Within(item.Target, item.Source)
+            )
+                throw new IOException("Colisión o destino dentro del origen.");
+        }
+        if (
+            MessageBox.Show(
+                L.T("MoveConfirm")
+                    + "\n"
+                    + string.Join("\n", plan.Select(p => p.Source + " → " + p.Target)),
+                "FluxDrop",
+                MessageBoxButton.YesNo
+            ) != MessageBoxResult.Yes
+        )
+            return;
+        var completed = new List<(string Source, string Target)>();
+        try
+        {
+            foreach (var item in plan)
+            {
+                if (Directory.Exists(item.Source))
+                    Directory.Move(item.Source, item.Target);
+                else
+                    File.Move(item.Source, item.Target, false);
+                completed.Add(item);
+            }
+        }
+        catch
+        {
+            foreach (var item in completed.AsEnumerable().Reverse())
+            {
+                if (Directory.Exists(item.Target))
+                    Directory.Move(item.Target, item.Source);
+                else
+                    File.Move(item.Target, item.Source, false);
+            }
+            throw;
+        }
+        selected.Items.Clear();
+        Add(plan.Select(p => p.Target));
+    }
+
+    void Quit()
+    {
+        if (
+            Queue.Snapshot().Any(j => j.State == JobState.Running)
+            && MessageBox.Show(
+                "Hay trabajos ejecutándose. ¿Cancelar y salir?",
+                "FluxDrop",
+                MessageBoxButton.YesNo
+            ) != MessageBoxResult.Yes
+        )
+            return;
+        quitting = true;
+        Queue.CancelAll();
+        watch?.Dispose();
+        desktop?.Dispose();
+        tray?.Dispose();
+        Application.Current.Shutdown();
+    }
 }

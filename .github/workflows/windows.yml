@@ -31,6 +31,12 @@ jobs:
         run: dotnet run --project apps/windows/FluxDrop.Tests -c Release
       - name: Publish self-contained Windows app
         run: dotnet publish apps/windows/FluxDrop.Windows -c Release -r win-x64 --self-contained true -p:DebugType=embedded -o build/windows-publish
+      - name: Include runtime license notices
+        run: |
+          New-Item -ItemType Directory -Force build/windows-publish/ThirdParty | Out-Null
+          foreach ($name in @('microsoft.netcore.app.runtime.win-x64','microsoft.windowsdesktop.app.runtime.win-x64','microsoft.extensions.logging.abstractions','microsoft.extensions.dependencyinjection.abstractions')) {
+            Get-ChildItem "$env:USERPROFILE/.nuget/packages/$name" -Recurse -File -ErrorAction SilentlyContinue | Where-Object { $_.Name -match '^(LICENSE|THIRD.PARTY.NOTICES)' } | ForEach-Object { Copy-Item $_.FullName "build/windows-publish/ThirdParty/$name-$($_.Name)" -Force }
+          }
       - name: Inspect bundled licenses
         run: |
           build/windows-publish/engines/ffmpeg.exe -version

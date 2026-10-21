@@ -1,0 +1,15 @@
+FluxDrop for Windows 0.4.0-dev
+
+Microsoft .NET 10 Desktop Runtime: MIT and third-party notices, distributed self-contained with LICENSE.txt and ThirdPartyNotices.txt in the application folder. https://github.com/dotnet/runtime
+PDFsharp-WPF 6.2.4: MIT; pinned version. https://github.com/empira/PDFsharp/tree/v6.2.4
+Markdig 0.41.3: BSD-2-Clause. https://github.com/xoofx/markdig
+YamlDotNet 16.3.0: MIT. https://github.com/aaubry/YamlDotNet
+Microsoft.Extensions.Logging.Abstractions / DependencyInjection.Abstractions: MIT, transitively used by PDFsharp. https://github.com/dotnet/runtime
+
+FFmpeg 9.0.2: LGPL 2.1 or later, GPL/nonfree/network disabled.
+LAME 4.0 library: LGPL 2 or later.
+Opus 1.6.1: upstream BSD and patent notices.
+libwebp 1.6.0: BSD and upstream PATENTS grant.
+See engines/ for exact configure flags, license files and engines/sources/ for exact unmodified source archives and reconstruction script. Build dependencies (Ubuntu MinGW/CMake/pkg-config) are not included in the end-user app. Users can replace the LGPL command-line engines in engines/ with compatible builds. No keys, credentials or external service are required for processing.
+
+The installer is created with Inno Setup 6, retaining compiler copyright and license notices in the generated setup. Build/installer compiler is not embedded as a tool for conversions.

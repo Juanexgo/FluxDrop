@@ -1,15 +1,222 @@
 using System.Formats.Tar;
 using System.IO.Compression;
+
 namespace FluxDrop.Core;
-public static class ArchiveEngine {
- const long Limit=2L*1024*1024*1024;const int EntryLimit=10000;
- public static async Task<string> Run(Request r,string work,CancellationToken token){string target=Path.Combine(work,"result");bool create=r.Operation.EndsWith("Create",StringComparison.Ordinal);string type=r.Operation.StartsWith("zip",StringComparison.Ordinal)?"zip":r.Operation.StartsWith("tar",StringComparison.Ordinal)?"tar":"gzip";if(create){if(type=="gzip"){if(r.Inputs.Length!=1||!File.Exists(r.Inputs[0]))throw new ArgumentException("GZIP admite un único archivo.");await using var output=File.Create(target);await using(var gzip=new GZipStream(output,CompressionLevel.Optimal,true))await Copy(r.Inputs[0],gzip,token);return target;}var entries=new Dictionary<string,string>(StringComparer.OrdinalIgnoreCase);foreach(var input in r.Inputs){foreach(var f in SafeFiles.Walk(input)){var name=Directory.Exists(input)?Path.GetFileName(input)+"/"+Path.GetRelativePath(input,f).Replace('\\','/'):Path.GetFileName(f);SafeFiles.ExtractName(name);if(!entries.TryAdd(name,f))throw new IOException("Nombres repetidos en el archivo comprimido.");if(entries.Count>EntryLimit)throw new IOException("Máximo 10 000 archivos.");}}if(entries.Count==0)throw new IOException("No hay archivos para comprimir.");if(type=="zip"){using var zip=ZipFile.Open(target,ZipArchiveMode.Create);foreach(var (name,input) in entries){token.ThrowIfCancellationRequested();var entry=zip.CreateEntry(name,CompressionLevel.Optimal);await using var s=entry.Open();await Copy(input,s,token);}}else{await using var output=File.Create(target);await using var tar=new TarWriter(output,TarEntryFormat.Pax);foreach(var(name,input) in entries){token.ThrowIfCancellationRequested();await using var s=File.OpenRead(input);var entry=new PaxTarEntry(TarEntryType.RegularFile,name){DataStream=s};await tar.WriteEntryAsync(entry,token);}}await ValidateCreated(target,type,entries,token);return target;}
- if(r.Inputs.Length!=1)throw new ArgumentException("Extrae un comprimido por trabajo.");if(type=="gzip"){await using var input=File.OpenRead(r.Inputs[0]);await using var gzip=new GZipStream(input,CompressionMode.Decompress);await using var output=File.Create(target);await Limited(gzip,output,Limit,token);return target;}Directory.CreateDirectory(target);long total=0;int count=0;var seen=new HashSet<string>(StringComparer.OrdinalIgnoreCase);
- async Task Entry(string name,long length,bool directory,Stream? data){token.ThrowIfCancellationRequested();SafeFiles.ExtractName(name);if(++count>EntryLimit||length<0||length>Limit||total+length>Limit||!seen.Add(name.TrimEnd('/')))throw new IOException("El comprimido excede los límites o repite rutas.");total+=length;string dest=Path.GetFullPath(Path.Combine(target,name));if(!SafeFiles.Within(dest,target))throw new IOException("Ruta fuera del destino.");if(directory){Directory.CreateDirectory(dest);return;}Directory.CreateDirectory(Path.GetDirectoryName(dest)!);await using var output=new FileStream(dest,FileMode.CreateNew);if(data==null)throw new IOException("Entrada sin contenido.");long written=await Limited(data,output,length,token);if(written!=length)throw new IOException("Tamaño extraído incorrecto.");}
- if(type=="zip"){using var zip=ZipFile.OpenRead(r.Inputs[0]);foreach(var e in zip.Entries){int kind=(e.ExternalAttributes>>16)&0xF000;if(kind!=0&&kind!=0x8000&&kind!=0x4000||(e.ExternalAttributes&0x400)!=0)throw new IOException("Enlaces no permitidos.");if(e.Length>16*1024*1024&&e.Length>Math.Max(e.CompressedLength,1)*200)throw new IOException("Expansión ZIP desproporcionada.");await using var s=e.Open();await Entry(e.FullName,e.Length,e.FullName.EndsWith('/'),s);}}
- else{await using var input=File.OpenRead(r.Inputs[0]);await using var reader=new TarReader(input);TarEntry? e;while((e=await reader.GetNextEntryAsync(false,token))!=null){if(e.EntryType is not (TarEntryType.RegularFile or TarEntryType.V7RegularFile or TarEntryType.Directory))throw new IOException("TAR: enlaces y entradas especiales no permitidos.");await Entry(e.Name,e.Length,e.EntryType==TarEntryType.Directory,e.DataStream);}}
- return target;}
- static async Task Copy(string file,Stream output,CancellationToken token){await using var input=File.OpenRead(file);await input.CopyToAsync(output,token);}
- static async Task<long> Limited(Stream input,Stream output,long limit,CancellationToken token){long total=0;byte[] buffer=new byte[65536];int n;while((n=await input.ReadAsync(buffer,token))>0){total+=n;if(total>limit)throw new IOException("Expansión por encima del límite.");await output.WriteAsync(buffer.AsMemory(0,n),token);}return total;}
- static async Task ValidateCreated(string file,string type,Dictionary<string,string> expected,CancellationToken token){var seen=new HashSet<string>();async Task Check(string name,Stream? data){if(!expected.TryGetValue(name,out var original)||data==null)throw new IOException("Archivo comprimido inválido.");var actual=Convert.ToHexStringLower(await System.Security.Cryptography.SHA256.HashDataAsync(data,token));if(actual!=await SafeFiles.Hash(original,token))throw new IOException("La verificación del comprimido falló.");seen.Add(name);}if(type=="zip"){using var zip=ZipFile.OpenRead(file);foreach(var e in zip.Entries){await using var s=e.Open();await Check(e.FullName,s);}}else{await using var input=File.OpenRead(file);await using var tar=new TarReader(input);TarEntry? e;while((e=await tar.GetNextEntryAsync(false,token))!=null)await Check(e.Name,e.DataStream);}if(seen.Count!=expected.Count)throw new IOException("Faltan entradas en el comprimido.");}
+
+public static class ArchiveEngine
+{
+    const long Limit = 2L * 1024 * 1024 * 1024;
+    const int EntryLimit = 10000;
+
+    public static async Task<string> Run(Request r, string work, CancellationToken token)
+    {
+        string target = Path.Combine(work, "result");
+        bool create = r.Operation.EndsWith("Create", StringComparison.Ordinal);
+        string type =
+            r.Operation.StartsWith("zip", StringComparison.Ordinal) ? "zip"
+            : r.Operation.StartsWith("tar", StringComparison.Ordinal) ? "tar"
+            : "gzip";
+        if (create)
+        {
+            if (type == "gzip")
+            {
+                if (r.Inputs.Length != 1 || !File.Exists(r.Inputs[0]))
+                    throw new ArgumentException("GZIP admite un único archivo.");
+                await using var output = File.Create(target);
+                await using (var gzip = new GZipStream(output, CompressionLevel.Optimal, true))
+                    await Copy(r.Inputs[0], gzip, token);
+                return target;
+            }
+            var entries = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var input in r.Inputs)
+            {
+                foreach (var f in SafeFiles.Walk(input))
+                {
+                    var name = Directory.Exists(input)
+                        ? Path.GetFileName(input)
+                            + "/"
+                            + Path.GetRelativePath(input, f).Replace('\\', '/')
+                        : Path.GetFileName(f);
+                    SafeFiles.ExtractName(name);
+                    if (!entries.TryAdd(name, f))
+                        throw new IOException("Nombres repetidos en el archivo comprimido.");
+                    if (entries.Count > EntryLimit)
+                        throw new IOException("Máximo 10 000 archivos.");
+                }
+            }
+            if (entries.Count == 0)
+                throw new IOException("No hay archivos para comprimir.");
+            if (type == "zip")
+            {
+                using var zip = ZipFile.Open(target, ZipArchiveMode.Create);
+                foreach (var (name, input) in entries)
+                {
+                    token.ThrowIfCancellationRequested();
+                    var entry = zip.CreateEntry(name, CompressionLevel.Optimal);
+                    await using var s = entry.Open();
+                    await Copy(input, s, token);
+                }
+            }
+            else
+            {
+                await using var output = File.Create(target);
+                await using var tar = new TarWriter(output, TarEntryFormat.Pax);
+                foreach (var (name, input) in entries)
+                {
+                    token.ThrowIfCancellationRequested();
+                    await using var s = File.OpenRead(input);
+                    var entry = new PaxTarEntry(TarEntryType.RegularFile, name) { DataStream = s };
+                    await tar.WriteEntryAsync(entry, token);
+                }
+            }
+            await ValidateCreated(target, type, entries, token);
+            return target;
+        }
+        if (r.Inputs.Length != 1)
+            throw new ArgumentException("Extrae un comprimido por trabajo.");
+        if (type == "gzip")
+        {
+            await using var input = File.OpenRead(r.Inputs[0]);
+            await using var gzip = new GZipStream(input, CompressionMode.Decompress);
+            await using var output = File.Create(target);
+            await Limited(gzip, output, Limit, token);
+            return target;
+        }
+        Directory.CreateDirectory(target);
+        long total = 0;
+        int count = 0;
+        var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        async Task Entry(string name, long length, bool directory, Stream? data)
+        {
+            token.ThrowIfCancellationRequested();
+            SafeFiles.ExtractName(name);
+            if (
+                ++count > EntryLimit
+                || length < 0
+                || length > Limit
+                || total + length > Limit
+                || !seen.Add(name.TrimEnd('/'))
+            )
+                throw new IOException("El comprimido excede los límites o repite rutas.");
+            total += length;
+            string dest = Path.GetFullPath(Path.Combine(target, name));
+            if (!SafeFiles.Within(dest, target))
+                throw new IOException("Ruta fuera del destino.");
+            if (directory)
+            {
+                Directory.CreateDirectory(dest);
+                return;
+            }
+            Directory.CreateDirectory(Path.GetDirectoryName(dest)!);
+            await using var output = new FileStream(dest, FileMode.CreateNew);
+            if (data == null)
+                throw new IOException("Entrada sin contenido.");
+            long written = await Limited(data, output, length, token);
+            if (written != length)
+                throw new IOException("Tamaño extraído incorrecto.");
+        }
+        if (type == "zip")
+        {
+            using var zip = ZipFile.OpenRead(r.Inputs[0]);
+            foreach (var e in zip.Entries)
+            {
+                int kind = (e.ExternalAttributes >> 16) & 0xF000;
+                if (
+                    kind != 0 && kind != 0x8000 && kind != 0x4000
+                    || (e.ExternalAttributes & 0x400) != 0
+                )
+                    throw new IOException("Enlaces no permitidos.");
+                if (e.Length > 16 * 1024 * 1024 && e.Length > Math.Max(e.CompressedLength, 1) * 200)
+                    throw new IOException("Expansión ZIP desproporcionada.");
+                await using var s = e.Open();
+                await Entry(e.FullName, e.Length, e.FullName.EndsWith('/'), s);
+            }
+        }
+        else
+        {
+            await using var input = File.OpenRead(r.Inputs[0]);
+            await using var reader = new TarReader(input);
+            TarEntry? e;
+            while ((e = await reader.GetNextEntryAsync(false, token)) != null)
+            {
+                if (
+                    e.EntryType
+                    is not (
+                        TarEntryType.RegularFile
+                        or TarEntryType.V7RegularFile
+                        or TarEntryType.Directory
+                    )
+                )
+                    throw new IOException("TAR: enlaces y entradas especiales no permitidos.");
+                await Entry(e.Name, e.Length, e.EntryType == TarEntryType.Directory, e.DataStream);
+            }
+        }
+        return target;
+    }
+
+    static async Task Copy(string file, Stream output, CancellationToken token)
+    {
+        await using var input = File.OpenRead(file);
+        await input.CopyToAsync(output, token);
+    }
+
+    static async Task<long> Limited(
+        Stream input,
+        Stream output,
+        long limit,
+        CancellationToken token
+    )
+    {
+        long total = 0;
+        byte[] buffer = new byte[65536];
+        int n;
+        while ((n = await input.ReadAsync(buffer, token)) > 0)
+        {
+            total += n;
+            if (total > limit)
+                throw new IOException("Expansión por encima del límite.");
+            await output.WriteAsync(buffer.AsMemory(0, n), token);
+        }
+        return total;
+    }
+
+    static async Task ValidateCreated(
+        string file,
+        string type,
+        Dictionary<string, string> expected,
+        CancellationToken token
+    )
+    {
+        var seen = new HashSet<string>();
+        async Task Check(string name, Stream? data)
+        {
+            if (!expected.TryGetValue(name, out var original) || data == null)
+                throw new IOException("Archivo comprimido inválido.");
+            var actual = Convert.ToHexStringLower(
+                await System.Security.Cryptography.SHA256.HashDataAsync(data, token)
+            );
+            if (actual != await SafeFiles.Hash(original, token))
+                throw new IOException("La verificación del comprimido falló.");
+            seen.Add(name);
+        }
+        if (type == "zip")
+        {
+            using var zip = ZipFile.OpenRead(file);
+            foreach (var e in zip.Entries)
+            {
+                await using var s = e.Open();
+                await Check(e.FullName, s);
+            }
+        }
+        else
+        {
+            await using var input = File.OpenRead(file);
+            await using var tar = new TarReader(input);
+            TarEntry? e;
+            while ((e = await tar.GetNextEntryAsync(false, token)) != null)
+                await Check(e.Name, e.DataStream);
+        }
+        if (seen.Count != expected.Count)
+            throw new IOException("Faltan entradas en el comprimido.");
+    }
 }
