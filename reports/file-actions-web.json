@@ -1,0 +1,32 @@
+{
+  "feature": "File actions explanation",
+  "pages": [
+    "/",
+    "/funciones/"
+  ],
+  "controls": 6,
+  "mouse": {
+    "selected": "shelf",
+    "title": "Estante flotante",
+    "ariaPressed": "true"
+  },
+  "keyboard": {
+    "key": "Enter",
+    "selected": "paths",
+    "title": "Copiar rutas"
+  },
+  "responsive": [
+    {
+      "viewport": 1280,
+      "documentWidth": 1265
+    },
+    {
+      "viewport": 390,
+      "documentWidth": 375,
+      "previewWidth": 327
+    }
+  ],
+  "browserErrors": [],
+  "processing": "No upload, file input, conversion or network call in the component",
+  "nativeActions": "Uses descriptions of existing native actions; web is an explicitly labelled illustration"
+}

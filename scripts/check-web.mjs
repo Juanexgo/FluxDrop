@@ -39,3 +39,9 @@ const licenses=await readFile(join(root,'licencias/index.html'),'utf8');
 assert.ok(licenses.includes(sources.path) && licenses.includes(sources.sha256));
 assert.equal((await stat(join(root,sources.path))).size,sources.size);
 console.log('Engine sources schema, size, checksum display and download link passed.');
+
+const homepage=await readFile(join(root,'index.html'),'utf8');
+assert.ok(homepage.includes('data-file-actions') && homepage.includes('/file-actions.js'));
+assert.equal([...homepage.matchAll(/data-select-action=/g)].length,6);
+assert.ok(homepage.includes('no recibe ni procesa tus archivos'));
+console.log('File actions section: six controls, external script and local-processing disclosure passed.');

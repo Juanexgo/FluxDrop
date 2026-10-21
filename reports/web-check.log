@@ -2,9 +2,10 @@
 > fluxdrop-web@0.3.0 check
 > astro check
 
-22:17:27 [types] Generated 26ms
-22:17:27 [check] Getting diagnostics for Astro files in /private/tmp/fluxdrop-github/apps/web...
-Result (12 files):
+22:24:58 [vite] Re-optimizing dependencies because vite config has changed
+22:24:58 [types] Generated 172ms
+22:24:58 [check] Getting diagnostics for Astro files in /private/tmp/fluxdrop-github/apps/web...
+Result (14 files):
 - 0 errors
 - 0 warnings
 - 0 hints

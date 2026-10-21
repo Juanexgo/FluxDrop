@@ -1,0 +1,40 @@
+---
+const actions = [
+  {id:'share', title:'Compartir', label:'Compartir', icon:'M12 16V3m-4 4 4-4 4 4M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7', description:'Abre el selector de macOS y elige el servicio y el destinatario. AirDrop aparece cuando el sistema lo ofrece.'},
+  {id:'shelf', title:'Estante flotante', label:'Estante', icon:'M4 5h16v10H4zM2 19h20M8 15v4m8-4v4', description:'Reúne hasta 50 referencias en un panel flotante. Fíjalo a un borde y arrastra archivos desde allí a otra app.'},
+  {id:'copy', title:'Copiar archivos', label:'Copiar', icon:'M8 8h12v13H8zM16 8V3H3v13h5', description:'Copia los archivos al portapapeles para pegarlos en Finder. Tus originales permanecen en su ubicación.'},
+  {id:'move', title:'Mover con revisión', label:'Mover', icon:'M3 8V5h7l2 3h9v13H3V8m3 6h10m-4-4 4 4-4 4', description:'Elige una carpeta y revisa el movimiento de originales antes de confirmar. Rechaza colisiones y destinos en otro volumen.'},
+  {id:'paths', title:'Copiar rutas', label:'Rutas', icon:'M6 2h8l5 5v15H6zM14 2v6h5M9 12h7m-7 4h7', description:'Obtén las rutas completas como texto, una por línea. Útil para documentación, scripts o compartir una ubicación.'},
+  {id:'terminal', title:'Abrir en Terminal', label:'Terminal', icon:'M2 4h20v16H2zM6 8l4 4-4 4m7 0h5', description:'Abre en Terminal la carpeta seleccionada o la que contiene el archivo. No construye ni ejecuta comandos desde su nombre.'},
+];
+const point=(r:number,deg:number)=>({x:180+r*Math.cos(deg*Math.PI/180),y:180+r*Math.sin(deg*Math.PI/180)});
+const wedge=(angle:number)=>{const a=point(151,angle-27),b=point(151,angle+27),c=point(63,angle+27),d=point(63,angle-27);return `M${a.x},${a.y} A151,151 0 0 1 ${b.x},${b.y} L${c.x},${c.y} A63,63 0 0 0 ${d.x},${d.y} Z`;};
+---
+<section class="section file-actions" id="acciones-de-archivos" data-file-actions aria-labelledby="file-actions-title">
+  <div class="section-heading"><div><p class="eyebrow">EL MODO ARCHIVOS</p><h2 id="file-actions-title">La siguiente acción.<br/>Sin perder el hilo.</h2><p>Abre el widget, elige <strong>Archivos</strong> y reúne tus archivos o carpetas. Seis acciones para seguir trabajando desde el mismo lugar.</p></div><a class="text-link" href="/ayuda/">Configura tu widget ↗</a></div>
+  <div class="file-actions-layout">
+    <figure class="action-preview">
+      <div class="preview-top"><span><i aria-hidden="true"></i> FluxDrop · Archivos</span><kbd>⌃ Control</kbd></div>
+      <svg class="action-wheel" viewBox="0 0 360 360" aria-hidden="true">
+        <circle cx="180" cy="180" r="158" fill="#eeeae1"/>
+        {actions.map((action,index)=>{const angle=-90+index*60,p=point(107,angle);return <g class="wheel-sector" data-wheel-action={action.id} data-active={index===0?'true':'false'}><path class="petal" d={wedge(angle)}/><g transform={`translate(${p.x-10},${p.y-22}) scale(.85)`}><path class="action-glyph" d={action.icon}/></g><text x={p.x} y={p.y+15} class="petal-label" text-anchor="middle">{action.label}</text></g>})}
+        <circle cx="180" cy="180" r="51" fill="#fffaf3" stroke="#dfd8c9"/>
+        <image href="/mark.svg" x="166" y="151" width="28" height="28"/>
+        <text x="180" y="200" text-anchor="middle" class="wheel-center" data-center-title>Compartir</text>
+      </svg>
+      <figcaption><span class="preview-label">EXPLORA UNA ACCIÓN</span><strong data-wheel-title>Compartir</strong><span class="preview-explanation">Pulsa una tarjeta para verla en la rueda.</span><span class="preview-disclaimer">Representación interactiva del modo Archivos. Esta web no recibe ni procesa tus archivos.</span></figcaption>
+    </figure>
+    <div class="file-action-cards" aria-label="Explorar las seis acciones de archivos">
+      {actions.map((action,index)=><button type="button" class="action-card" data-select-action={action.id} data-label={action.title} data-short-label={action.label} aria-pressed={index===0?'true':'false'}><svg viewBox="0 0 24 24" width="28" height="28" aria-hidden="true"><path class="action-glyph" d={action.icon}/></svg><span class="action-card-title">{action.title}</span><span class="action-card-description">{action.description}</span><span class="action-card-link" aria-hidden="true">Ver en la rueda <span>↗</span></span></button>)}
+    </div>
+  </div>
+  <p class="file-action-note">Control es la tecla inicial del gesto opcional durante un arrastre y puedes cambiarla en Ajustes. Depende de permisos de macOS y su validación manual sigue pendiente. El widget convencional y su modo Archivos funcionan de forma independiente.</p>
+</section>
+<script is:inline src="/file-actions.js" defer></script>
+<style>
+.file-actions .section-heading>div{max-width:760px}.file-actions .section-heading p:not(.eyebrow){font-size:18px;line-height:1.6;color:var(--muted,#62645f);max-width:660px}
+.file-actions-layout{display:grid;grid-template-columns:minmax(280px,.85fr) minmax(0,1.65fr);gap:24px;align-items:start;margin-top:34px}.action-preview{margin:0;background:linear-gradient(150deg,#fffaf2,#f0ede5);border:1px solid #ded9cf;border-radius:28px;padding:22px 14px 24px;position:sticky;top:104px;overflow:hidden}.preview-top{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:0 10px;font-size:12px;color:#4d514b}.preview-top span{display:flex;align-items:center;gap:7px}.preview-top i{width:6px;height:6px;border-radius:50%;background:#d8502c}.preview-top kbd{font:inherit;background:#fff;border:1px solid #ddd8cb;border-bottom-width:3px;padding:7px 9px;border-radius:8px;white-space:nowrap}.action-wheel{width:100%;height:auto;display:block;max-width:400px;margin:16px auto 8px}.petal{fill:#fffdfa;stroke:#d6d0c4;stroke-width:1.2;transition:fill .15s,stroke .15s}.wheel-sector[data-active=true] .petal{fill:#ff9b76;stroke:#db5a32}.action-glyph{fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}.wheel-sector{color:#363b35}.petal-label{font:600 10px system-ui,sans-serif;fill:#33392f}.wheel-center{font:600 10px system-ui,sans-serif;fill:#5e402e}.action-preview figcaption{display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;padding:0 12px}.preview-label{font-size:10px;letter-spacing:.14em;color:#856a52}.action-preview figcaption strong{font-size:21px;letter-spacing:-.03em;color:#2d342c}.preview-explanation{font-size:12px;color:#676b62}.preview-disclaimer{font-size:11px!important;line-height:1.5!important;text-align:center;color:#666b61!important;margin:18px auto 0;max-width:270px;padding:0 8px}.file-action-cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.action-card{appearance:none;text-align:left;font:inherit;cursor:pointer;border:1px solid #deded4;background:#fff;color:#30382f;border-radius:22px;padding:27px 25px;display:flex;flex-direction:column;min-height:246px;transition:border-color .15s,background .15s}.action-card[aria-pressed=true]{border-color:#d85e37;background:#fff8ef;box-shadow:inset 0 0 0 1px #d85e37}.action-card:hover{border-color:#ba6246}.action-card:focus-visible{outline:3px solid #394f38;outline-offset:4px}.action-card>svg{margin-bottom:22px;color:#606e5c}.action-card-title{display:block;font-weight:650;font-size:20px;letter-spacing:-.035em;margin:0 0 10px}.action-card-description{display:block;font-size:14px;line-height:1.6;margin:0 0 22px;color:#60675d}.action-card-link{display:flex;justify-content:space-between;align-items:center;font-size:11px;font-weight:600;margin-top:auto;color:#854227}.file-action-note{font-size:12px;color:#696d64;line-height:1.65;max-width:950px;margin:22px 0 0}
+@media(max-width:900px){.file-actions-layout{grid-template-columns:1fr}.action-preview{position:static;max-width:410px;width:100%;justify-self:center}.action-card{min-height:220px}.file-actions .section-heading{align-items:start}}
+@media(max-width:520px){.file-action-cards{grid-template-columns:1fr}.action-card{min-height:0;padding:24px}.action-card>svg{margin-bottom:15px}.action-preview{max-width:100%}.file-actions .section-heading p:not(.eyebrow){font-size:16px}}
+@media(prefers-reduced-motion:reduce){.petal,.action-card{transition:none}}
+</style>

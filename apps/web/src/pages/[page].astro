@@ -1,5 +1,6 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import FileActions from '../components/FileActions.astro';
 import sources from '../data/engine-sources.json';
 import {validateEngineSources} from '../data/validate.mjs';
 validateEngineSources(sources);
@@ -12,4 +13,5 @@ const {content}=Astro.props;
   {content.sections.map(([title, text])=><section><h2>{title}</h2><p>{text}</p></section>)}
   {Astro.params.page==='licencias' && <section><h2>Fuentes de los motores {sources.version}</h2><p>Archivos originales, configuración real, avisos y script de reconstrucción de FFmpeg, LAME y Opus. No contiene archivos del usuario.</p><a class="text-link" href={sources.path} download>Descargar fuentes y licencias ({(sources.size/1_000_000).toFixed(1)} MB) ↗</a><p class="fine">SHA-256: <code>{sources.sha256}</code></p></section>}
   <a class="text-link" href="/descarga/">Estado de la descarga ↗</a></article>
+{Astro.params.page==='funciones' && <FileActions />}
 </Layout>
