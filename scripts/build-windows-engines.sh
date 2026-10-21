@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Build LGPL-only Windows x64 engines on Ubuntu with the distro MinGW toolchain.
 set -euo pipefail
+SCRIPT_PATH="$(cd "$(dirname "$0")" && pwd)/$(basename "$0")"
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 TASK_WORK="${FLUXDROP_WINDOWS_ENGINE_WORK:-$ROOT/build/windows-engines-work}"
 TASK_OUT="${FLUXDROP_WINDOWS_ENGINE_OUTPUT:-$ROOT/build/windows-engines}"
@@ -31,4 +32,4 @@ cp "$TASK_WORK/lame-4.0/LICENSE" "$TASK_OUT/LAME-LICENSE.txt"
 cp "$TASK_WORK/opus-1.6.1/COPYING" "$TASK_OUT/Opus-COPYING.txt"
 cp "$WEBP/COPYING" "$TASK_OUT/WebP-COPYING.txt"
 tar -czf "$TASK_OUT/sources/libwebp-vendored.tar.gz" -C "$WEBP" .
-cp "$ROOT/scripts/build-windows-engines.sh" "$TASK_OUT/sources/"
+cp "$SCRIPT_PATH" "$TASK_OUT/sources/"

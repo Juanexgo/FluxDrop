@@ -306,6 +306,44 @@ try
             );
         }
     );
+    await Test(
+        "nested recipe passwords are not persisted",
+        () =>
+            Task.Run(() =>
+            {
+                var recipe = new Recipe(
+                    1,
+                    "private",
+                    [new("jsonPretty", new Options { Password = "never-persist" })]
+                );
+                var options = new Options
+                {
+                    Password = "never-persist",
+                    RecipeJson = JsonSerializer.Serialize(recipe, Config.Json),
+                };
+                Check(
+                    !JsonSerializer
+                        .Serialize(options.WithoutPasswords(), Config.Json)
+                        .Contains("never-persist")
+                );
+            })
+    );
+    await Test(
+        "invalid nonfinite media options rejected",
+        () => Reject(() => Task.Run(() => new Options { Start = double.NaN }.Validate()))
+    );
+    await Test(
+        "queue executes and reports verified output",
+        async () =>
+        {
+            var q = new JobQueue(engine, Path.Combine(root, "live-queue.json"));
+            var job = q.Add(new("jsonPretty", [input], root, new()));
+            for (int i = 0; i < 100 && job.State is JobState.Pending or JobState.Running; i++)
+                await Task.Delay(20);
+            Check(job.State == JobState.Complete && job.Outputs.Length == 1);
+            DataEngine.Json(await File.ReadAllTextAsync(job.Outputs[0]));
+        }
+    );
     Console.WriteLine($"RESULT {passed} passed, 0 failed");
     return 0;
 }

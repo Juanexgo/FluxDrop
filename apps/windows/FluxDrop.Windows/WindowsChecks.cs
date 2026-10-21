@@ -368,6 +368,99 @@ public static class WindowsChecks
                 }
             );
         }
+        Test(
+            "recipe validates and executes chained images",
+            () =>
+            {
+                var recipe = new Recipe(
+                    1,
+                    "resize and jpeg",
+                    [
+                        new("image", new Options { MaxSide = 40, Format = "png" }),
+                        new("image", new Options { MaxSide = 20, Format = "jpg" }),
+                    ]
+                );
+                recipe.Validate(engine.Capabilities.Where(c => c.Id != "recipe").ToArray());
+                var result = Execute(
+                    "recipe",
+                    [input],
+                    new Options { RecipeJson = JsonSerializer.Serialize(recipe, Config.Json) }
+                );
+                var final = Directory.GetFiles(result.Outputs[0]).Single();
+                Check(ImageEngine.Read(final).PixelWidth == 20);
+            }
+        );
+        Test(
+            "icon PNG set verifies every dimension",
+            () =>
+            {
+                var large = BitmapSource.Create(
+                    1024,
+                    1024,
+                    96,
+                    96,
+                    PixelFormats.Bgra32,
+                    null,
+                    new byte[1024 * 1024 * 4],
+                    4096
+                );
+                string square = Path.Combine(root, "square.png");
+                ImageEngine.Write(large, square, "png", 100);
+                var result = Execute("imageIcons", [square]);
+                var files = Directory.GetFiles(result.Outputs[0]);
+                Check(files.Length == 9);
+                foreach (var f in files)
+                {
+                    var b = ImageEngine.Read(f);
+                    Check(b.PixelWidth == b.PixelHeight);
+                    Check(Path.GetFileNameWithoutExtension(f) == "icon-" + b.PixelWidth);
+                }
+            }
+        );
+        Test(
+            "localization uses both resource cultures",
+            () =>
+            {
+                L.Language = "en";
+                Check(L.T("Files") == "Files");
+                L.Language = "es";
+                Check(L.T("Files") == "Archivos");
+            }
+        );
+        if (MediaEngine.Available)
+            Test(
+                "active FFmpeg cancellation terminates process tree",
+                () =>
+                {
+                    using var source = new CancellationTokenSource(TimeSpan.FromMilliseconds(300));
+                    var timer = System.Diagnostics.Stopwatch.StartNew();
+                    try
+                    {
+                        ProcessRunner
+                            .Run(
+                                MediaEngine.Ffmpeg,
+                                [
+                                    "-re",
+                                    "-f",
+                                    "lavfi",
+                                    "-i",
+                                    "sine=frequency=200:duration=30",
+                                    "-f",
+                                    "null",
+                                    "-",
+                                ],
+                                source.Token
+                            )
+                            .GetAwaiter()
+                            .GetResult();
+                        throw new Exception("not cancelled");
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        Check(timer.Elapsed < TimeSpan.FromSeconds(8));
+                    }
+                }
+            );
         Config.Write(
             Path.Combine(root, "windows-results.json"),
             new

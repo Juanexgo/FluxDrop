@@ -27,6 +27,7 @@ jobs:
           if ($env:ENGINE_RUN -notmatch '^\d+$') { throw 'Invalid run ID' }
           gh run download $env:ENGINE_RUN --repo $env:GITHUB_REPOSITORY --name windows-engines-x64 --dir build/windows-engines
           if ($LASTEXITCODE -ne 0) { throw 'Engine artifact unavailable' }
+          Copy-Item scripts/build-windows-engines.sh build/windows-engines/sources/build-windows-engines.sh -Force
       - name: Check core on Windows
         run: dotnet run --project apps/windows/FluxDrop.Tests -c Release
       - name: Publish self-contained Windows app
