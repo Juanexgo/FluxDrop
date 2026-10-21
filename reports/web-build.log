@@ -1,30 +1,30 @@
 
-> fluxdrop-web@0.2.0 build
+> fluxdrop-web@0.3.0 build
 > node scripts/sync-data.mjs && astro build
 
-21:41:25 [types] Generated 21ms
-21:41:25 [build] output: "static"
-21:41:25 [build] mode: "static"
-21:41:25 [build] directory: /private/tmp/fluxdrop-github/apps/web/dist/
-21:41:25 [build] Collecting build info...
-21:41:25 [build] ✓ Completed in 29ms.
-21:41:26 [build] Building static entrypoints...
-21:41:26 [vite] ✓ built in 449ms
-21:41:27 [vite] ✓ built in 577ms
-21:41:27 [build] Rearranging server assets...
+22:05:55 [types] Generated 22ms
+22:05:55 [build] output: "static"
+22:05:55 [build] mode: "static"
+22:05:55 [build] directory: /private/tmp/fluxdrop-github/apps/web/dist/
+22:05:55 [build] Collecting build info...
+22:05:55 [build] ✓ Completed in 39ms.
+22:05:55 [build] Building static entrypoints...
+22:05:56 [vite] ✓ built in 507ms
+22:05:58 [vite] ✓ built in 1.68s
+22:05:58 [build] Rearranging server assets...
 
  generating static routes
-21:41:27   ├─ /404.html (+4ms)
-21:41:27   ├─ /descarga/index.html (+1ms)
-21:41:27   ├─ /formatos/index.html (+2ms)
-21:41:27   ├─ /funciones/index.html (+1ms)
-21:41:27   ├─ /novedades/index.html (+1ms)
-21:41:27   ├─ /ayuda/index.html (+1ms)
-21:41:27   ├─ /privacidad/index.html (+1ms)
-21:41:27   ├─ /licencias/index.html (+1ms)
-21:41:27   ├─ /index.html (+1ms)
-21:41:27 ✓ Completed in 20ms.
+22:05:58   ├─ /404.html (+5ms)
+22:05:58   ├─ /descarga/index.html (+5ms)
+22:05:58   ├─ /formatos/index.html (+3ms)
+22:05:58   ├─ /funciones/index.html (+1ms)
+22:05:58   ├─ /novedades/index.html (+1ms)
+22:05:58   ├─ /ayuda/index.html (+1ms)
+22:05:58   ├─ /privacidad/index.html (+1ms)
+22:05:58   ├─ /licencias/index.html (+1ms)
+22:05:58   ├─ /index.html (+1ms)
+22:05:58 ✓ Completed in 26ms.
 
-21:41:27 [build] ✓ Completed in 1.07s.
-21:41:27 [build] 9 page(s) built in 1.43s
-21:41:27 [build] Complete!
+22:05:58 [build] ✓ Completed in 2.26s.
+22:05:58 [build] 9 page(s) built in 2.30s
+22:05:58 [build] Complete!

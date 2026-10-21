@@ -2,7 +2,7 @@
 
 Esta entrega no equivale a haber completado todos los formatos posibles del documento inicial. No se ocultan los límites detrás de controles simulados.
 
-- AVIF de salida no disponible; MP3/Opus de salida tampoco se anuncian. PDF a Office fuera de alcance inicial.
+- AVIF condicionado a ImageIO del sistema, comprobado en macOS 26.3; no acreditado en macOS 14. MP3/Opus solo mono/estéreo. PDF a Office sigue fuera.
 - Firma Developer ID, notarización, publicación de instalador estable y actualizador firmado requieren pasos externos. Sparkle evaluado, no implementado.
 - Arm64 construido; Intel y macOS 14 necesitan verificación propia.
 - El widget aparece con un atajo registrado (tres combinaciones disponibles), con activación adicional por modificador durante arrastre (opcional), o con el gesto de clic derecho global opcional y configurable. La captura depende de la autorización de macOS; no importa la selección de Finder automáticamente. La selección de sectores se sugiere por extensión; el motor valida contenido real al ejecutar. Un lote mixto produce resultado o error explícito por archivo; no hay omisión silenciosa.

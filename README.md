@@ -4,7 +4,7 @@ Web pública: https://fluxdrop-ruby.vercel.app · [Descarga de desarrollo](https
 
 Utilidad nativa de macOS para transformar archivos localmente. SwiftUI/AppKit, motores Apple, libwebp, libarchive del sistema y FFmpeg compilado desde fuente. Web estática Astro/TypeScript; nunca recibe archivos.
 
-Estado: versión de desarrollo 0.2.0. El estado de validación se encuentra en `docs/TEST-RESULTS.md` cuando termina la comprobación final. No equivale a una versión firmada y notarizada para distribución pública.
+Estado: versión de desarrollo 0.3.0. El estado de validación se encuentra en `docs/TEST-RESULTS.md` cuando termina la comprobación final. No equivale a una versión firmada y notarizada para distribución pública.
 
 ## Empezar
 
@@ -42,3 +42,7 @@ El atajo inicial ⌃⌥D muestra el widget junto al cursor; también se abre des
 ## Versión 0.2
 
 Tres modos del widget: Convertir, Editar y Archivos. Recorte visual de imágenes, montaje visual de páginas PDF, reproducción/recorte multimedia y acceso a compresión. Exportación JPEG/PNG/TIFF/HEIC/BMP/WebP: 36 rutas comprobadas con fixtures, incluyendo reexportaciones al mismo formato. Esto mide rutas de imagen, no herramientas ni todas las combinaciones posibles del producto. 34 pruebas XCTest pasaron; ver evidencia y límites en docs/TEST-RESULTS.md.
+
+## Revisión 0.3
+
+MP3 y Opus con motores incluidos, AVIF condicionado a ImageIO disponible, paginación de acciones, intercambio de teclas, verificación multimedia completa y ocho fixtures de seguridad de comprimidos. 39 pruebas pasaron; 49 rutas de imagen verificadas en macOS 26.3. El titular no tiene membresía Apple Developer: firma Developer ID y notarización siguen pendientes. Ver docs/TEST-RESULTS.md.

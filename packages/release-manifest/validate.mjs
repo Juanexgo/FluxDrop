@@ -22,3 +22,8 @@ export function validateDevelopmentDownload(value) {
   if (!/^\/downloads\/[A-Za-z0-9.-]+\.dmg$/.test(r.installerPath) || !/^\/[a-z0-9-]+\/$/.test(r.releaseNotesPath) || r.signing!=='ad-hoc' || r.notarized!==false) throw Error('Invalid development artifact/signing status');
   return value;
 }
+
+export function validateEngineSources(value) {
+  if (!value || value.schemaVersion!==1 || Object.keys(value).sort().join(',')!=='path,schemaVersion,sha256,size,version' || !/^\d+\.\d+\.\d+$/.test(value.version) || !/^\/downloads\/[A-Za-z0-9.-]+\.zip$/.test(value.path) || !Number.isSafeInteger(value.size) || value.size<=0 || !/^[a-f0-9]{64}$/.test(value.sha256)) throw Error('Invalid engine source archive');
+  return value;
+}

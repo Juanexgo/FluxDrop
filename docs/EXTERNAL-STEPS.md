@@ -5,3 +5,5 @@
 3. Revisar licencias y patentes de la compilación concreta antes de venta.
 4. Completar recorrido visual del panel radial, arrastre real, VoiceOver, monitores y macOS mínimo cuando el controlador de pantalla esté disponible.
 5. Sparkle solo fue evaluado; para incorporarlo faltan claves Ed25519 protegidas, feed firmado e integración probada entre versiones. Intel no está construido ni anunciado.
+
+El titular confirmó el 20 de octubre de 2026 que no tiene membresía Apple Developer. La compilación 0.3 se entrega como desarrollo ad hoc; no se realizó contratación ni pago. Antes de firma/notarización deberá disponer de membresía y crear un certificado Developer ID Application propio en el llavero.

@@ -22,3 +22,7 @@
 Completado build Release: tres modos del widget, activación opcional por modificador durante arrastre con tap pasivo, seis acciones de archivo, estante de referencias, mover con revisión y rollback, editores visuales de imagen/PDF/multimedia/compresión, BMP y WebP real (libwebp 1.6.0 BSD incorporado). Matriz de 36 rutas de imagen obtenida de ejecuciones reales; 34 XCTest pasaron. Recorte manual exportó 320 × 180 y cola Verificado. DMG verificado y firmado ad hoc. No se habilita canal estable ni se promete paridad de 275 rutas. Persisten pruebas manuales de permisos/gestos, mínimo macOS y firma/notarización externas.
 
 0.2 publicado en GitHub/Vercel; CI web correcto, nueve rutas públicas y descarga completa con SHA-256 coincidente. Matriz y búsqueda revisadas en navegador.
+
+## 20 octubre — revisión 0.3
+
+Implementados MP3/Opus desde fuentes oficiales, AVIF condicionado a ImageIO, paginación real de rueda, intercambio de teclas, decodificación completa de verificación y corrección de recorte de audio unido. 39 pruebas finales pasaron, ocho fixtures hostiles rechazados y 49 rutas de imagen comprobadas en macOS 26.3. Conversión AVIF manual desde rueda: Verificado, 640 × 360. El titular confirmó que no tiene membresía Apple Developer; no se realizaron pagos ni notarización. Pendientes las comprobaciones manuales globales y hardware/OS alternativos.

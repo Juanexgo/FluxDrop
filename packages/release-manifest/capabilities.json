@@ -9,11 +9,11 @@
       "id": "image",
       "name": "Convertir y transformar imagen",
       "category": "image",
-      "inputs": "JPEG / PNG / TIFF / HEIC / BMP / WebP de un fotograma",
-      "outputs": "JPEG / PNG / TIFF / HEIC si el encoder existe / BMP / WebP",
+      "inputs": "JPEG / PNG / TIFF / HEIC / BMP / WebP de un fotograma / AVIF si ImageIO puede decodificarlo",
+      "outputs": "JPEG / PNG / TIFF / HEIC si el encoder existe / BMP / WebP / AVIF si ImageIO ofrece codificador",
       "engine": "Image I/O + CoreGraphics + libwebp 1.6.0",
       "progress": "Indeterminado por imagen",
-      "limits": "Máximo 100 MP y 32768 px por lado; WebP ≤16383 px. JPEG: fondo blanco y sRGB. WebP: sRGB, transparencia, opción sin pérdida, siempre sin metadatos. AVIF no disponible.",
+      "limits": "Máximo 100 MP y 32768 px por lado; WebP ≤16383 px. JPEG: fondo blanco y sRGB. WebP: sRGB, transparencia, opción sin pérdida, siempre sin metadatos. AVIF condicionado al codificador del sistema; comprobado en macOS 26.3, pendiente en macOS 14.",
       "verification": "verified"
     },
     {
@@ -399,6 +399,28 @@
       "engine": "Foundation",
       "progress": "Indeterminado",
       "limits": "Conserva originales; rechaza nombres inválidos y colisiones. Paso final de receta recomendado.",
+      "verification": "verified"
+    },
+    {
+      "id": "audioMP3",
+      "name": "Audio → MP3",
+      "category": "media",
+      "inputs": "Audio o vídeo con pista de audio decodificable",
+      "outputs": "MP3 con bitrate configurable",
+      "engine": "FFmpeg 9.0.2 con LAME 4.0 y libopus 1.6.1 integrados",
+      "progress": "Posición temporal de codificación; verificación final",
+      "limits": "LAME 4.0 integrado. Entrada mono/estéreo; multicanal rechazado. Sin mezcla implícita.",
+      "verification": "verified"
+    },
+    {
+      "id": "audioOpus",
+      "name": "Audio → Opus",
+      "category": "media",
+      "inputs": "Audio o vídeo con pista de audio decodificable",
+      "outputs": "Opus en contenedor Ogg (.opus)",
+      "engine": "FFmpeg 9.0.2 con LAME 4.0 y libopus 1.6.1 integrados",
+      "progress": "Posición temporal de codificación; verificación final",
+      "limits": "libopus 1.6.1 integrado. Mono/estéreo; multicanal rechazado. Remuestreo explícito a 48 kHz.",
       "verification": "verified"
     }
   ]

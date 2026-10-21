@@ -9,3 +9,5 @@ FFmpeg: `scripts/build-ffmpeg.sh` descarga únicamente fuente oficial fijada por
 Web: Node compatible con Astro 6, `npm ci` desde apps/web, `npm run dev`. `npm run build` sincroniza la matriz/manifiesto canónicos y genera dist. La variable opcional SITE_URL establece canonical; no es un secreto. Versionar package-lock.json y Package.resolved. No versionar build, node_modules, certificados ni llaveros.
 
 Textos nativos: Resources/en.lproj y es.lproj/Localizable.strings. `tr` resuelve el bundle de recursos SwiftPM empaquetado. No cambiar el idioma global del Mac para probar; arrancar una instancia aislada con AppleLanguages para una comprobación localizada.
+
+En 0.3, build-ffmpeg.sh también compila LAME 4.0 y Opus 1.6.1 desde tar oficiales fijados por SHA-256. Requiere pkg-config en desarrollo (por ejemplo pkgconf); no se distribuye ni se necesita en el equipo final. Evitar duplicar bundles en poco espacio: FLUXDROP_SKIP_WORKSPACE_COPY=1. La versión está en packages/release-manifest/build-info.json. Mantener al menos 1 GiB libre adicional para compilación; los scripts eliminan objetos temporales tras copiar helpers.

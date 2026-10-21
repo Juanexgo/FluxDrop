@@ -1,3 +1,29 @@
+# Validación 0.3.0-dev — 20 de octubre de 2026
+
+## Implementado y comprobado
+
+- App Release compilada con Swift 6 estricto en macOS 26.3/arm64. Versión de app, DMG y scripts centralizada en build-info.json; corregida la ruta antigua del script de notarización.
+- 39 pruebas XCTest, cero fallos y cero omitidas; ejecución 13.061 segundos (no benchmark). El log reports/native-tests.log corresponde a los helpers definitivos con LAME/Opus incorporados.
+- 49 rutas de imagen de siete formatos: JPEG, PNG, TIFF, HEIC, BMP, WebP y AVIF. Las salidas se decodifican y se comprueban dimensiones/originales. AVIF depende de un codificador ImageIO disponible: probado aquí en macOS 26.3, no acredita soporte AVIF en macOS 14. Las 49 rutas incluyen reexportaciones al mismo formato y no equivalen a 49 herramientas.
+- MP3 con LAME 4.0 y Opus/Ogg con libopus 1.6.1, integrados desde fuente. Pruebas de conversión y códec real, inspección y decodificación completa. Mono/estéreo; se rechaza multicanal para evitar una mezcla implícita. Opus utiliza 48 kHz.
+- La verificación multimedia comprueba códec y duración y decodifica toda la salida con -xerror; ya no se limita al primer segundo. La unión inspecciona todas las entradas y permite un recorte posterior al primer clip. Pruebas de salida de 0.5 segundos y entrada secundaria corrupta.
+- Ocho fixtures pequeños de comprimidos peligrosos: traversal, ruta absoluta, colisión por mayúsculas, symlink ZIP, expansión de 17 MiB, hardlink/symlink TAR y ZIP dañado. Rechazo, originales intactos, ausencia de resultados publicados y limpieza de staging comprobados. No equivale a auditoría exhaustiva de formatos maliciosos.
+- Paginación de rueda probada para que ninguna acción quede truncada; intercambio de teclas con conflictos probado para las doce asignaciones posibles.
+- Recorrido manual 0.3: selector con nombre Unicode, rueda con siete formatos, clic en AVIF y cola Verificado. sips confirma salida AVIF de 640 × 360 en Pictures/FluxDrop. No se sustituyó la conversión por una simulación.
+- DMG 0.3 creado, hdiutil verify correcto, montado en solo lectura, codesign --verify --deep --strict correcto y ffmpeg embebido ejecutado desde el volumen.
+
+## Bloqueos y pendientes reales
+
+El titular confirmó que no tiene membresía Apple Developer. No hay Developer ID Application en el llavero; solo Apple Development. No se firmó con Developer ID ni se presentó a notarización, no se contrató membresía ni se activó el canal estable. La firma actual es ad hoc y puede ser rechazada por Gatekeeper.
+
+El controlador visual vuelve a perder conexión al abrir Ajustes de la app. Se tomó una muestra del proceso: seguía vivo y su hilo principal esperaba eventos de AppKit; eso no acredita los controles de Ajustes. Siguen pendientes su recorrido interactivo y permisos, gestos globales reales en otras apps, arrastre desde Finder durante el gesto, VoiceOver, varios monitores, macOS 14, Intel y pruebas físicas sin red/permisos/disco lleno. No se anuncian resultados de esas pruebas.
+
+Office con fidelidad compleja, actualizador firmado y soporte universal de formatos no están implementados. No hay un benchmark comparativo contra Tangerine ni evidencia para declarar superioridad global. Windows permanece sin cambios, por decisión del titular.
+
+Durante la reconstrucción del motor se agotó espacio al instalar copias de compilación; se conservaron/reconstruyeron los ejecutables válidos, se corrigió el script para copiar solo los dos helpers y se limpiaron temporales del proyecto. La suite final se ejecutó después de recuperar el espacio. No se eliminaron archivos del usuario.
+
+La evidencia siguiente es histórica de 0.2 y 0.1. La comprobación pública 0.3 se registra después del despliegue.
+
 # Resultados 0.2.0-dev — 20 de octubre de 2026
 
 ## Verificado en esta revisión
@@ -67,3 +93,7 @@ Astro check: cero errores, advertencias o hints. Build de producción: nueve pá
 ## Publicación 0.2 — comprobada
 
 GitHub main 1f13d71 publicado; Web checks 39540123486 terminó correctamente. Vercel completó el despliegue 511jkN7gVNzA5EskNscSvRfhcaKV. Nueve rutas públicas devolvieron HTTP 200 con cabeceras de seguridad. El navegador mostró la matriz de 36 rutas; la búsqueda FLAC dejó una operación visible y conservó la matriz de imágenes. Descarga HTTPS completa del instalador 0.2.0-dev: 36 133 923 bytes, SHA-256 2ae419fd930cd9cc84917d4f79c1ea003e276be253ee3dbbf5e05ad8a057238e, idéntico al manifiesto. Evidencia en reports/public-download.json. El canal estable sigue desactivado.
+
+## Web 0.3 — comprobación local
+
+Astro check: cero errores/advertencias/hints. Build estático de nueve páginas correcto. Enlaces internos, manifiestos, artefacto, tamaño/checksum y descarga de fuentes de motores verificados por scripts. El primer intento falló por espacio durante la copia de instaladores antiguos; tras limpiar solo temporales del proyecto el build completo terminó correctamente. Gatekeeper comprobado sobre 0.3: rejected; firma ad hoc, sin notarización.

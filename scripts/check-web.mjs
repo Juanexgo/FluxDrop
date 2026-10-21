@@ -30,3 +30,12 @@ assert.equal(coverage.schemaVersion,1);assert.equal(new Set(coverage.routes.map(
 assert.ok(coverage.routes.every(r=>r.verification==='representative-fixture'));
 const formatsPage=await readFile(join(root,'formatos/index.html'),'utf8');
 assert.ok(formatsPage.includes(`${coverage.routes.length} rutas de imagen comprobadas`));
+
+const {validateEngineSources}=await import('../packages/release-manifest/validate.mjs');
+const sources=validateEngineSources(JSON.parse(await readFile(new URL('../packages/release-manifest/engine-sources.json',import.meta.url),'utf8')));
+assert.throws(()=>validateEngineSources({...sources,path:'/downloads/../unsafe.zip'}));
+assert.throws(()=>validateEngineSources({...sources,size:0}));
+const licenses=await readFile(join(root,'licencias/index.html'),'utf8');
+assert.ok(licenses.includes(sources.path) && licenses.includes(sources.sha256));
+assert.equal((await stat(join(root,sources.path))).size,sources.size);
+console.log('Engine sources schema, size, checksum display and download link passed.');

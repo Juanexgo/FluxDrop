@@ -11,3 +11,9 @@ La compilación concreta de FFmpeg debe revisarse antes de venta: obligaciones L
 Marca, textos y panel de FluxDrop son propios. La referencia visual aportada se usó para la idea de interacción circular, sin reutilizar marca ni recursos de Tangerine.
 
 - libwebp 1.6.0, código C incorporado estáticamente. Fuente oficial fijada en commit `4fa21912338357f89e4fd51cf2368325b59e9bd9`; subconjunto y SHA-256 por archivo en `apps/macos/Vendor/WebP/UPSTREAM.json`. Licencia BSD y concesión de patentes originales en `third-party/WebP-{COPYING,PATENTS,AUTHORS}.txt`, también incluidas en el bundle. No requiere Homebrew ni descarga al convertir. Fuente: https://chromium.googlesource.com/webm/libwebp/
+
+## Audio incorporado en 0.3
+
+FFmpeg 9.0.2 se reconstruyó con `--enable-libmp3lame --enable-libopus`, conservando `--disable-gpl --disable-nonfree --disable-network --disable-autodetect`. LAME 4.0: biblioteca estática, frontend y decoder deshabilitados, LGPL 2 o posterior; avisos COPYING y LICENSE originales incluidos. SHA-256 del tar oficial: 3df5124d5ad3a98312ffd7ba6a9b36230e4f8a3e66d3ce0f425e336c32d216eb. libopus 1.6.1: biblioteca estática, sin documentación ni programas extra, avisos BSD y concesiones de patentes upstream incluidos; SHA-256 6ffcb593207be92584df15b32466ed64bbec99109f007c82205f0194572411a1. Los tar originales de ambos se distribuyen con FFmpeg en Resources/ThirdParty. Sin modificaciones al código de los motores. La app no enlaza con FFmpeg: ejecuta helpers sustituibles con argumentos estructurados. El script permite reconstruir los ejecutables con bibliotecas modificadas; no se prohíbe la ingeniería inversa necesaria para depurar cambios.
+
+`pkg-config` es una herramienta de compilación, no se incorpora al producto ni se necesita en el Mac del usuario. Configuración y dependencias dinámicas reales en los archivos buildconf/linkage incluidos. Revisión comercial de la compilación concreta sigue pendiente.

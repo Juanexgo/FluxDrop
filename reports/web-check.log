@@ -1,16 +1,10 @@
 
-> fluxdrop-web@0.2.0 check
+> fluxdrop-web@0.3.0 check
 > astro check
 
-21:40:41 [types] Generated 27ms
-21:40:41 [check] Getting diagnostics for Astro files in /private/tmp/fluxdrop-github/apps/web...
+22:04:07 [types] Generated 28ms
+22:04:07 [check] Getting diagnostics for Astro files in /private/tmp/fluxdrop-github/apps/web...
 Result (12 files):
 - 0 errors
 - 0 warnings
 - 0 hints
-
-npm notice
-npm notice New minor version of npm available! 11.8.0 -> 11.21.1
-npm notice Changelog: https://github.com/npm/cli/releases/tag/v11.21.1
-npm notice To update run: npm install -g npm@11.21.1
-npm notice
