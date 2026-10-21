@@ -1,0 +1,26 @@
+name: Windows engines
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  engines:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - run: sudo apt-get update && sudo apt-get install -y gcc-mingw-w64-x86-64 g++-mingw-w64-x86-64 cmake pkg-config
+      - run: scripts/build-windows-engines.sh > build-engines.log 2>&1
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: windows-engines-x64
+          path: build/windows-engines
+          retention-days: 14
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: windows-engine-build-log
+          path: build-engines.log
+          retention-days: 14
