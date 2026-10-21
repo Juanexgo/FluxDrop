@@ -13,8 +13,8 @@ fetch opus-1.6.1.tar.gz https://downloads.xiph.org/releases/opus/opus-1.6.1.tar.
 PREFIX="$TASK_WORK/install"
 (cd lame-4.0 && ./configure --host=x86_64-w64-mingw32 --prefix="$PREFIX" --disable-shared --enable-static --disable-frontend --disable-decoder && make -j4 && make install)
 (cd opus-1.6.1 && ./configure --host=x86_64-w64-mingw32 --prefix="$PREFIX" --disable-shared --enable-static --disable-doc --disable-extra-programs --disable-rtcd && make -j4 && make install)
-WEBP="$ROOT/apps/macos/Sources/CWebP/vendor"
-if [ ! -f "$WEBP/CMakeLists.txt" ]; then WEBP="$(find "$ROOT/apps/macos" -path '*/libwebp/CMakeLists.txt' -print -quit | xargs dirname)"; fi
+fetch libwebp-1.6.0.tar.gz https://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-1.6.0.tar.gz e4ab7009bf0629fd11982d4c2aa83964cf244cffba7347ecd39019a9e38c4564
+WEBP="$TASK_WORK/libwebp-1.6.0"
 cmake -S "$WEBP" -B webp-build -DCMAKE_SYSTEM_NAME=Windows -DCMAKE_C_COMPILER=x86_64-w64-mingw32-gcc -DCMAKE_INSTALL_PREFIX="$PREFIX" -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF -DWEBP_BUILD_ANIM_UTILS=OFF -DWEBP_BUILD_CWEBP=OFF -DWEBP_BUILD_DWEBP=OFF -DWEBP_BUILD_GIF2WEBP=OFF -DWEBP_BUILD_IMG2WEBP=OFF -DWEBP_BUILD_VWEBP=OFF -DWEBP_BUILD_WEBPINFO=OFF -DWEBP_BUILD_WEBPMUX=OFF -DWEBP_BUILD_EXTRAS=OFF
 cmake --build webp-build -j4
 cmake --install webp-build
