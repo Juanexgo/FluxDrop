@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="FluxDrop.Core/FluxDrop.Core.csproj" />
+  <Project Path="FluxDrop.Tests/FluxDrop.Tests.csproj" />
+  <Project Path="FluxDrop.Windows/FluxDrop.Windows.csproj" />
+</Solution>
