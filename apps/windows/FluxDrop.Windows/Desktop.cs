@@ -251,24 +251,32 @@ public sealed class WatchService : IDisposable
 
     async Task Stable(string path, WatchRule rule, CancellationTokenSource source)
     {
+        var token = source.Token;
         try
         {
-            for (int tries = 0; tries < 30; tries++)
+            for (int tries = 0; tries < 300; tries++)
             {
-                await Task.Delay(2000, source.Token);
+                await Task.Delay(2000, token);
                 if (!File.Exists(path) || Path.GetFileName(path).StartsWith('.'))
                     return;
                 SafeFiles.Input(path);
                 var before = new FileInfo(path);
                 var stamp = (before.Length, before.LastWriteTimeUtc);
-                await Task.Delay(2000, source.Token);
+                await Task.Delay(2000, token);
                 var after = new FileInfo(path);
                 if (
                     after.Length != stamp.Length
                     || after.LastWriteTimeUtc != stamp.LastWriteTimeUtc
                 )
                     continue;
-                using (File.Open(path, FileMode.Open, FileAccess.Read, FileShare.Read)) { }
+                try
+                {
+                    using (File.Open(path, FileMode.Open, FileAccess.Read, FileShare.Read)) { }
+                }
+                catch (IOException)
+                {
+                    continue;
+                }
                 lock (seen)
                 {
                     if (seen.TryGetValue(path, out var previous) && previous == stamp)
