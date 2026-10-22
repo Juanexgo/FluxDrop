@@ -59,6 +59,14 @@ jobs:
           if(!$process.HasExited){ Stop-Process -Id $process.Id -Force; throw 'Windows checks timed out after 180 seconds' }
           Get-Content build/windows-qa/windows-results.json
           if ($process.ExitCode -ne 0) { throw "Windows tests failed: $($process.ExitCode)" }
+      - name: Package corresponding engine sources separately
+        run: |
+          New-Item -ItemType Directory -Force build/windows-installer | Out-Null
+          $engine = 'build/windows-publish/engines'
+          $files = @("$engine/sources", "$engine/buildconf.txt", "$engine/ocr-build.txt", "$engine/ocr-linkage.txt") + @(Get-ChildItem "$engine/*LICENSE*", "$engine/*COPYING*" | ForEach-Object FullName)
+          Compress-Archive -Path $files -DestinationPath build/windows-installer/FluxDrop-0.4.0-windows-engine-sources.zip -CompressionLevel Optimal
+          Get-ChildItem "$engine/sources" -Recurse -File | Where-Object { $_.Name -match '\.tar\.' } | Remove-Item
+          'Corresponding source archives, build configuration, licenses and reconstruction scripts: https://fluxdrop-ruby.vercel.app/downloads/FluxDrop-0.4.0-windows-engine-sources.zip . The sources are offered beside this installer at https://fluxdrop-ruby.vercel.app/windows/ . LGPL engines can be replaced with compatible modified builds. No download occurs during conversion.' | Set-Content "$engine/sources/SOURCES.txt"
       - name: Build per-user installer
         run: |
           $compiler = 'C:/Program Files (x86)/Inno Setup 6/ISCC.exe'
