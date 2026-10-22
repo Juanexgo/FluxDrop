@@ -13,3 +13,7 @@ libwebp 1.6.0: BSD and upstream PATENTS grant.
 See engines/ for exact configure flags, license files and engines/sources/ for exact unmodified source archives and reconstruction script. Build dependencies (Ubuntu MinGW/CMake/pkg-config) are not included in the end-user app. Users can replace the LGPL command-line engines in engines/ with compatible builds. No keys, credentials or external service are required for processing.
 
 The installer is created with Inno Setup 6, retaining compiler copyright and license notices in the generated setup. Build/installer compiler is not embedded as a tool for conversions.
+
+PdfPig 0.1.13: Apache-2.0, source commit baeac0d0c344e543ed8b277eac3edd8f8b9c1ac4, license and NOTICES included. https://github.com/UglyToad/PdfPig
+Tesseract 5.5.3: Apache-2.0; Leptonica 1.87.0: BSD. Unmodified source archives and reconstruction script in engines/sources; script applies one CMake MinGW library-casing correction (Ws2_32 -> ws2_32).
+tessdata_fast eng/spa: Apache-2.0, source commit 87416418657359cb625c412a48b6e1d6d41c29bd. Optional installer task; installed size visible and models removable in Settings. Recognition is local and does not download files.

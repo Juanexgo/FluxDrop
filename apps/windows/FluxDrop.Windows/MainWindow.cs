@@ -943,6 +943,37 @@ public sealed class MainWindow : Window
                 }
             )
         );
+        string models = Path.Combine(AppContext.BaseDirectory, "engines", "tessdata");
+        long bytes = new[] { "eng", "spa" }
+            .Select(language => Path.Combine(models, language + ".traineddata"))
+            .Where(File.Exists)
+            .Sum(path => new FileInfo(path).Length);
+        p.Children.Add(
+            UI.Text(L.T("OcrModels") + " · " + (bytes / 1000000d).ToString("0.0") + " MB")
+        );
+        p.Children.Add(
+            UI.Action(
+                L.T("RemoveModels"),
+                () =>
+                {
+                    if (
+                        MessageBox.Show(
+                            L.T("RemoveModelsConfirm"),
+                            "FluxDrop",
+                            MessageBoxButton.YesNo
+                        ) != MessageBoxResult.Yes
+                    )
+                        return;
+                    foreach (var language in new[] { "eng", "spa" })
+                    {
+                        string file = Path.Combine(models, language + ".traineddata");
+                        if (File.Exists(file))
+                            File.Delete(file);
+                    }
+                    MessageBox.Show(L.T("ModelsRemoved"), "FluxDrop");
+                }
+            )
+        );
         p.Children.Add(UI.Action(L.T("Quit"), Quit));
         return p;
     }

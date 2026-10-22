@@ -64,7 +64,7 @@ public static class PdfEngine
             for (int i = 0; i < r.Inputs.Length; i++)
             {
                 token.ThrowIfCancellationRequested();
-                var image = ImageEngine.Read(r.Inputs[i]);
+                var image = await ImageEngine.ReadInputAsync(r.Inputs[i], work, token);
                 string png = Path.Combine(work, i + ".png");
                 ImageEngine.Write(image, png, "png", 100);
                 using var x = XImage.FromFile(png);
@@ -238,6 +238,19 @@ public static class PdfEngine
                     o.OcrLanguage.StartsWith("es", StringComparison.OrdinalIgnoreCase) ? "spa"
                     : o.OcrLanguage.StartsWith("en", StringComparison.OrdinalIgnoreCase) ? "eng"
                     : throw new ArgumentException("OCR incluido: español o inglés.");
+                if (
+                    !File.Exists(
+                        Path.Combine(
+                            AppContext.BaseDirectory,
+                            "engines",
+                            "tessdata",
+                            language + ".traineddata"
+                        )
+                    )
+                )
+                    throw new IOException(
+                        "Modelo OCR no instalado. Vuelve a ejecutar el instalador y selecciona OCR español e inglés."
+                    );
                 string text = await ProcessRunner.Run(
                     ocrExe,
                     [

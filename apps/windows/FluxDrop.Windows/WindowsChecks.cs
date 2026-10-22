@@ -289,6 +289,12 @@ public static class WindowsChecks
                     Check(
                         MediaEngine.Probe(r.Outputs[0], default).GetAwaiter().GetResult().Info.Video
                     );
+                    var roundtrip = Execute(
+                        "image",
+                        r.Outputs,
+                        new Options { Format = "png", MaxSide = 32 }
+                    );
+                    Check(ImageEngine.Read(roundtrip.Outputs[0]).PixelWidth == 32);
                 }
             );
             string video = Path.Combine(root, "video.mp4");

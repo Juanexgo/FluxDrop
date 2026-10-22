@@ -4,7 +4,10 @@ namespace FluxDrop.Windows;
 
 public sealed class WindowsEngine : PortableEngine
 {
-    static readonly string[] Images = ["png", "jpg", "jpeg", "tif", "tiff", "bmp"];
+    static string[] Images =>
+        MediaEngine.Available
+            ? ["png", "jpg", "jpeg", "tif", "tiff", "bmp", "webp"]
+            : ["png", "jpg", "jpeg", "tif", "tiff", "bmp"];
     static readonly string[] Media =
     [
         "mp4",
@@ -180,7 +183,11 @@ public sealed class WindowsEngine : PortableEngine
                     string detail = "";
                     if (r.Operation is "image" or "imageIcons")
                     {
-                        var image = ImageEngine.Read(r.Inputs.Single());
+                        var image = await ImageEngine.ReadInputAsync(
+                            r.Inputs.Single(),
+                            work,
+                            token
+                        );
                         if (r.Operation == "imageIcons")
                         {
                             if (image.PixelWidth != image.PixelHeight || image.PixelWidth < 1024)

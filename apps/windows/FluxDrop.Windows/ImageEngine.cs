@@ -8,6 +8,47 @@ namespace FluxDrop.Windows;
 
 public static class ImageEngine
 {
+    public static async Task<BitmapSource> ReadInputAsync(
+        string path,
+        string work,
+        CancellationToken token
+    )
+    {
+        byte[] header = new byte[32];
+        int length;
+        using (var file = File.OpenRead(path))
+            length = await file.ReadAsync(header, token);
+        if (
+            length >= 12
+            && System.Text.Encoding.ASCII.GetString(header, 0, 4) == "RIFF"
+            && System.Text.Encoding.ASCII.GetString(header, 8, 4) == "WEBP"
+        )
+        {
+            if (
+                length >= 21
+                && System.Text.Encoding.ASCII.GetString(header, 12, 4) == "VP8X"
+                && (header[20] & 2) != 0
+            )
+                throw new IOException("WebP animado no admitido en imágenes; usa multimedia.");
+            if (!MediaEngine.Available)
+                throw new IOException("WebP requiere el motor incluido.");
+            var info = (await MediaEngine.Probe(path, token)).Info;
+            if (info.Width <= 0 || info.Height <= 0 || (long)info.Width * info.Height > 100_000_000)
+                throw new IOException("Dimensiones WebP no válidas.");
+            string decoded = Path.Combine(work, "decoded-" + Guid.NewGuid().ToString("N") + ".bmp");
+            await ProcessRunner.Run(
+                MediaEngine.Ffmpeg,
+                ["-v", "error", "-nostdin", "-i", path, "-frames:v", "1", "-c:v", "bmp", decoded],
+                token
+            );
+            var result = Read(decoded);
+            if (result.PixelWidth != info.Width || result.PixelHeight != info.Height)
+                throw new IOException("Dimensiones WebP inesperadas.");
+            return result;
+        }
+        return Read(path);
+    }
+
     public static BitmapSource Read(string file)
     {
         using var s = File.OpenRead(file);
