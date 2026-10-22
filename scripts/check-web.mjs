@@ -45,3 +45,13 @@ assert.ok(homepage.includes('data-file-actions') && homepage.includes('/file-act
 assert.equal([...homepage.matchAll(/data-select-action=/g)].length,6);
 assert.ok(homepage.includes('no recibe ni procesa tus archivos'));
 console.log('File actions section: six controls, external script and local-processing disclosure passed.');
+
+const {validateWindowsDownload}=await import('../packages/release-manifest/validate.mjs');
+const windows=validateWindowsDownload(JSON.parse(await readFile(new URL('../packages/release-manifest/windows.json',import.meta.url),'utf8'))).release;
+validateWindowsDownload({schemaVersion:1,platform:'windows',channel:'development',release:null});
+assert.throws(()=>validateWindowsDownload({schemaVersion:1,platform:'windows',channel:'stable',release:null}));
+if(windows){assert.throws(()=>validateWindowsDownload({schemaVersion:1,platform:'windows',channel:'development',release:{...windows,signing:'signed'}}));assert.throws(()=>validateWindowsDownload({schemaVersion:1,platform:'windows',channel:'development',release:{...windows,installerPath:'/downloads/../unsafe.exe'}}));assert.ok(downloadPage.includes(windows.installerPath)&&downloadPage.includes(windows.sha256));assert.equal((await stat(join(root,windows.installerPath))).size,windows.size);const {createHash}=await import('node:crypto');const {createReadStream}=await import('node:fs');const hash=createHash('sha256');for await(const chunk of createReadStream(join(root,windows.installerPath)))hash.update(chunk);assert.equal(hash.digest('hex'),windows.sha256);}
+assert.ok(formatsPage.includes('Compatibilidad de Windows'));assert.ok((await readFile(join(root,'windows/index.html'),'utf8')).includes('No hay paridad total de formatos'));
+console.log('Windows manifest, platform disclosure and real artifact checks passed.');
+const windowsSourceValue=JSON.parse(await readFile(new URL('../packages/release-manifest/windows-sources.json',import.meta.url),'utf8'));
+if(windows){const sources=validateEngineSources(windowsSourceValue);assert.equal((await stat(join(root,sources.path))).size,sources.size);assert.ok((await readFile(join(root,'windows/index.html'),'utf8')).includes(sources.sha256));}

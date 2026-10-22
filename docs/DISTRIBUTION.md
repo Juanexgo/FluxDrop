@@ -16,3 +16,12 @@ Sparkle evaluado, no incorporado en esta versión. Requiere feed HTTPS, firma Ed
 ## Mac App Store
 
 No es el canal de este bundle. Requeriría sandbox, bookmarks security-scoped, revisión de carpetas vigiladas, integración del helper, firma de tienda y revisión de licencias. No reutilizar este empaquetado asumiendo compatibilidad. [Notarización Apple para distribución directa](https://developer.apple.com/documentation/security/notarizing-macos-software-before-distribution).
+
+
+## Windows directo
+
+Workflow `Windows engines` produce FFmpeg/ffprobe x64 LGPL desde fuentes con hash y sin GPL/nonfree/red. Workflow `Windows OCR engines` compila Tesseract/Leptonica estáticos y fija los modelos eng/spa por commit. `Windows build and verification` recibe los dos run IDs, ejecuta pruebas en Windows, publica .NET self-contained, genera un instalador por usuario con Inno Setup 6 y verifica instalación, ejecución instalada y desinstalación.
+
+Artefactos separados: EXE para instalar; ZIP con fuentes exactas, configuración, licencias y scripts de motores. El instalador conserva avisos y el enlace a esas fuentes; no necesita ese ZIP para funcionar. Se publican ambos antes de activar el manifiesto `windows.json`, que lleva requisitos, fecha, versión, tamaño, SHA-256 y firma real. `publish-windows-download.mjs` prepara las entradas después de comprobar los artefactos. La web vuelve a comprobar tamaño y SHA-256 al compilar.
+
+Windows 0.4 es de desarrollo, **sin Authenticode**. SmartScreen puede advertir o bloquear. Para una distribución firmada se requiere un certificado/proveedor de firma válido del titular, proteger sus claves fuera del repositorio, firmar binarios/instalador, timestamp y comprobar `Get-AuthenticodeSignature` y `signtool verify /pa`. La firma no garantiza reputación SmartScreen inmediata. No instalar certificados raíz propios ni desactivar SmartScreen como procedimiento de distribución. No se ha comprado ni solicitado un certificado.

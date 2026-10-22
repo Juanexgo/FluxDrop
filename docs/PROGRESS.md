@@ -30,3 +30,13 @@ Implementados MP3/Opus desde fuentes oficiales, AVIF condicionado a ImageIO, pag
 Comprobación ampliada: 43 tests pasaron sobre el código de producción 0.3; iconset, PDF cifrado y operaciones PDF/datos/Markdown antes pendientes comprobadas. Estados y límites individuales de la matriz corregidos. Instalador y fuentes públicos descargados completos y checksum coincidente.
 
 Añadida sección web de Acciones de archivos inspirada en la referencia aportada, con diseño e iconos propios, seis tarjetas y rueda explicativa. Ratón, Enter, estado accesible y anchos 390/1280 comprobados. Se identificó expresamente como representación, sin procesamiento web ni promesa de gesto global ya validado.
+
+## 2026-10-21 · Windows nativo
+
+Se añade apps/windows al monorepo sin reemplazar la app de Mac: solución .NET 10 con Core, WPF/WinRT y pruebas. Widget radial con sectores curvos, atajo global configurable y conflicto, clic derecho opcional no invasivo, ventana, bandeja, cola recuperable, recetas, vigilancia, historial y salida segura. Imágenes WIC/WebP, PDFsharp/PdfPig, render Windows, OCR Tesseract local, FFmpeg audio/vídeo, datos y comprimidos con límites.
+
+Los motores Windows se compilan desde fuentes fijadas; se prepara instalador EXE autocontenido por usuario y ZIP separado de fuentes correspondientes. La página de descarga incorpora plataformas y manifiestos separados. No se habilita el enlace Windows antes de una aceptación completa del instalador. Evidencia y fallos reales corregidos: WINDOWS-TEST-RESULTS.md.
+
+## Windows 0.4 — aceptación final, 2026-10-21
+
+App nativa WPF, motores locales, instalador autocontenido y fuentes correspondientes completados. CI Windows 39701573768 aprobó 29 pruebas de núcleo, 27 nativas y otras 27 después de instalar; cierre y desinstalación correctos. Web incorpora descarga Windows separada de Mac, matriz real y capturas del runner. Distribución de desarrollo sin firma; límites y pruebas manuales pendientes en WINDOWS-TEST-RESULTS.md.

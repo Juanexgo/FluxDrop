@@ -13,3 +13,10 @@ El clic derecho global es opcional y está desactivado inicialmente. Al activarl
 En 0.2, el gesto opcional durante un arrastre usa otro tap pasivo (listenOnly), limitado a flagsChanged: observa cambios de modificadores y si el botón izquierdo sigue pulsado, sin texto de teclas, registro de eventos ni acceso al contenido del arrastre de otra app. Las tres teclas se configuran por modo. Requiere autorización del sistema; queda desactivado inicialmente.
 
 El estante conserva solo referencias URL en memoria, hasta 50 archivos. Copiar archivos/rutas modifica el portapapeles únicamente al elegir esa acción. Compartir abre el selector nativo: el usuario elige el destinatario y confirma el envío; el servicio elegido puede usar red. Las conversiones siguen siendo locales. Mover requiere una revisión explícita de originales y solo funciona dentro del mismo volumen.
+
+
+## Windows
+
+La edición Windows guarda ajustes, reglas y el mínimo historial de rutas/operaciones/resultados en `%LOCALAPPDATA%/FluxDrop`. Contraseñas PDF se eliminan antes de serializar, incluidas recetas anidadas. Se puede desactivar o borrar el historial. El hook global opcional solo decide si se eligió el gesto de clic derecho y su modificador; no guarda eventos ni registra contenido de otras aplicaciones.
+
+OCR usa modelos locales eng/spa seleccionables en el instalador, con tamaño visible y eliminación desde Configuración. No descarga modelos ni procesa en servidores durante una conversión. Compartir es una acción explícita que entrega archivos al selector de Windows: la aplicación o servicio elegido puede usar internet. El inicio con Windows y las notificaciones de trabajos son opcionales. No hay analítica ni comprobación automática de actualizaciones.

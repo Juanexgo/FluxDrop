@@ -1,12 +1,12 @@
 # FluxDrop
 
-Web pública: https://fluxdrop-ruby.vercel.app · [Descarga de desarrollo](https://fluxdrop-ruby.vercel.app/descarga/). Firma ad hoc, sin notarización de Apple; macOS puede bloquear la apertura.
+Web pública: https://fluxdrop-ruby.vercel.app · [Descarga de desarrollo](https://fluxdrop-ruby.vercel.app/descarga/). macOS: firma ad hoc, sin notarización. Windows: instalador de desarrollo sin firma Authenticode. Cada sistema puede advertir o bloquear su apertura.
 
-Utilidad nativa de macOS para transformar archivos localmente. SwiftUI/AppKit, motores Apple, libwebp, libarchive del sistema y FFmpeg compilado desde fuente. Web estática Astro/TypeScript; nunca recibe archivos.
+Utilidad nativa para macOS y Windows que transforma archivos localmente. SwiftUI/AppKit en Mac y C#/WPF en Windows, con motores propios de cada plataforma y FFmpeg compilado desde fuentes fijadas. Web estática Astro/TypeScript; nunca recibe archivos.
 
-Estado: versión de desarrollo 0.3.0. El estado de validación se encuentra en `docs/TEST-RESULTS.md` cuando termina la comprobación final. No equivale a una versión firmada y notarizada para distribución pública.
+Estado: macOS 0.3.0-dev y Windows 0.4.0-dev. El estado de validación se encuentra en `docs/TEST-RESULTS.md` cuando termina la comprobación final. No equivale a una versión firmada y notarizada para distribución pública.
 
-## Empezar
+## Empezar en macOS
 
 ```sh
 scripts/build-ffmpeg.sh
@@ -33,7 +33,7 @@ El atajo inicial ⌃⌥D muestra el widget junto al cursor; también se abre des
 - [Limitaciones](docs/LIMITATIONS.md)
 - [Avances](docs/PROGRESS.md)
 
-`apps/macos`: app, motores, pruebas; `apps/web`: sitio; `packages/release-manifest`: capacidades y canal estable; `scripts`: build y releases; `fixtures`: entradas pequeñas reproducibles.
+`apps/macos`: app Swift, motores y pruebas; `apps/windows`: app WPF, núcleo y pruebas; `apps/web`: sitio; `packages/release-manifest`: capacidades y canal estable; `scripts`: build y releases; `fixtures`: entradas pequeñas reproducibles.
 
 ## Publicación y lanzamiento
 
@@ -48,3 +48,14 @@ Tres modos del widget: Convertir, Editar y Archivos. Recorte visual de imágenes
 MP3 y Opus con motores incluidos, AVIF condicionado a ImageIO disponible, paginación de acciones, intercambio de teclas, verificación multimedia completa y ocho fixtures de seguridad de comprimidos. 39 pruebas pasaron; 49 rutas de imagen verificadas en macOS 26.3. El titular no tiene membresía Apple Developer: firma Developer ID y notarización siguen pendientes. Ver docs/TEST-RESULTS.md.
 
 Comprobación final ampliada: 43 pruebas pasaron sobre el código 0.3; todas las operaciones registradas tienen cobertura representativa. No equivale a validar todos los archivos posibles ni los gestos globales pendientes.
+
+
+## Windows
+
+La app nativa de Windows vive en `apps/windows` dentro de este mismo monorepo. No es necesario separar repositorios: cada sistema conserva su interfaz, motores, pruebas y artefactos; la web y los manifiestos se mantienen juntos. Windows 11 22H2+ x64, C#/WPF y .NET 10 autocontenido. [Desarrollo, diferencias y distribución](docs/WINDOWS.md).
+
+- `dotnet run --project apps/windows/FluxDrop.Tests -c Release`: pruebas portables del núcleo.
+- `dotnet build apps/windows/FluxDrop.Windows -c Release`: compilación; en Mac no ejecuta WPF.
+- Workflow `Windows engines`: compila FFmpeg/LAME/Opus/WebP desde fuentes fijadas para Windows.
+- Workflow `Windows build and verification`: usa el run de motores, prueba en Windows, publica self-contained, crea EXE y comprueba instalación/ejecución/desinstalación.
+- Manifiesto independiente `packages/release-manifest/windows.json`; una descarga nula nunca se presenta como un instalador disponible. La distribución Windows de desarrollo no tiene firma Authenticode. macOS conserva su DMG y manifiestos anteriores.

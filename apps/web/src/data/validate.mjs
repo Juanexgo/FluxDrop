@@ -27,3 +27,13 @@ export function validateEngineSources(value) {
   if (!value || value.schemaVersion!==1 || Object.keys(value).sort().join(',')!=='path,schemaVersion,sha256,size,version' || !/^\d+\.\d+\.\d+$/.test(value.version) || !/^\/downloads\/[A-Za-z0-9.-]+\.zip$/.test(value.path) || !Number.isSafeInteger(value.size) || value.size<=0 || !/^[a-f0-9]{64}$/.test(value.sha256)) throw Error('Invalid engine source archive');
   return value;
 }
+
+export function validateWindowsDownload(value) {
+  if(!value || Object.keys(value).sort().join(',')!=='channel,platform,release,schemaVersion' || value.schemaVersion!==1 || value.platform!=='windows' || value.channel!=='development') throw Error('Invalid Windows download envelope');
+  const r=value.release;if(r===null)return value;
+  const fields=['version','date','minimumWindows','architectures','installerPath','size','sha256','releaseNotesPath','signing'];
+  if(!r || fields.some(k=>!Object.hasOwn(r,k)) || Object.keys(r).some(k=>!fields.includes(k)))throw Error('Invalid Windows release fields');
+  if(!/^\d+\.\d+\.\d+-dev$/.test(r.version) || !/^\d{4}-\d{2}-\d{2}$/.test(r.date) || !Number.isFinite(Date.parse(r.date)) || new Date(r.date).toISOString().slice(0,10)!==r.date || r.minimumWindows!=='Windows 11 22H2' || !Array.isArray(r.architectures) || r.architectures.join(',')!=='x64')throw Error('Invalid Windows version or requirements');
+  if(!/^\/downloads\/FluxDrop-[A-Za-z0-9.-]+-setup\.exe$/.test(r.installerPath) || !Number.isSafeInteger(r.size) || r.size<1 || !/^[a-f0-9]{64}$/.test(r.sha256) || r.releaseNotesPath!=='/windows/' || r.signing!=='unsigned')throw Error('Invalid Windows artifact or signing');
+  return value;
+}

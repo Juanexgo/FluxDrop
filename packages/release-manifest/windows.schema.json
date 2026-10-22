@@ -1,0 +1,81 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "FluxDrop Windows development download",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "platform",
+    "channel",
+    "release"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "platform": {
+      "const": "windows"
+    },
+    "channel": {
+      "const": "development"
+    },
+    "release": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "version",
+            "date",
+            "minimumWindows",
+            "architectures",
+            "installerPath",
+            "size",
+            "sha256",
+            "releaseNotesPath",
+            "signing"
+          ],
+          "properties": {
+            "version": {
+              "type": "string",
+              "pattern": "^\\d+\\.\\d+\\.\\d+-dev$"
+            },
+            "date": {
+              "type": "string",
+              "format": "date"
+            },
+            "minimumWindows": {
+              "const": "Windows 11 22H2"
+            },
+            "architectures": {
+              "const": [
+                "x64"
+              ]
+            },
+            "installerPath": {
+              "type": "string",
+              "pattern": "^/downloads/FluxDrop-[A-Za-z0-9.-]+-setup\\.exe$"
+            },
+            "size": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "sha256": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            "releaseNotesPath": {
+              "const": "/windows/"
+            },
+            "signing": {
+              "const": "unsigned"
+            }
+          }
+        }
+      ]
+    }
+  }
+}
