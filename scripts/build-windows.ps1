@@ -1,7 +1,7 @@
 param([string]$EngineDirectory = "$PSScriptRoot/../build/windows-engines", [switch]$SkipTests)
 $ErrorActionPreference = 'Stop'
 $taskRoot = (Resolve-Path "$PSScriptRoot/..").Path
-if (-not $IsWindows) { throw 'Run on Windows 11 with .NET 10 SDK. A Mac can cross-compile the csproj but cannot run the WPF checks.' }
+if ([System.Environment]::OSVersion.Platform -ne [System.PlatformID]::Win32NT) { throw 'Run on Windows 11 with .NET 10 SDK. A Mac can cross-compile the csproj but cannot run the WPF checks.' }
 foreach($tool in @('ffmpeg.exe','ffprobe.exe','tesseract.exe')) { if(!(Test-Path "$EngineDirectory/$tool")) { throw "Missing $tool. Build pinned engines with the documented GitHub workflows; no engine is downloaded by the app." } }
 $canonical = "$taskRoot/build/windows-engines"
 if((Resolve-Path $EngineDirectory).Path -ne (Resolve-Path $canonical -ErrorAction SilentlyContinue).Path){New-Item -ItemType Directory -Force $canonical | Out-Null;Copy-Item "$EngineDirectory/*" $canonical -Recurse -Force}
