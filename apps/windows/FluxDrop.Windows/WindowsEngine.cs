@@ -248,6 +248,7 @@ public sealed class WindowsEngine : PortableEngine
                                     null,
                                     0
                                 );
+                                bgra.Freeze();
                                 byte[] pixels = new byte[
                                     checked(bgra.PixelWidth * bgra.PixelHeight * 4)
                                 ];
