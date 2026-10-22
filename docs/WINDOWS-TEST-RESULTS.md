@@ -32,3 +32,9 @@ El directorio de certificados PE es (0, 0): **sin firma Authenticode**. Es una d
 No se acredita clic derecho físico durante un arrastre, selección global de Explorer, entrega de Windows Share, lectores de pantalla, varios monitores físicos, Windows 11 22H2 real, ARM64 nativo, disco lleno o denegación real de permisos. No se afirma firma Authenticode. HEIC/AVIF y H.264/hardware/HDR no se anuncian como soportados; MP4/MOV usan MPEG-4 Part 2. Duplicados genera informe SHA-256, sin eliminación. Recetas Mac y Windows no se importan automáticamente.
 
 Los render PNG son capturas del contenido WPF ejecutado en un runner Windows con fixtures, no fotografías de una sesión de usuario ni una prueba de gestos físicos.
+
+## Publicación comprobada
+
+Web publicada desde commit `e31d6efedf5b65921c6f00f96b2e6966fb62a201`: Vercel READY/success, proyecto fluxdrop, equipo juanexgos-projects, producción https://fluxdrop-ruby.vercel.app. Web checks [39726238201](https://github.com/Juanexgo/FluxDrop/actions/runs/39726238201) aprobado; Astro cero errores/advertencias y diez páginas con enlaces/manifiestos validados.
+
+Se descargaron completos por HTTPS el EXE y el ZIP de fuentes desde producción: tamaños y SHA-256 coinciden exactamente con los valores anteriores. /descarga/, /windows/, /formatos/, /privacidad/ y /licencias/ respondieron 200. Navegador confirmó ambos botones de plataforma, checksum Windows, vista de 390 px sin desbordamiento horizontal y sin errores de consola observados. No se modificó el DMG Mac.

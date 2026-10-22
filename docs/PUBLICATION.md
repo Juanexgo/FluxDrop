@@ -19,3 +19,7 @@ Web pública: https://fluxdrop-ruby.vercel.app . Proyecto `fluxdrop` del equipo 
 La descarga de desarrollo usa un manifiesto separado `development.json`: archivo real, tamaño, SHA-256, arquitectura y estado de firma explícitos. El build falla si el binario falta o su tamaño/hash difiere. No se activa stable.json para esta entrega ad hoc. Las actualizaciones de main se despliegan por la integración Git de Vercel.
 
 Documentación oficial: https://docs.astro.build/en/guides/deploy/vercel/ y https://vercel.com/docs/monorepos .
+
+## Windows 0.4.0-dev
+
+El mismo repositorio incluye apps/windows. Producción e31d6ef ofrece EXE Windows 11 22H2+ x64 y fuentes de motores, manteniendo el DMG Mac 0.3. El EXE permanece sin firma Authenticode. Ambas descargas Windows se verificaron completas por HTTPS con tamaño/SHA-256; ver WINDOWS-TEST-RESULTS.md. Para futuras versiones se recomienda alojamiento de artefactos separado del historial Git; esta entrega usa los archivos estáticos comprobados en public/downloads.
