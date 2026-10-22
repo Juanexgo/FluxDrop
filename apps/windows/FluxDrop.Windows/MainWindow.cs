@@ -228,6 +228,7 @@ public sealed class MainWindow : Window
                     {
                         selected.Items.Clear();
                         preview.Source = null;
+                        RefreshActions("");
                     }
                 ),
                 UI.Action(L.T("Widget"), ShowWidget)
@@ -398,16 +399,59 @@ public sealed class MainWindow : Window
         public override string ToString() => Name;
     }
 
+    public IReadOnlyList<Capability> CompatibleActions(string filter) =>
+        Engine
+            .Capabilities.Where(c =>
+                c.Id != "recipe"
+                && (
+                    L.Operation(c.Id) + " " + string.Join(' ', c.Extensions) + " " + c.Output
+                ).Contains(filter, StringComparison.CurrentCultureIgnoreCase)
+            )
+            .Where(c =>
+                Selection.Length == 0
+                || c.Extensions.Length == 0
+                || Selection.Any(p =>
+                    File.Exists(p)
+                    && c.Extensions.Contains(
+                        Path.GetExtension(p).TrimStart('.'),
+                        StringComparer.OrdinalIgnoreCase
+                    )
+                )
+            )
+            .OrderBy(c =>
+                c.Category switch
+                {
+                    "image" => 0,
+                    "pdf" => 1,
+                    "media" => 2,
+                    "data" => 3,
+                    "archive" => 4,
+                    _ => 5,
+                }
+            )
+            .ToArray();
+
     void RefreshActions(string filter)
     {
         actions.Items.Clear();
-        foreach (
-            var c in Engine.Capabilities.Where(c =>
-                c.Id != "recipe"
-                && L.Operation(c.Id).Contains(filter, StringComparison.CurrentCultureIgnoreCase)
-            )
-        )
-            actions.Items.Add(new ActionItem(c.Id, L.Operation(c.Id)));
+        foreach (var c in CompatibleActions(filter))
+        {
+            int count = Selection.Count(p =>
+                c.Extensions.Length == 0
+                || File.Exists(p)
+                    && c.Extensions.Contains(
+                        Path.GetExtension(p).TrimStart('.'),
+                        StringComparer.OrdinalIgnoreCase
+                    )
+            );
+            actions.Items.Add(
+                new ActionItem(
+                    c.Id,
+                    L.Operation(c.Id)
+                        + (Selection.Length > 0 ? $" ({count}/{Selection.Length})" : "")
+                )
+            );
+        }
         if (actions.Items.Count > 0)
             actions.SelectedIndex = 0;
     }

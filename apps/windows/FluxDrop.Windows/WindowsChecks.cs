@@ -490,6 +490,8 @@ public static class WindowsChecks
             {
                 var main = new MainWindow(selfTesting: true);
                 main.Add([input]);
+                Check(main.CompatibleActions("")[0].Id == "image");
+                Check(!main.CompatibleActions("").Any(c => c.Id == "jsonPretty"));
                 main.Show();
                 main.UpdateLayout();
                 var shot = new RenderTargetBitmap(1000, 790, 96, 96, PixelFormats.Pbgra32);
