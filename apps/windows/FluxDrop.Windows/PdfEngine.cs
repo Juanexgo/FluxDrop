@@ -3,9 +3,6 @@ using FluxDrop.Core;
 using PdfSharp.Drawing;
 using PdfSharp.Pdf;
 using PdfSharp.Pdf.IO;
-using Windows.Graphics.Imaging;
-using Windows.Storage;
-using Windows.Storage.Streams;
 
 namespace FluxDrop.Windows;
 
@@ -197,10 +194,7 @@ public static class PdfEngine
             await File.WriteAllTextAsync(target, text.ToString(), new UTF8Encoding(false), token);
             return (target, false);
         }
-        var native = await global::Windows.Data.Pdf.PdfDocument.LoadFromFileAsync(
-            await StorageFile.GetFileFromPathAsync(Path.GetFullPath(r.Inputs[0])),
-            o.Password
-        );
+        using var renderStream = File.OpenRead(r.Inputs[0]);
         string dir = Path.Combine(work, "rendered");
         Directory.CreateDirectory(dir);
         var textOutput = new StringBuilder();
@@ -211,27 +205,27 @@ public static class PdfEngine
         for (int i = 0; i < pages.Length; i++)
         {
             token.ThrowIfCancellationRequested();
-            using var page = native.GetPage((uint)pages[i]);
-            uint width = (uint)Math.Ceiling(page.Size.Width * o.Dpi / 96d),
-                height = (uint)Math.Ceiling(page.Size.Height * o.Dpi / 96d);
+            var sourcePage = source.Pages[pages[i]];
+            int width = (int)Math.Ceiling(sourcePage.Width.Point * o.Dpi / 72d),
+                height = (int)Math.Ceiling(sourcePage.Height.Point * o.Dpi / 72d);
             if ((long)width * height > 80_000_000 || width > 16000 || height > 16000)
                 throw new IOException("La página supera el límite de render (80 MP).");
-            using var stream = new InMemoryRandomAccessStream();
-            await page.RenderToStreamAsync(
-                stream,
-                new global::Windows.Data.Pdf.PdfPageRenderOptions
-                {
-                    DestinationWidth = width,
-                    DestinationHeight = height,
-                }
+            string png = Path.Combine(dir, $"page-{i + 1:D4}.png");
+            renderStream.Position = 0;
+            PDFtoImage.Conversion.SavePng(
+                png,
+                renderStream,
+                page: pages[i],
+                leaveOpen: true,
+                password: o.Password,
+                options: new PDFtoImage.RenderOptions(Dpi: o.Dpi)
             );
             token.ThrowIfCancellationRequested();
-            stream.Seek(0);
+            var rendered = ImageEngine.Read(png);
+            if (rendered.PixelWidth > 16000 || rendered.PixelHeight > 16000)
+                throw new IOException("Render PDF fuera de límites.");
             if (r.Operation == "pdfOCR")
             {
-                string png = Path.Combine(dir, $"page-{i + 1:D4}.png");
-                await using (var destination = File.Create(png))
-                    await stream.AsStreamForRead().CopyToAsync(destination, token);
                 string bmp = Path.ChangeExtension(png, "bmp");
                 ImageEngine.Write(ImageEngine.Read(png), bmp, "bmp", 100);
                 string language =
@@ -269,9 +263,6 @@ public static class PdfEngine
             }
             else
             {
-                string png = Path.Combine(dir, $"page-{i + 1:D4}.png");
-                await using (var dest = File.Create(png))
-                    await stream.AsStreamForRead().CopyToAsync(dest, token);
                 var image = ImageEngine.Read(png);
                 if (r.Operation == "pdfCompress")
                 {
@@ -279,8 +270,8 @@ public static class PdfEngine
                     ImageEngine.Write(image, jpg, "jpg", o.Quality);
                     using var x = XImage.FromFile(jpg);
                     var p = compressed.AddPage();
-                    p.Width = XUnit.FromPoint(page.Size.Width * 72 / 96);
-                    p.Height = XUnit.FromPoint(page.Size.Height * 72 / 96);
+                    p.Width = XUnit.FromPoint(image.PixelWidth * 72d / o.Dpi);
+                    p.Height = XUnit.FromPoint(image.PixelHeight * 72d / o.Dpi);
                     using var g = XGraphics.FromPdfPage(p);
                     g.DrawImage(x, 0, 0, p.Width.Point, p.Height.Point);
                 }

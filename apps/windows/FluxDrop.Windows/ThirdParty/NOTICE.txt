@@ -19,3 +19,5 @@ Tesseract 5.5.3: Apache-2.0; Leptonica 1.87.0: BSD. Unmodified source archives a
 tessdata_fast eng/spa: Apache-2.0, source commit 87416418657359cb625c412a48b6e1d6d41c29bd. Optional installer task; installed size visible and models removable in Settings. Recognition is local and does not download files.
 
 MinGW compiler runtimes statically linked into the source-built engines: GCC libgcc/libstdc++ under GPLv3 with GCC Runtime Library Exception (copies included), MinGW-w64 runtime notices (including public-domain/per-file licenses and ZPL project license), winpthreads BSD/MIT notices included. These compiler runtime notices do not enable GPL codecs in FFmpeg.
+
+PDF rendering uses PDFtoImage 5.4.0 (MIT), SkiaSharp 4.150.1 (MIT plus native third-party notices) and bblanchon.PDFium.Win32 152.0.7961 (NuGet declares Apache-2.0; release package and PDFium component/third-party licenses included in ThirdParty/PDFium-152.0.7961). Exact Windows DLL matched against the upstream release archive by SHA-256. Build flags disable V8 and XFA. No PDF JavaScript engine is enabled. Windows.Data.Pdf is not used by the shipped PDF rendering path.

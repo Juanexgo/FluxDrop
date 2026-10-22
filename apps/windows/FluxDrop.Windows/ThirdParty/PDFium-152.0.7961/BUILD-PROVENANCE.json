@@ -1,0 +1,11 @@
+{
+  "package": "bblanchon.PDFium.Win32",
+  "version": "152.0.7961",
+  "repositoryCommit": "c6529b58791d142002f819beb46e370e668797d7",
+  "releaseArchive": "https://github.com/bblanchon/pdfium-binaries/releases/download/chromium/7961/pdfium-win-x64.tgz",
+  "archiveSha256": "88276459349b291c41f10422dad0210f007c04d919c8fa56472b6b7c6406adf4",
+  "dllSha256": "d3d9f4b7c9dabe3363f30779c5c3c715c47332749fa590e4b4a2b8b6780cb1c4",
+  "sameBinaryAsNuget": true,
+  "v8": false,
+  "xfa": false
+}

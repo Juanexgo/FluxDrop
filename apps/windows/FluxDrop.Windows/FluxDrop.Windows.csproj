@@ -12,6 +12,7 @@
     <ApplicationIcon>Assets/FluxDrop.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="PDFtoImage" Version="5.4.0" />
     <Using Remove="System.Windows.Forms" />
     <Using Remove="System.Drawing" />
     <ProjectReference Include="../FluxDrop.Core/FluxDrop.Core.csproj" />
