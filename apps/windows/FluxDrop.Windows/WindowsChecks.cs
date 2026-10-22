@@ -13,6 +13,11 @@ public static class WindowsChecks
 {
     public static int Run(string[] args)
     {
+        System.Windows.Media.RenderOptions.ProcessRenderMode = System
+            .Windows
+            .Interop
+            .RenderMode
+            .SoftwareOnly;
         var app = new Application { ShutdownMode = ShutdownMode.OnExplicitShutdown };
         app.Startup += (_, _) =>
             app.Dispatcher.BeginInvoke(
@@ -31,7 +36,10 @@ public static class WindowsChecks
                         Directory.CreateDirectory(root);
                         File.WriteAllText(Path.Combine(root, "fatal-error.txt"), ex.ToString());
                     }
-                    app.Shutdown(exit);
+                    app.Dispatcher.BeginInvoke(
+                        System.Windows.Threading.DispatcherPriority.ApplicationIdle,
+                        new Action(() => app.Shutdown(exit))
+                    );
                 })
             );
         return app.Run();
@@ -540,7 +548,13 @@ public static class WindowsChecks
                 wshot.Render(widget);
                 ImageEngine.Write(wshot, Path.Combine(root, "windows-widget.png"), "png", 100);
                 widget.Close();
-                main.Hide();
+                main.Close();
+                var frame = new System.Windows.Threading.DispatcherFrame();
+                main.Dispatcher.BeginInvoke(
+                    System.Windows.Threading.DispatcherPriority.ApplicationIdle,
+                    new Action(() => frame.Continue = false)
+                );
+                System.Windows.Threading.Dispatcher.PushFrame(frame);
             }
         );
         Config.Write(

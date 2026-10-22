@@ -103,23 +103,28 @@ public sealed class JobQueue
             );
     }
 
-    public Job Add(Request request)
+    public Job Add(Request request) => AddMany([request])[0];
+
+    public Job[] AddMany(IEnumerable<Request> requests)
     {
-        request.Options.Validate();
-        var cap =
-            engine.Capabilities.FirstOrDefault(c => c.Id == request.Operation)
-            ?? throw new ArgumentException("Operación desconocida.");
-        if (request.Inputs.Length == 0)
-            throw new ArgumentException("Selecciona archivos.");
-        foreach (var p in request.Inputs)
-            SafeFiles.Input(p);
-        var job = new Job { Request = request };
+        var added = new List<Job>();
+        foreach (var request in requests)
+        {
+            request.Options.Validate();
+            if (!engine.Capabilities.Any(c => c.Id == request.Operation))
+                throw new ArgumentException("Operación desconocida.");
+            if (request.Inputs.Length is < 1 or > 10000 || added.Count >= 10000)
+                throw new ArgumentException("Máximo 10 000 entradas por lote.");
+            foreach (var path in request.Inputs)
+                SafeFiles.Input(path);
+            added.Add(new Job { Request = request });
+        }
         lock (jobs)
-            jobs.Add(job);
+            jobs.AddRange(added);
         Save();
         Notify();
         _ = Pump();
-        return job;
+        return added.ToArray();
     }
 
     public void PausePending(bool value)
@@ -146,8 +151,15 @@ public sealed class JobQueue
 
     public void CancelAll()
     {
-        foreach (var j in Snapshot())
-            Cancel(j.Id);
+        lock (jobs)
+        {
+            foreach (var source in running.Values)
+                source.Cancel();
+            foreach (var job in jobs.Where(j => j.State == JobState.Pending))
+                job.State = JobState.Cancelled;
+        }
+        Save();
+        Notify();
     }
 
     public void Retry(Guid id)
@@ -188,7 +200,7 @@ public sealed class JobQueue
                 }
                 Save();
                 Notify(next);
-                _ = Run(next, source);
+                _ = Task.Run(() => Run(next, source));
             }
         }
         finally

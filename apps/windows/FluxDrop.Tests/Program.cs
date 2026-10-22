@@ -344,6 +344,23 @@ try
             DataEngine.Json(await File.ReadAllTextAsync(job.Outputs[0]));
         }
     );
+    await Test(
+        "batch queue commits and cancels pending work together",
+        () =>
+            Task.Run(() =>
+            {
+                var queue = new JobQueue(engine, Path.Combine(root, "batch-queue.json"));
+                queue.PausePending(true);
+                var items = queue.AddMany(
+                    Enumerable
+                        .Range(0, 500)
+                        .Select(_ => new Request("jsonPretty", [input], root, new()))
+                );
+                Check(items.Length == 500 && items.All(j => j.State == JobState.Pending));
+                queue.CancelAll();
+                Check(queue.Snapshot().All(j => j.State == JobState.Cancelled));
+            })
+    );
     Console.WriteLine($"RESULT {passed} passed, 0 failed");
     return 0;
 }

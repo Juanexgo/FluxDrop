@@ -80,7 +80,12 @@ jobs:
           $p = Start-Process $setup -ArgumentList '/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART',"/DIR=$target" -PassThru -Wait
           if ($p.ExitCode -ne 0) { throw 'Installer failed' }
           $p = Start-Process "$target/FluxDrop.exe" -ArgumentList '--self-test','--test-output',"$env:GITHUB_WORKSPACE/build/installed-qa" -PassThru -Wait
-          if ($p.ExitCode -ne 0) { throw 'Installed app tests failed' }
+          Write-Host "Installed app exit code: $($p.ExitCode)"
+          Get-Content build/installed-qa/windows-results.json
+          if ($p.ExitCode -ne 0) {
+            Get-WinEvent -FilterHashtable @{LogName='Application';StartTime=(Get-Date).AddMinutes(-5)} -ErrorAction SilentlyContinue | Where-Object { $_.ProviderName -in @('Application Error','.NET Runtime','Windows Error Reporting') } | Select-Object -First 8 -Property ProviderName,Message | Format-List
+            throw 'Installed app tests failed'
+          }
           $p = Start-Process "$target/unins000.exe" -ArgumentList '/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART' -PassThru -Wait
           if ($p.ExitCode -ne 0) { throw 'Uninstall failed' }
           Get-FileHash $setup -Algorithm SHA256 | Format-List

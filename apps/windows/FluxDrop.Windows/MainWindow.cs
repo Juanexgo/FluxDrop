@@ -553,8 +553,14 @@ public sealed class MainWindow : Window
         if (cap.Aggregate)
             Queue.Add(new(id, compatible, Preferences.Destination, options));
         else
-            foreach (var input in compatible)
-                Queue.Add(new(id, [input], Preferences.Destination, options));
+            Queue.AddMany(
+                compatible.Select(input => new Request(
+                    id,
+                    [input],
+                    Preferences.Destination,
+                    options
+                ))
+            );
         tabs.SelectedIndex = 1;
     }
 
