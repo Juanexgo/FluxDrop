@@ -11,7 +11,7 @@ DisableProgramGroupPage=yes
 PrivilegesRequired=lowest
 ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
-MinVersion=10.0.22000
+MinVersion=10.0.22621
 OutputDir=..\build\windows-installer
 OutputBaseFilename=FluxDrop-0.4.0-windows-x64-dev-setup
 SetupIconFile=..\apps\windows\FluxDrop.Windows\Assets\FluxDrop.ico
@@ -26,8 +26,10 @@ Name: "spanish"; MessagesFile: "compiler:Languages\Spanish.isl"
 Name: "english"; MessagesFile: "compiler:Default.isl"
 [Tasks]
 Name: "desktopicon"; Description: "Crear acceso directo / Create desktop shortcut"; Flags: unchecked
+Name: "ocr"; Description: "OCR local español e inglés (~8 MB) / Local Spanish and English OCR (~8 MB)"
 [Files]
-Source: "..\build\windows-publish\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\build\windows-publish\*"; DestDir: "{app}"; Excludes: "engines\tessdata\*"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\build\windows-publish\engines\tessdata\*"; DestDir: "{app}\engines\tessdata"; Tasks: ocr; Flags: ignoreversion recursesubdirs createallsubdirs
 [Icons]
 Name: "{group}\FluxDrop"; Filename: "{app}\FluxDrop.exe"
 Name: "{autodesktop}\FluxDrop"; Filename: "{app}\FluxDrop.exe"; Tasks: desktopicon

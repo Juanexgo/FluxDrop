@@ -5,6 +5,9 @@ on:
       engine_run:
         description: 'Successful Windows engines workflow run ID'
         required: true
+      ocr_run:
+        description: 'Successful Windows OCR engines workflow run ID'
+        required: true
 permissions:
   contents: read
   actions: read
@@ -23,10 +26,15 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           ENGINE_RUN: ${{ inputs.engine_run }}
+          OCR_RUN: ${{ inputs.ocr_run }}
         run: |
           if ($env:ENGINE_RUN -notmatch '^\d+$') { throw 'Invalid run ID' }
           gh run download $env:ENGINE_RUN --repo $env:GITHUB_REPOSITORY --name windows-engines-x64 --dir build/windows-engines
           if ($LASTEXITCODE -ne 0) { throw 'Engine artifact unavailable' }
+          if ($env:OCR_RUN -notmatch '^\d+$') { throw 'Invalid OCR run ID' }
+          gh run download $env:OCR_RUN --repo $env:GITHUB_REPOSITORY --name windows-ocr-x64 --dir build/windows-ocr
+          if ($LASTEXITCODE -ne 0) { throw 'OCR artifact unavailable' }
+          Copy-Item build/windows-ocr/* build/windows-engines -Recurse -Force
           Copy-Item scripts/build-windows-engines.sh build/windows-engines/sources/build-windows-engines.sh -Force
       - name: Check core on Windows
         run: dotnet run --project apps/windows/FluxDrop.Tests -c Release

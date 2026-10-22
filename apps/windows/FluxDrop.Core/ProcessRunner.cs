@@ -37,7 +37,7 @@ public static class ProcessRunner
         var stderr = new StringBuilder();
         async Task Drain(StreamReader reader, StringBuilder output)
         {
-            while (await reader.ReadLineAsync() is { } s)
+            while (await reader.ReadLineAsync().ConfigureAwait(false) is { } s)
             {
                 if (output.Length < 1024 * 1024)
                     output.AppendLine(s);
@@ -46,7 +46,7 @@ public static class ProcessRunner
         }
         var a = Drain(p.StandardOutput, stdout);
         var b = Drain(p.StandardError, stderr);
-        await Task.WhenAll(a, b, p.WaitForExitAsync(CancellationToken.None));
+        await Task.WhenAll(a, b, p.WaitForExitAsync(CancellationToken.None)).ConfigureAwait(false);
         token.ThrowIfCancellationRequested();
         if (p.ExitCode != 0)
             throw new IOException(

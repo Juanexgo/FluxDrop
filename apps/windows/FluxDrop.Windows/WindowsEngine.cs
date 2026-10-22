@@ -36,6 +36,7 @@ public sealed class WindowsEngine : PortableEngine
             .Concat(
                 new[]
                 {
+                    "pdfText",
                     "pdfMerge",
                     "pdfExtract",
                     "pdfSplit",
@@ -48,7 +49,7 @@ public sealed class WindowsEngine : PortableEngine
                     "pdf",
                     ["pdf"],
                     id == "pdfImages" || id == "pdfSplit" ? "folder"
-                        : id == "pdfOCR" ? "txt"
+                        : id is "pdfOCR" or "pdfText" ? "txt"
                         : "pdf",
                     false,
                     id == "pdfMerge"
@@ -222,11 +223,11 @@ public sealed class WindowsEngine : PortableEngine
                                     "Esta versión exporta imágenes sin metadatos. Activa quitar metadatos."
                                 );
                             var transformed = ImageEngine.Transform(image, r.Options);
-                            temp = Path.Combine(work, "image." + (ext == "webp" ? "png" : ext));
+                            temp = Path.Combine(work, "image." + (ext == "webp" ? "bmp" : ext));
                             ImageEngine.Write(
                                 transformed,
                                 temp,
-                                ext == "webp" ? "png" : ext,
+                                ext == "webp" ? "bmp" : ext,
                                 r.Options.Quality
                             );
                             if (ext == "webp")

@@ -4,7 +4,6 @@ using PdfSharp.Drawing;
 using PdfSharp.Pdf;
 using PdfSharp.Pdf.IO;
 using Windows.Graphics.Imaging;
-using Windows.Media.Ocr;
 using Windows.Storage;
 using Windows.Storage.Streams;
 
@@ -76,8 +75,9 @@ public static class PdfEngine
                     g.DrawImage(x, 0, 0, page.Width.Point, page.Height.Point);
                 progress?.Report((i + 1d) / r.Inputs.Length);
             }
+            int expectedPages = output.PageCount;
             output.Save(target);
-            Verify(target, output.PageCount);
+            Verify(target, expectedPages);
             return (target, false);
         }
         if (r.Operation == "markdownPDF")
@@ -110,8 +110,9 @@ public static class PdfEngine
                 }
             }
             g.Dispose();
+            int expectedPages = pdf.PageCount;
             pdf.Save(target);
-            Verify(target, pdf.PageCount);
+            Verify(target, expectedPages);
             return (target, false);
         }
         if (r.Operation == "pdfMerge")
@@ -128,8 +129,9 @@ public static class PdfEngine
                     output.AddPage(pdf.Pages[i]);
                 }
             }
+            int expectedPages = output.PageCount;
             output.Save(target);
-            Verify(target, output.PageCount);
+            Verify(target, expectedPages);
             return (target, false);
         }
         using var source = Open(r.Inputs.Single(), o.Password, PdfDocumentOpenMode.Import);
@@ -169,6 +171,32 @@ public static class PdfEngine
             }
             return (target, split);
         }
+        if (r.Operation == "pdfText")
+        {
+            using var stream = File.OpenRead(r.Inputs[0]);
+            using var document = UglyToad.PdfPig.PdfDocument.Open(
+                stream,
+                new UglyToad.PdfPig.ParsingOptions
+                {
+                    Password = o.Password,
+                    UseLenientParsing = false,
+                }
+            );
+            var text = new StringBuilder();
+            for (int i = 0; i < pages.Length; i++)
+            {
+                token.ThrowIfCancellationRequested();
+                text.AppendLine(document.GetPage(pages[i] + 1).Text);
+                if (text.Length > 16 * 1024 * 1024)
+                    throw new IOException("Texto PDF demasiado grande.");
+                progress?.Report((i + 1d) / pages.Length);
+            }
+            if (string.IsNullOrWhiteSpace(text.ToString()))
+                throw new IOException("El PDF no contiene texto extraíble. Usa OCR local.");
+            target = Path.Combine(work, "text.txt");
+            await File.WriteAllTextAsync(target, text.ToString(), new UTF8Encoding(false), token);
+            return (target, false);
+        }
         var native = await global::Windows.Data.Pdf.PdfDocument.LoadFromFileAsync(
             await StorageFile.GetFileFromPathAsync(Path.GetFullPath(r.Inputs[0])),
             o.Password
@@ -177,16 +205,9 @@ public static class PdfEngine
         Directory.CreateDirectory(dir);
         var textOutput = new StringBuilder();
         using var compressed = new PdfDocument();
-        OcrEngine? ocr =
-            r.Operation == "pdfOCR"
-                ? OcrEngine.TryCreateFromLanguage(
-                    new global::Windows.Globalization.Language(o.OcrLanguage)
-                )
-                : null;
-        if (r.Operation == "pdfOCR" && ocr == null)
-            throw new IOException(
-                "Instala el idioma de OCR en Configuración de Windows → Idioma y región. No se descarga dentro de FluxDrop."
-            );
+        string ocrExe = Path.Combine(AppContext.BaseDirectory, "engines", "tesseract.exe");
+        if (r.Operation == "pdfOCR" && !File.Exists(ocrExe))
+            throw new IOException("El motor OCR local no está incluido en esta instalación.");
         for (int i = 0; i < pages.Length; i++)
         {
             token.ThrowIfCancellationRequested();
@@ -208,19 +229,30 @@ public static class PdfEngine
             stream.Seek(0);
             if (r.Operation == "pdfOCR")
             {
-                var decoder = await global::Windows.Graphics.Imaging.BitmapDecoder.CreateAsync(
-                    stream
+                string png = Path.Combine(dir, $"page-{i + 1:D4}.png");
+                await using (var destination = File.Create(png))
+                    await stream.AsStreamForRead().CopyToAsync(destination, token);
+                string bmp = Path.ChangeExtension(png, "bmp");
+                ImageEngine.Write(ImageEngine.Read(png), bmp, "bmp", 100);
+                string language =
+                    o.OcrLanguage.StartsWith("es", StringComparison.OrdinalIgnoreCase) ? "spa"
+                    : o.OcrLanguage.StartsWith("en", StringComparison.OrdinalIgnoreCase) ? "eng"
+                    : throw new ArgumentException("OCR incluido: español o inglés.");
+                string text = await ProcessRunner.Run(
+                    ocrExe,
+                    [
+                        bmp,
+                        "stdout",
+                        "--tessdata-dir",
+                        Path.Combine(AppContext.BaseDirectory, "engines", "tessdata"),
+                        "-l",
+                        language,
+                        "--psm",
+                        "3",
+                    ],
+                    token
                 );
-                using var bitmap = await decoder.GetSoftwareBitmapAsync(
-                    BitmapPixelFormat.Bgra8,
-                    BitmapAlphaMode.Premultiplied
-                );
-                if (width > OcrEngine.MaxImageDimension || height > OcrEngine.MaxImageDimension)
-                    throw new IOException(
-                        "Reduce los DPI para respetar el límite de OCR del sistema."
-                    );
-                var recognized = await ocr!.RecognizeAsync(bitmap);
-                textOutput.AppendLine(recognized.Text);
+                textOutput.AppendLine(text);
             }
             else
             {

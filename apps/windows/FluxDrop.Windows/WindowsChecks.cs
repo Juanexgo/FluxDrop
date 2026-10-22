@@ -201,33 +201,6 @@ public static class WindowsChecks
                 Check(p.PageCount > 0);
             }
         );
-        Test(
-            "widget and main window render",
-            () =>
-            {
-                var main = new MainWindow(selfTesting: true);
-                main.Add([input]);
-                main.Show();
-                main.UpdateLayout();
-                var shot = new RenderTargetBitmap(1000, 790, 96, 96, PixelFormats.Pbgra32);
-                shot.Render(main);
-                ImageEngine.Write(shot, Path.Combine(root, "windows-main.png"), "png", 100);
-                var widget = new WidgetWindow(main);
-                widget.Show();
-                widget.UpdateLayout();
-                var wshot = new RenderTargetBitmap(
-                    (int)widget.Width,
-                    (int)widget.Height,
-                    96,
-                    96,
-                    PixelFormats.Pbgra32
-                );
-                wshot.Render(widget);
-                ImageEngine.Write(wshot, Path.Combine(root, "windows-widget.png"), "png", 100);
-                widget.Close();
-                main.Hide();
-            }
-        );
         if (MediaEngine.Available)
         {
             Test(
@@ -380,6 +353,39 @@ public static class WindowsChecks
             );
         }
         Test(
+            "local OCR recognizes PDF fixture offline",
+            () =>
+            {
+                string pdf = Path.Combine(root, "ocr-fixture.pdf");
+                using (var document = new PdfDocument())
+                {
+                    var page = document.AddPage();
+                    using (var graphics = XGraphics.FromPdfPage(page))
+                        graphics.DrawString(
+                            "FLUXDROP LOCAL OCR",
+                            new XFont("Arial", 28),
+                            XBrushes.Black,
+                            new XPoint(60, 100)
+                        );
+                    document.Save(pdf);
+                }
+                var existingText = Execute("pdfText", [pdf]);
+                Check(
+                    File.ReadAllText(existingText.Outputs[0])
+                        .Contains("FLUXDROP", StringComparison.Ordinal)
+                );
+                var result = Execute(
+                    "pdfOCR",
+                    [pdf],
+                    new Options { Dpi = 144, OcrLanguage = "en-US" }
+                );
+                Check(
+                    File.ReadAllText(result.Outputs[0])
+                        .Contains("FLUXDROP", StringComparison.OrdinalIgnoreCase)
+                );
+            }
+        );
+        Test(
             "recipe validates and executes chained images",
             () =>
             {
@@ -472,6 +478,33 @@ public static class WindowsChecks
                     }
                 }
             );
+        Test(
+            "widget and main window render",
+            () =>
+            {
+                var main = new MainWindow(selfTesting: true);
+                main.Add([input]);
+                main.Show();
+                main.UpdateLayout();
+                var shot = new RenderTargetBitmap(1000, 790, 96, 96, PixelFormats.Pbgra32);
+                shot.Render(main);
+                ImageEngine.Write(shot, Path.Combine(root, "windows-main.png"), "png", 100);
+                var widget = new WidgetWindow(main);
+                widget.Show();
+                widget.UpdateLayout();
+                var wshot = new RenderTargetBitmap(
+                    (int)widget.Width,
+                    (int)widget.Height,
+                    96,
+                    96,
+                    PixelFormats.Pbgra32
+                );
+                wshot.Render(widget);
+                ImageEngine.Write(wshot, Path.Combine(root, "windows-widget.png"), "png", 100);
+                widget.Close();
+                main.Hide();
+            }
+        );
         Config.Write(
             Path.Combine(root, "windows-results.json"),
             new

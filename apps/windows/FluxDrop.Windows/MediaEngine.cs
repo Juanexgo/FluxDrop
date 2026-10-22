@@ -25,11 +25,13 @@ public static class MediaEngine
         CancellationToken token
     )
     {
-        var json = await ProcessRunner.Run(
-            Ffprobe,
-            ["-v", "error", "-show_streams", "-show_format", "-of", "json", path],
-            token
-        );
+        var json = await ProcessRunner
+            .Run(
+                Ffprobe,
+                ["-v", "error", "-show_streams", "-show_format", "-of", "json", path],
+                token
+            )
+            .ConfigureAwait(false);
         using var d = JsonDocument.Parse(json);
         var streams = d.RootElement.GetProperty("streams").EnumerateArray().ToArray();
         bool video = streams.Any(s => s.GetProperty("codec_type").GetString() == "video"),
