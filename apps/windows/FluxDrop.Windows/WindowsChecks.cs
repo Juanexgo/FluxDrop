@@ -530,6 +530,16 @@ public static class WindowsChecks
                 main.Add([input]);
                 Check(main.CompatibleActions("")[0].Id == "image");
                 Check(!main.CompatibleActions("").Any(c => c.Id == "jsonPretty"));
+                bool rejected = false;
+                try
+                {
+                    main.Submit("jsonPretty", new Options());
+                }
+                catch (ArgumentException)
+                {
+                    rejected = true;
+                }
+                Check(rejected);
                 main.Show();
                 main.UpdateLayout();
                 var shot = new RenderTargetBitmap(1000, 790, 96, 96, PixelFormats.Pbgra32);

@@ -534,6 +534,8 @@ public sealed class MainWindow : Window
                     )
             )
             .ToArray();
+        if (compatible.Length == 0)
+            throw new ArgumentException(L.T("NoCompatible"));
         var skipped = Selection.Except(compatible).ToArray();
         if (
             skipped.Length > 0
