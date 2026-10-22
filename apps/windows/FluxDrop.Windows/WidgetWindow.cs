@@ -170,10 +170,27 @@ public sealed class WidgetWindow : Window
             main.Selection.Length == 0 ? L.T("Add") : main.Selection.Length + " ↓",
             () => main.AddFiles()
         );
+        var border = new FrameworkElementFactory(typeof(Border));
+        border.SetValue(Border.CornerRadiusProperty, new CornerRadius(40));
+        border.SetValue(
+            Border.BackgroundProperty,
+            dark ? new SolidColorBrush(Color.FromRgb(45, 46, 49)) : Brushes.White
+        );
+        border.SetValue(
+            Border.BorderBrushProperty,
+            new SolidColorBrush(Color.FromRgb(180, 181, 176))
+        );
+        border.SetValue(Border.BorderThicknessProperty, new Thickness(1));
+        var content = new FrameworkElementFactory(typeof(ContentPresenter));
+        content.SetValue(ContentPresenter.HorizontalAlignmentProperty, HorizontalAlignment.Center);
+        content.SetValue(ContentPresenter.VerticalAlignmentProperty, VerticalAlignment.Center);
+        border.AppendChild(content);
+        middle.Template = new ControlTemplate(typeof(Button)) { VisualTree = border };
+        middle.Foreground = dark ? Brushes.White : Brushes.Black;
         middle.Width = 78;
-        middle.Height = 68;
+        middle.Height = 78;
         Canvas.SetLeft(middle, center - 39);
-        Canvas.SetTop(middle, center - 34);
+        Canvas.SetTop(middle, center - 39);
         canvas.Children.Add(middle);
         stack.Children.Add(
             UI.Action(
