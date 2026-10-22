@@ -89,7 +89,7 @@ public static class MediaEngine
         if (
             !double.IsFinite(first.Duration)
             || first.Duration <= 0
-            || r.Options.Start >= first.Duration
+            || (r.Operation != "audioJoin" && r.Options.Start >= first.Duration)
         )
             throw new IOException("Duración desconocida o recorte fuera de la entrada.");
         var o = r.Options;

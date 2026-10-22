@@ -18,9 +18,11 @@ Presets son recetas de un paso; recetas versionadas admiten solo IDs registrados
 
 ## Distribución y dependencias
 
-FFmpeg 9.0.2 LGPL, sin GPL/nonfree/red; LAME 4.0 LGPL, Opus 1.6.1 BSD y libwebp 1.6.0 BSD. Fuentes exactas, configuración y script incluidos junto a los ejecutables. PDFsharp-WPF se fija en 6.2.4 MIT; no actualizar a 6.5+ sin revisar el cambio a AGPL/comercial. Markdig 0.41.3 BSD-2-Clause, YamlDotNet 16.3.0 MIT, runtime .NET MIT y avisos redistribuibles. No se descargan motores durante conversiones. Firma Authenticode requiere un certificado y proveedor de firma propios; no se incluyen claves.
+FFmpeg 9.0.2 LGPL, sin GPL/nonfree/red; LAME 4.0 LGPL, Opus 1.6.1 BSD y libwebp 1.6.0 BSD. Configuración, avisos y scripts incluidos junto a los ejecutables. Los archivos fuente exactos se ofrecen como ZIP separado al lado del instalador en la misma web (enlace en engines/sources/SOURCES.txt). PDFsharp-WPF se fija en 6.2.4 MIT; no actualizar a 6.5+ sin revisar el cambio a AGPL/comercial. Markdig 0.41.3 BSD-2-Clause, YamlDotNet 16.3.0 MIT, runtime .NET MIT y avisos redistribuibles. No se descargan motores durante conversiones. Firma Authenticode requiere un certificado y proveedor de firma propios; no se incluyen claves.
 
 
 Se eligió Tesseract para distribución directa después de comprobar en documentación oficial que Windows.Media.Ocr requiere identidad de paquete. No se oculta esa API detrás de un botón que falle en una instalación EXE. El build de Leptonica solo necesita entrada BMP; la app rasteriza PDF con Windows y convierte a BMP antes de reconocerlo. Tesseract/Leptonica se compilan estáticos sin libcurl ni libarchive. La única modificación a Tesseract es normalizar `Ws2_32` a `ws2_32` en CMake para MinGW/Linux; el script incluido reproduce ese cambio. Los modelos eng/spa de tessdata_fast se fijan al commit 87416418657359cb625c412a48b6e1d6d41c29bd y conservan licencia Apache-2.0.
 
 Compartir usa el selector nativo de Windows y solo entrega los archivos a un destino elegido explícitamente. Esa app o servicio puede usar red; esto no forma parte del procesamiento local. Verificación manual del selector/entrega al destinatario pendiente.
+
+Abre `apps/windows/FluxDrop.slnx` en Visual Studio con desarrollo de escritorio .NET 10, o usa el SDK de .NET. `scripts/build-windows.ps1` publica y prueba una app autocontenida con motores previamente compilados; no instala dependencias en el equipo del usuario. El workflow añade el empaquetado, las fuentes correspondientes y la prueba de instalación/desinstalación.
