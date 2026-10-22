@@ -242,14 +242,32 @@ public sealed class WindowsEngine : PortableEngine
                                 if (!MediaEngine.Available)
                                     throw new IOException("WebP requiere el motor incluido.");
                                 string webp = Path.Combine(work, "image.webp");
+                                var bgra = new System.Windows.Media.Imaging.FormatConvertedBitmap(
+                                    transformed,
+                                    System.Windows.Media.PixelFormats.Bgra32,
+                                    null,
+                                    0
+                                );
+                                byte[] pixels = new byte[
+                                    checked(bgra.PixelWidth * bgra.PixelHeight * 4)
+                                ];
+                                bgra.CopyPixels(pixels, bgra.PixelWidth * 4, 0);
+                                string raw = Path.Combine(work, "pixels.bgra");
+                                await File.WriteAllBytesAsync(raw, pixels, token);
                                 await ProcessRunner.Run(
                                     MediaEngine.Ffmpeg,
                                     [
                                         "-v",
                                         "error",
                                         "-nostdin",
+                                        "-f",
+                                        "rawvideo",
+                                        "-pixel_format",
+                                        "bgra",
+                                        "-video_size",
+                                        $"{bgra.PixelWidth}x{bgra.PixelHeight}",
                                         "-i",
-                                        temp,
+                                        raw,
                                         "-c:v",
                                         "libwebp",
                                         "-quality",

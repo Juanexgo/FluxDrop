@@ -294,7 +294,12 @@ public static class WindowsChecks
                         r.Outputs,
                         new Options { Format = "png", MaxSide = 32 }
                     );
-                    Check(ImageEngine.Read(roundtrip.Outputs[0]).PixelWidth == 32);
+                    var check = ImageEngine.Read(roundtrip.Outputs[0]);
+                    Check(check.PixelWidth == 32);
+                    var bgra = new FormatConvertedBitmap(check, PixelFormats.Bgra32, null, 0);
+                    byte[] pixel = new byte[4];
+                    bgra.CopyPixels(new Int32Rect(0, 0, 1, 1), pixel, 4, 0);
+                    Check(Math.Abs(pixel[3] - 190) <= 3);
                 }
             );
             string video = Path.Combine(root, "video.mp4");

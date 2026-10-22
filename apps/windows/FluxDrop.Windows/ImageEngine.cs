@@ -35,15 +35,43 @@ public static class ImageEngine
             var info = (await MediaEngine.Probe(path, token)).Info;
             if (info.Width <= 0 || info.Height <= 0 || (long)info.Width * info.Height > 100_000_000)
                 throw new IOException("Dimensiones WebP no válidas.");
-            string decoded = Path.Combine(work, "decoded-" + Guid.NewGuid().ToString("N") + ".bmp");
+            string decoded = Path.Combine(
+                work,
+                "decoded-" + Guid.NewGuid().ToString("N") + ".bgra"
+            );
             await ProcessRunner.Run(
                 MediaEngine.Ffmpeg,
-                ["-v", "error", "-nostdin", "-i", path, "-frames:v", "1", "-c:v", "bmp", decoded],
+                [
+                    "-v",
+                    "error",
+                    "-nostdin",
+                    "-i",
+                    path,
+                    "-frames:v",
+                    "1",
+                    "-f",
+                    "rawvideo",
+                    "-pix_fmt",
+                    "bgra",
+                    decoded,
+                ],
                 token
             );
-            var result = Read(decoded);
-            if (result.PixelWidth != info.Width || result.PixelHeight != info.Height)
-                throw new IOException("Dimensiones WebP inesperadas.");
+            long expected = (long)info.Width * info.Height * 4;
+            if (new FileInfo(decoded).Length != expected)
+                throw new IOException("Tamaño WebP decodificado inesperado.");
+            byte[] pixels = await File.ReadAllBytesAsync(decoded, token);
+            var result = BitmapSource.Create(
+                info.Width,
+                info.Height,
+                96,
+                96,
+                PixelFormats.Bgra32,
+                null,
+                pixels,
+                info.Width * 4
+            );
+            result.Freeze();
             return result;
         }
         return Read(path);
@@ -75,7 +103,9 @@ public static class ImageEngine
             try
             {
                 orientation = System.Convert.ToUInt16(
-                    metadata.GetQuery("/app1/ifd/{ushort=274}") ?? 1,
+                    metadata.GetQuery(
+                        metadata.Format == "tiff" ? "/ifd/{ushort=274}" : "/app1/ifd/{ushort=274}"
+                    ) ?? 1,
                     CultureInfo.InvariantCulture
                 );
             }
