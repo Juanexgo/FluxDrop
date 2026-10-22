@@ -9,6 +9,8 @@ cd "$TASK_WORK"
 fetch() { curl -fL --retry 3 --proto '=https' "$2" -o "$1"; printf '%s  %s\n' "$3" "$1" | sha256sum -c -; tar -xf "$1"; }
 fetch tesseract-5.5.3.tar.gz https://codeload.github.com/tesseract-ocr/tesseract/tar.gz/refs/tags/5.5.3 9218e62793116d42a9f6d14cd9348518b27f382096eea3d0f2d1a24616bb5884
 fetch leptonica-1.87.0.tar.gz https://codeload.github.com/DanBloomberg/leptonica/tar.gz/refs/tags/1.87.0 fa2b40c5caea96d1bb93a97486262aed8731b69ce25a84a6bf5d25323e33f631
+# Upstream uses MSVC casing; MinGW import libraries on Linux are case-sensitive.
+sed -i 's/Ws2_32/ws2_32/g' tesseract-5.5.3/CMakeLists.txt
 PREFIX="$TASK_WORK/install"
 CROSS=(-DCMAKE_SYSTEM_NAME=Windows -DCMAKE_SYSTEM_PROCESSOR=x86_64 -DCMAKE_C_COMPILER=x86_64-w64-mingw32-gcc-posix -DCMAKE_CXX_COMPILER=x86_64-w64-mingw32-g++-posix -DCMAKE_RC_COMPILER=x86_64-w64-mingw32-windres -DCMAKE_INSTALL_PREFIX="$PREFIX" -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF -DCMAKE_EXE_LINKER_FLAGS=-static)
 cmake -S leptonica-1.87.0 -B lep-build "${CROSS[@]}" -DBUILD_PROG=OFF -DSW_BUILD=OFF -DENABLE_GIF=OFF -DENABLE_ZLIB=OFF -DENABLE_LIBPNG=OFF -DENABLE_JPEG=OFF -DENABLE_TIFF=OFF -DENABLE_LIBWEBP=OFF -DENABLE_OPENJPEG=OFF -DCMAKE_POLICY_VERSION_MINIMUM=3.5

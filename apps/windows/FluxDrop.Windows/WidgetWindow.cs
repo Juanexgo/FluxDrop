@@ -75,11 +75,15 @@ public sealed class WidgetWindow : Window
 
     void Render()
     {
+        bool dark = main.Foreground is SolidColorBrush foreground && foreground.Color.R > 200;
+        Foreground = dark ? Brushes.White : Brushes.Black;
         layout.Children.Clear();
         var outer = new Border
         {
             CornerRadius = new CornerRadius(30),
-            Background = new SolidColorBrush(Color.FromArgb(248, 35, 36, 39)),
+            Background = new SolidColorBrush(
+                dark ? Color.FromArgb(248, 35, 36, 39) : Color.FromArgb(250, 248, 247, 243)
+            ),
             BorderBrush = new SolidColorBrush(Color.FromRgb(90, 85, 80)),
             BorderThickness = new Thickness(1),
             Padding = new Thickness(12),
@@ -111,35 +115,55 @@ public sealed class WidgetWindow : Window
             Height = center * 1.92,
             Stroke = new SolidColorBrush(Color.FromRgb(86, 79, 72)),
             StrokeThickness = 1,
-            Fill = new SolidColorBrush(Color.FromRgb(44, 43, 43)),
+            Fill = new SolidColorBrush(
+                dark ? Color.FromRgb(44, 43, 43) : Color.FromRgb(215, 217, 211)
+            ),
         };
         Canvas.SetLeft(circle, center * .04);
         Canvas.SetTop(circle, center * .04);
         canvas.Children.Add(circle);
         string[] labels = files
-            ? [L.T("Copy"), L.T("CopyPath"), L.T("Move"), L.T("Shelf"), L.T("Terminal"), L.T("Add")]
+            ?
+            [
+                L.T("Copy"),
+                L.T("CopyPath"),
+                L.T("Move"),
+                L.T("Shelf"),
+                L.T("Terminal"),
+                L.T("Share"),
+            ]
             : main.Preferences.Favorites;
         for (int i = 0; i < labels.Length; i++)
         {
             int index = i;
             string value = labels[i];
-            var button = UI.Action(value, () => Choose(index, value));
-            button.Width = Math.Clamp(center * .65, 88, 130);
-            button.Height = 62;
-            button.FontSize = 11;
-            button.Background = UI.Coral;
-            button.Foreground = Brushes.Black;
+            var button = new SectorButton(value, index, labels.Length, Width - 26, dark);
+            button.Click += (_, _) =>
+            {
+                try
+                {
+                    Choose(index, value);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message, "FluxDrop");
+                }
+            };
             button.ToolTip = files ? value : L.T("Drop");
             button.AllowDrop = true;
             button.Drop += (_, e) =>
             {
-                main.AcceptDrop(e);
-                e.Handled = true;
-                Choose(index, value);
+                try
+                {
+                    main.AcceptDrop(e);
+                    e.Handled = true;
+                    Choose(index, value);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message, "FluxDrop");
+                }
             };
-            double angle = (i * 360d / labels.Length - 90) * Math.PI / 180;
-            Canvas.SetLeft(button, center + Math.Cos(angle) * radius - button.Width / 2);
-            Canvas.SetTop(button, center + Math.Sin(angle) * radius - 31);
             canvas.Children.Add(button);
         }
         var middle = UI.Action(
@@ -186,7 +210,7 @@ public sealed class WidgetWindow : Window
                     main.OpenTerminal();
                     break;
                 case 5:
-                    main.AddFiles();
+                    main.ShareFiles();
                     break;
             }
         }

@@ -208,6 +208,7 @@ public sealed class MainWindow : Window
     StackPanel BuildFiles()
     {
         var panel = new StackPanel();
+        destinationView.Text = Preferences.Destination;
         panel.Children.Add(UI.Text("FluxDrop", 30));
         panel.Children.Add(UI.Text(L.T("Drop")));
         panel.Children.Add(
@@ -232,18 +233,24 @@ public sealed class MainWindow : Window
                 UI.Action(L.T("Widget"), ShowWidget)
             )
         );
-        panel.Children.Add(selected);
+        var workspace = new Grid { Margin = new Thickness(0, 12, 0, 12) };
+        workspace.ColumnDefinitions.Add(new ColumnDefinition());
+        workspace.ColumnDefinitions.Add(new ColumnDefinition());
+        var filesPane = new StackPanel { Margin = new Thickness(0, 0, 12, 0) };
+        filesPane.Children.Add(selected);
+        filesPane.Children.Add(preview);
+        workspace.Children.Add(filesPane);
         selected.SelectionChanged += (_, _) => Preview();
-        panel.Children.Add(preview);
-        var search = UI.Field(panel, L.T("Search"));
+        var actionPane = new StackPanel { Margin = new Thickness(12, 0, 0, 0) };
+        Grid.SetColumn(actionPane, 1);
+        workspace.Children.Add(actionPane);
+        var search = UI.Field(actionPane, L.T("Search"));
         search.TextChanged += (_, _) => RefreshActions(search.Text);
-        panel.Children.Add(actions);
+        actionPane.Children.Add(actions);
         RefreshActions("");
+        panel.Children.Add(workspace);
         panel.Children.Add(
-            UI.Row(
-                UI.Action(L.T("Destination"), ChooseDestination),
-                UI.Text(Preferences.Destination)
-            )
+            UI.Row(UI.Action(L.T("Destination"), ChooseDestination), destinationView)
         );
         panel.Children.Add(
             UI.Row(
@@ -424,6 +431,7 @@ public sealed class MainWindow : Window
         }
         if (selected.Items.Count > 0)
             selected.SelectedIndex = 0;
+        RefreshActions("");
     }
 
     public void AcceptDrop(DragEventArgs e)
@@ -454,11 +462,14 @@ public sealed class MainWindow : Window
         }
     }
 
+    readonly TextBlock destinationView = UI.Text("");
+
     void ChooseDestination()
     {
         if (UI.Folder() is { } dir)
         {
             Preferences.Destination = dir;
+            destinationView.Text = dir;
             Preferences.Save();
         }
     }
@@ -1002,6 +1013,60 @@ public sealed class MainWindow : Window
     {
         if (Selection.Length == 0)
             throw new ArgumentException(L.T("NoFiles"));
+    }
+
+    global::Windows.ApplicationModel.DataTransfer.DataTransferManager? shareManager;
+    global::Windows.Foundation.TypedEventHandler<
+        global::Windows.ApplicationModel.DataTransfer.DataTransferManager,
+        global::Windows.ApplicationModel.DataTransfer.DataRequestedEventArgs
+    >? shareHandler;
+
+    public void ShareFiles()
+    {
+        RequireSelection();
+        var files = Selection;
+        Show();
+        Activate();
+        var handle = new System.Windows.Interop.WindowInteropHelper(this).EnsureHandle();
+        if (shareManager != null && shareHandler != null)
+            shareManager.DataRequested -= shareHandler;
+        shareManager =
+            global::Windows.ApplicationModel.DataTransfer.DataTransferManagerInterop.GetForWindow(
+                handle
+            );
+        shareHandler = async (_, args) =>
+        {
+            var deferral = args.Request.GetDeferral();
+            try
+            {
+                var items = new List<global::Windows.Storage.IStorageItem>();
+                foreach (var file in files)
+                {
+                    if (Directory.Exists(file))
+                        items.Add(
+                            await global::Windows.Storage.StorageFolder.GetFolderFromPathAsync(file)
+                        );
+                    else
+                        items.Add(
+                            await global::Windows.Storage.StorageFile.GetFileFromPathAsync(file)
+                        );
+                }
+                args.Request.Data.Properties.Title = "FluxDrop";
+                args.Request.Data.SetStorageItems(items);
+            }
+            catch (Exception ex)
+            {
+                args.Request.FailWithDisplayText(ex.Message);
+            }
+            finally
+            {
+                deferral.Complete();
+            }
+        };
+        shareManager.DataRequested += shareHandler;
+        global::Windows.ApplicationModel.DataTransfer.DataTransferManagerInterop.ShowShareUIForWindow(
+            handle
+        );
     }
 
     public void CopyFiles()
