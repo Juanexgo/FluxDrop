@@ -51,6 +51,7 @@ public sealed class MainWindow : Window
 
     public MainWindow(bool selfTesting = false)
     {
+        quitting = selfTesting;
         L.Language = Preferences.Language;
         Title = "FluxDrop · Windows";
         Width = 1000;

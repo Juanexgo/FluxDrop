@@ -135,7 +135,7 @@ public static class SafeFiles
     public static async Task<string> Hash(string file, CancellationToken token)
     {
         await using var s = File.OpenRead(file);
-        return Convert.ToHexStringLower(await SHA256.HashDataAsync(s, token));
+        return Convert.ToHexStringLower(await SHA256.HashDataAsync(s, token).ConfigureAwait(false));
     }
 
     public static bool Within(string child, string parent)

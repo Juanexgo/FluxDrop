@@ -17,3 +17,5 @@ The installer is created with Inno Setup 6, retaining compiler copyright and lic
 PdfPig 0.1.13: Apache-2.0, source commit baeac0d0c344e543ed8b277eac3edd8f8b9c1ac4, license and NOTICES included. https://github.com/UglyToad/PdfPig
 Tesseract 5.5.3: Apache-2.0; Leptonica 1.87.0: BSD. Unmodified source archives and reconstruction script in engines/sources; script applies one CMake MinGW library-casing correction (Ws2_32 -> ws2_32).
 tessdata_fast eng/spa: Apache-2.0, source commit 87416418657359cb625c412a48b6e1d6d41c29bd. Optional installer task; installed size visible and models removable in Settings. Recognition is local and does not download files.
+
+MinGW compiler runtimes statically linked into the source-built engines: GCC libgcc/libstdc++ under GPLv3 with GCC Runtime Library Exception (copies included), MinGW-w64 runtime notices (including public-domain/per-file licenses and ZPL project license), winpthreads BSD/MIT notices included. These compiler runtime notices do not enable GPL codecs in FFmpeg.

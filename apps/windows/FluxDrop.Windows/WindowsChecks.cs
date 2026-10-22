@@ -13,6 +13,32 @@ public static class WindowsChecks
 {
     public static int Run(string[] args)
     {
+        var app = new Application { ShutdownMode = ShutdownMode.OnExplicitShutdown };
+        app.Startup += (_, _) =>
+            app.Dispatcher.BeginInvoke(
+                new Action(() =>
+                {
+                    int exit = 1;
+                    try
+                    {
+                        exit = RunSuite(args);
+                    }
+                    catch (Exception ex)
+                    {
+                        string root =
+                            args.SkipWhile(a => a != "--test-output").Skip(1).FirstOrDefault()
+                            ?? Path.GetTempPath();
+                        Directory.CreateDirectory(root);
+                        File.WriteAllText(Path.Combine(root, "fatal-error.txt"), ex.ToString());
+                    }
+                    app.Shutdown(exit);
+                })
+            );
+        return app.Run();
+    }
+
+    private static int RunSuite(string[] args)
+    {
         string root =
             args.SkipWhile(a => a != "--test-output").Skip(1).FirstOrDefault()
             ?? Path.Combine(Path.GetTempPath(), "FluxDrop-Windows-QA");
@@ -56,7 +82,6 @@ public static class WindowsChecks
                 );
             }
         }
-        var app = new Application { ShutdownMode = ShutdownMode.OnExplicitShutdown };
         var engine = new WindowsEngine();
         string input = Path.Combine(root, "café & datos.png");
         var pixels = Enumerable.Repeat((byte)190, 128 * 64 * 4).ToArray();
@@ -527,7 +552,6 @@ public static class WindowsChecks
                 tests = results,
             }
         );
-        app.Shutdown();
         return failures == 0 ? 0 : 1;
     }
 }
