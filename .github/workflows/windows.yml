@@ -67,27 +67,30 @@ jobs:
           Compress-Archive -Path $files -DestinationPath build/windows-installer/FluxDrop-0.4.0-windows-engine-sources.zip -CompressionLevel Optimal
           Get-ChildItem "$engine/sources" -Recurse -File | Where-Object { $_.Name -match '\.tar\.' } | Remove-Item
           'Corresponding source archives, build configuration, licenses and reconstruction scripts: https://fluxdrop-ruby.vercel.app/downloads/FluxDrop-0.4.0-windows-engine-sources.zip . The sources are offered beside this installer at https://fluxdrop-ruby.vercel.app/windows/ . LGPL engines can be replaced with compatible modified builds. No download occurs during conversion.' | Set-Content "$engine/sources/SOURCES.txt"
-      - name: Build per-user installer
+      - name: Install pinned MSI build tools
         run: |
-          $compiler = 'C:/Program Files (x86)/Inno Setup 6/ISCC.exe'
-          if (!(Test-Path $compiler)) { throw 'Inno Setup 6 is required on the runner' }
-          & $compiler scripts/package-windows.iss
-          if ($LASTEXITCODE -ne 0) { throw 'Installer compiler failed' }
-      - name: Install, test installed app and uninstall
+          dotnet tool install wix --version 5.0.2 --tool-path build/wix-tools
+          if ($LASTEXITCODE -ne 0) { throw 'WiX restore failed' }
+          build/wix-tools/wix.exe extension add WixToolset.UI.wixext/5.0.2
+          if ($LASTEXITCODE -ne 0) { throw 'WiX UI restore failed' }
+      - name: Build per-user MSI installer
+        run: ./scripts/package-windows-msi.ps1
+      - name: Install MSI, test installed app, repair and uninstall
         run: |
-          $setup = (Get-ChildItem build/windows-installer/*setup.exe).FullName
-          $target = "$env:RUNNER_TEMP/FluxDrop-Installed"
-          $p = Start-Process $setup -ArgumentList '/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART',"/DIR=$target" -PassThru -Wait
-          if ($p.ExitCode -ne 0) { throw 'Installer failed' }
+          $setup = (Get-ChildItem build/windows-installer/*.msi).FullName
+          $target = "$env:LOCALAPPDATA/Programs/FluxDrop"
+          $p = Start-Process msiexec.exe -ArgumentList '/i',"`"$setup`"",'/qn','/norestart','/l*v',"`"$env:GITHUB_WORKSPACE/build/msi-install.log`"" -PassThru -Wait
+          if ($p.ExitCode -notin @(0,3010)) { Get-Content build/msi-install.log -Tail 80; throw "MSI install failed: $($p.ExitCode)" }
+          if (!(Test-Path "$env:APPDATA/Microsoft/Windows/Start Menu/Programs/FluxDrop/FluxDrop.lnk")) { throw 'Start menu shortcut missing' }
           $p = Start-Process "$target/FluxDrop.exe" -ArgumentList '--self-test','--test-output',"$env:GITHUB_WORKSPACE/build/installed-qa" -PassThru -Wait
-          Write-Host "Installed app exit code: $($p.ExitCode)"
           Get-Content build/installed-qa/windows-results.json
-          if ($p.ExitCode -ne 0) {
-            Get-WinEvent -FilterHashtable @{LogName='Application';StartTime=(Get-Date).AddMinutes(-5)} -ErrorAction SilentlyContinue | Where-Object { $_.ProviderName -in @('Application Error','.NET Runtime','Windows Error Reporting') } | Select-Object -First 8 -Property ProviderName,Message | Format-List
-            throw 'Installed app tests failed'
-          }
-          $p = Start-Process "$target/unins000.exe" -ArgumentList '/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART' -PassThru -Wait
-          if ($p.ExitCode -ne 0) { throw 'Uninstall failed' }
+          if ($p.ExitCode -ne 0) { throw 'Installed app tests failed' }
+          $p = Start-Process msiexec.exe -ArgumentList '/fa',"`"$setup`"",'/qn','/norestart' -PassThru -Wait
+          if ($p.ExitCode -notin @(0,3010)) { throw 'MSI repair failed' }
+          $p = Start-Process msiexec.exe -ArgumentList '/x',"`"$setup`"",'/qn','/norestart' -PassThru -Wait
+          if ($p.ExitCode -notin @(0,3010)) { throw 'MSI uninstall failed' }
+          if (Test-Path "$target/FluxDrop.exe") { throw 'MSI left the application executable after uninstall' }
+          if (Test-Path "$env:APPDATA/Microsoft/Windows/Start Menu/Programs/FluxDrop/FluxDrop.lnk") { throw 'MSI left its shortcut after uninstall' }
           Get-FileHash $setup -Algorithm SHA256 | Format-List
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         if: always()
@@ -96,6 +99,7 @@ jobs:
           path: |
             build/windows-qa
             build/installed-qa
+            build/msi-install.log
           retention-days: 14
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
