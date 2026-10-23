@@ -21,3 +21,5 @@ WiX 5.0.2 y UI 5.0.2 fijados desde NuGet; licencia MS-RL incluida. Esta versión
 ## Publicación de los artefactos
 
 https://github.com/Juanexgo/FluxDrop-Releases/releases/tag/v0.4-installers es una prerelease pública con PKG, MSI, sus checksums y licencia WiX. `node scripts/verify-installer-downloads.mjs` descargó ambos paquetes completos por HTTPS sin autenticación: formato XAR/OLE correcto, tamaños, SHA-256 y sidecars coincidentes. El código de ambas plataformas y la web siguen en Juanexgo/FluxDrop; el repositorio nuevo contiene únicamente distribución y avisos.
+
+Web de producción verificada desde `17d5cc9b55b7b06cb4ea7e555adbc002ef8c138d`: Vercel success y Web checks 39878347188 aprobado. /descarga/ respondió HTTP 200 con ambos enlaces reales (PKG/MSI), etiquetas correctas y SHA-256 del MSI. No se sustituyeron paquetes por archivos vacíos ni se renombró un EXE como MSI.
