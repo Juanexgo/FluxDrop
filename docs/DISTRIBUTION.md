@@ -25,3 +25,13 @@ Workflow `Windows engines` produce FFmpeg/ffprobe x64 LGPL desde fuentes con has
 Artefactos separados: EXE para instalar; ZIP con fuentes exactas, configuración, licencias y scripts de motores. El instalador conserva avisos y el enlace a esas fuentes; no necesita ese ZIP para funcionar. Se publican ambos antes de activar el manifiesto `windows.json`, que lleva requisitos, fecha, versión, tamaño, SHA-256 y firma real. `publish-windows-download.mjs` prepara las entradas después de comprobar los artefactos. La web vuelve a comprobar tamaño y SHA-256 al compilar.
 
 Windows 0.4 es de desarrollo, **sin Authenticode**. SmartScreen puede advertir o bloquear. Para una distribución firmada se requiere un certificado/proveedor de firma válido del titular, proteger sus claves fuera del repositorio, firmar binarios/instalador, timestamp y comprobar `Get-AuthenticodeSignature` y `signtool verify /pa`. La firma no garantiza reputación SmartScreen inmediata. No instalar certificados raíz propios ni desactivar SmartScreen como procedimiento de distribución. No se ha comprado ni solicitado un certificado.
+
+## PKG y MSI (2026-10-22)
+
+`scripts/package-pkg.sh` crea un asistente PKG macOS ES/EN para la app completa ya construida y firmada ad hoc. Destinos por usuario o sistema. Developer ID Installer sería necesario para firmar el paquete; no confundir firma de app con firma de PKG. `scripts/publish-macos-pkg.mjs` solo publica el artefacto verificado y su hash. El DMG previo se conserva como archivo histórico.
+
+`scripts/package-windows-msi.ps1` genera un MSI autocontenido con WiX 5.0.2/UI 5.0.2: por usuario, motores locales, OCR y escritorio opcionales, acceso Inicio, reparación y desinstalación Windows Installer. Los ejecutables internos son parte normal de la app; la descarga principal es un paquete MSI. Una instalación anterior de Inno/EXE debe retirarse desde Aplicaciones para evitar conflictos. Authenticode sigue pendiente; no se llama estable a ninguna entrega.
+
+La prueba real de instalación y los límites constan en INSTALLER-TEST-RESULTS.md.
+
+Los nuevos PKG/MSI se alojan en GitHub Releases público (Juanexgo/FluxDrop-Releases), separado del repositorio privado de fuentes. Los manifiestos solo aceptan URLs de ese repositorio y extensiones PKG/MSI correctas; un build estático valida esquema/enlaces y los artefactos locales conservados. Ejecutar `node scripts/verify-installer-downloads.mjs` en la publicación para descargar completos los artefactos remotos y validar formato, bytes, SHA-256 y sidecars; no se presenta un mero HEAD como comprobación de integridad.

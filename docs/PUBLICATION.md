@@ -23,3 +23,7 @@ Documentación oficial: https://docs.astro.build/en/guides/deploy/vercel/ y http
 ## Windows 0.4.0-dev
 
 El mismo repositorio incluye apps/windows. Producción e31d6ef ofrece EXE Windows 11 22H2+ x64 y fuentes de motores, manteniendo el DMG Mac 0.3. El EXE permanece sin firma Authenticode. Ambas descargas Windows se verificaron completas por HTTPS con tamaño/SHA-256; ver WINDOWS-TEST-RESULTS.md. Para futuras versiones se recomienda alojamiento de artefactos separado del historial Git; esta entrega usa los archivos estáticos comprobados en public/downloads.
+
+## Instaladores con asistente — 2026-10-22
+
+La descarga principal Mac pasa de DMG a PKG y Windows de Inno/EXE a MSI. Los nuevos archivos se alojan como assets públicos en Juanexgo/FluxDrop-Releases, prerelease v0.4-installers; el MSI de 113 447 948 bytes supera el límite de archivo de Git. El monorepo privado FluxDrop conserva ambas apps y web. No se publica fuente privada en el repositorio de descargas. Manifiestos con URL, tamaño y SHA-256, enlaces solo al repositorio autorizado y comprobación completa remota con verify-installer-downloads.mjs. Los binarios antiguos permanecen como archivos históricos. Firma y notarización siguen pendientes. Ver INSTALLER-TEST-RESULTS.md.

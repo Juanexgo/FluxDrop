@@ -3,16 +3,17 @@
   "status": "development",
   "download": {
     "version": "0.3.0-dev",
-    "date": "2026-10-20",
+    "date": "2026-10-22",
     "minimumMacOS": "14.0",
     "architectures": [
       "arm64"
     ],
-    "installerPath": "/downloads/FluxDrop-0.3.0-arm64-dev.dmg",
-    "size": 48921681,
-    "sha256": "2dab732a1cb8c294f624399666b6277bf9e1d256e296812e5d3731d5f456fa0b",
+    "size": 46579745,
+    "sha256": "9f0fbe0994863ccdbd65260b76fc19bb22bf4c56ae1183cb4d385c9971c18421",
     "releaseNotesPath": "/novedades/",
     "signing": "ad-hoc",
-    "notarized": false
+    "notarized": false,
+    "installerSigning": "unsigned",
+    "installerURL": "https://github.com/Juanexgo/FluxDrop-Releases/releases/download/v0.4-installers/FluxDrop-0.3.0-arm64-dev.pkg"
   }
 }

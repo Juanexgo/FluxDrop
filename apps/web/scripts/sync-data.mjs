@@ -13,11 +13,11 @@ const development=validateDevelopmentDownload(JSON.parse(await readFile(new URL(
 const {createHash}=await import('node:crypto');
 const {createReadStream}=await import('node:fs');
 const {stat}=await import('node:fs/promises');
-const artifact=new URL('../public'+development.installerPath,import.meta.url);
+if(development.installerPath){const artifact=new URL('../public'+development.installerPath,import.meta.url);
 if ((await stat(artifact)).size!==development.size) throw Error('Development artifact size mismatch');
 const digest=createHash('sha256');
 for await (const chunk of createReadStream(artifact)) digest.update(chunk);
-if (digest.digest('hex')!==development.sha256) throw Error('Development artifact checksum mismatch');
+if (digest.digest('hex')!==development.sha256) throw Error('Development artifact checksum mismatch');}
 
 const {validateEngineSources}=await import('../src/data/validate.mjs');
 const sources=validateEngineSources(JSON.parse(await readFile(new URL('../src/data/engine-sources.json',import.meta.url),'utf8')));
@@ -29,7 +29,7 @@ if (sourceHash.digest('hex')!==sources.sha256) throw Error('Engine source archiv
 
 const {validateWindowsDownload}=await import('../src/data/validate.mjs');
 const windows=validateWindowsDownload(JSON.parse(await readFile(new URL('../src/data/windows.json',import.meta.url),'utf8'))).release;
-if(windows){const artifact=new URL('../public'+windows.installerPath,import.meta.url);if((await stat(artifact)).size!==windows.size)throw Error('Windows installer size mismatch');const hash=createHash('sha256');for await(const chunk of createReadStream(artifact))hash.update(chunk);if(hash.digest('hex')!==windows.sha256)throw Error('Windows installer checksum mismatch');}
+if(windows?.installerPath){const artifact=new URL('../public'+windows.installerPath,import.meta.url);if((await stat(artifact)).size!==windows.size)throw Error('Windows installer size mismatch');const hash=createHash('sha256');for await(const chunk of createReadStream(artifact))hash.update(chunk);if(hash.digest('hex')!==windows.sha256)throw Error('Windows installer checksum mismatch');}
 
 const windowsSourceValue=JSON.parse(await readFile(new URL('../src/data/windows-sources.json',import.meta.url),'utf8'));
 if(windows&&!windowsSourceValue)throw Error('Windows corresponding sources required before publication');

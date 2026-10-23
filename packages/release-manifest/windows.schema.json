@@ -32,7 +32,6 @@
             "date",
             "minimumWindows",
             "architectures",
-            "installerPath",
             "size",
             "sha256",
             "releaseNotesPath",
@@ -57,7 +56,7 @@
             },
             "installerPath": {
               "type": "string",
-              "pattern": "^/downloads/FluxDrop-[A-Za-z0-9.-]+-setup\\.exe$"
+              "pattern": "^/downloads/FluxDrop-[A-Za-z0-9.-]+(?:-setup\\.exe|\\.msi)$"
             },
             "size": {
               "type": "integer",
@@ -72,8 +71,24 @@
             },
             "signing": {
               "const": "unsigned"
+            },
+            "installerURL": {
+              "type": "string",
+              "pattern": "^https://github\\.com/Juanexgo/FluxDrop-Releases/releases/download/[A-Za-z0-9.-]+/FluxDrop-[A-Za-z0-9.-]+\\.msi$"
             }
-          }
+          },
+          "oneOf": [
+            {
+              "required": [
+                "installerPath"
+              ]
+            },
+            {
+              "required": [
+                "installerURL"
+              ]
+            }
+          ]
         }
       ]
     }

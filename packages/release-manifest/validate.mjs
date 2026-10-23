@@ -14,12 +14,13 @@ export function validateManifest(value) {
 export function validateDevelopmentDownload(value) {
   if (!value || value.schemaVersion !== 1 || value.status !== 'development' || Object.keys(value).sort().join(',') !== 'download,schemaVersion,status') throw Error('Invalid development download envelope');
   const r=value.download;
-  const fields=['version','date','minimumMacOS','architectures','installerPath','size','sha256','releaseNotesPath','signing','notarized'];
+  const fields=['version','date','minimumMacOS','architectures',r?.installerURL?'installerURL':'installerPath','size','sha256','releaseNotesPath','signing','notarized','installerSigning'];
   if (!r || fields.some(k=>!Object.hasOwn(r,k)) || Object.keys(r).some(k=>!fields.includes(k))) throw Error('Invalid development download fields');
   if (!/^\d+\.\d+\.\d+-dev$/.test(r.version) || !/^\d{4}-\d{2}-\d{2}$/.test(r.date) || !Number.isFinite(Date.parse(r.date)) || new Date(r.date).toISOString().slice(0,10)!==r.date || !/^\d+\.\d+$/.test(r.minimumMacOS)) throw Error('Invalid development version/date/macOS');
   if (!Array.isArray(r.architectures) || !r.architectures.length || new Set(r.architectures).size!==r.architectures.length || r.architectures.some(a=>!['arm64','x86_64'].includes(a))) throw Error('Invalid development architectures');
   if (!Number.isSafeInteger(r.size) || r.size<=0 || !/^[a-f0-9]{64}$/.test(r.sha256)) throw Error('Invalid development size/checksum');
-  if (!/^\/downloads\/[A-Za-z0-9.-]+\.dmg$/.test(r.installerPath) || !/^\/[a-z0-9-]+\/$/.test(r.releaseNotesPath) || r.signing!=='ad-hoc' || r.notarized!==false) throw Error('Invalid development artifact/signing status');
+  const validLocation=r.installerURL ? /^https:\/\/github\.com\/Juanexgo\/FluxDrop-Releases\/releases\/download\/[A-Za-z0-9.-]+\/FluxDrop-[A-Za-z0-9.-]+\.pkg$/.test(r.installerURL) : /^\/downloads\/[A-Za-z0-9.-]+\.(?:dmg|pkg)$/.test(r.installerPath);
+  if (!validLocation || !/^\/[a-z0-9-]+\/$/.test(r.releaseNotesPath) || r.signing!=='ad-hoc' || r.notarized!==false || r.installerSigning!=='unsigned') throw Error('Invalid development artifact/signing status');
   return value;
 }
 
@@ -31,9 +32,10 @@ export function validateEngineSources(value) {
 export function validateWindowsDownload(value) {
   if(!value || Object.keys(value).sort().join(',')!=='channel,platform,release,schemaVersion' || value.schemaVersion!==1 || value.platform!=='windows' || value.channel!=='development') throw Error('Invalid Windows download envelope');
   const r=value.release;if(r===null)return value;
-  const fields=['version','date','minimumWindows','architectures','installerPath','size','sha256','releaseNotesPath','signing'];
+  const fields=['version','date','minimumWindows','architectures',r?.installerURL?'installerURL':'installerPath','size','sha256','releaseNotesPath','signing'];
   if(!r || fields.some(k=>!Object.hasOwn(r,k)) || Object.keys(r).some(k=>!fields.includes(k)))throw Error('Invalid Windows release fields');
   if(!/^\d+\.\d+\.\d+-dev$/.test(r.version) || !/^\d{4}-\d{2}-\d{2}$/.test(r.date) || !Number.isFinite(Date.parse(r.date)) || new Date(r.date).toISOString().slice(0,10)!==r.date || r.minimumWindows!=='Windows 11 22H2' || !Array.isArray(r.architectures) || r.architectures.join(',')!=='x64')throw Error('Invalid Windows version or requirements');
-  if(!/^\/downloads\/FluxDrop-[A-Za-z0-9.-]+-setup\.exe$/.test(r.installerPath) || !Number.isSafeInteger(r.size) || r.size<1 || !/^[a-f0-9]{64}$/.test(r.sha256) || r.releaseNotesPath!=='/windows/' || r.signing!=='unsigned')throw Error('Invalid Windows artifact or signing');
+  const validLocation=r.installerURL ? /^https:\/\/github\.com\/Juanexgo\/FluxDrop-Releases\/releases\/download\/[A-Za-z0-9.-]+\/FluxDrop-[A-Za-z0-9.-]+\.msi$/.test(r.installerURL) : /^\/downloads\/FluxDrop-[A-Za-z0-9.-]+(?:-setup\.exe|\.msi)$/.test(r.installerPath);
+  if(!validLocation || !Number.isSafeInteger(r.size) || r.size<1 || !/^[a-f0-9]{64}$/.test(r.sha256) || r.releaseNotesPath!=='/windows/' || r.signing!=='unsigned')throw Error('Invalid Windows artifact or signing');
   return value;
 }

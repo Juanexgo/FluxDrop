@@ -21,9 +21,9 @@ assert.throws(()=>validateDevelopmentDownload({...development,download:{...dev,n
 assert.throws(()=>validateDevelopmentDownload({...development,download:{...dev,installerPath:'/downloads/../bad.dmg'}}));
 assert.throws(()=>validateDevelopmentDownload({...development,download:{...dev,sha256:'bad'}}));
 const downloadPage=await readFile(join(root,'descarga/index.html'),'utf8');
-assert.ok(downloadPage.includes(dev.installerPath) && downloadPage.includes('download') && downloadPage.includes(dev.sha256));
-assert.equal((await stat(join(root,dev.installerPath))).size,dev.size);
-console.log('Development download schema, artifact size and page link checks passed.');
+assert.ok(downloadPage.includes(dev.installerURL??dev.installerPath) && downloadPage.includes('download') && downloadPage.includes(dev.sha256));
+if(dev.installerPath)assert.equal((await stat(join(root,dev.installerPath))).size,dev.size);
+console.log('Mac download schema and page link checks passed; remote artifacts are verified by verify-installer-downloads.mjs.');
 
 const coverage=JSON.parse(await readFile(new URL('../packages/release-manifest/image-routes.json',import.meta.url),'utf8'));
 assert.equal(coverage.schemaVersion,1);assert.equal(new Set(coverage.routes.map(r=>r.input+'>'+r.output)).size,coverage.routes.length);
@@ -50,8 +50,10 @@ const {validateWindowsDownload}=await import('../packages/release-manifest/valid
 const windows=validateWindowsDownload(JSON.parse(await readFile(new URL('../packages/release-manifest/windows.json',import.meta.url),'utf8'))).release;
 validateWindowsDownload({schemaVersion:1,platform:'windows',channel:'development',release:null});
 assert.throws(()=>validateWindowsDownload({schemaVersion:1,platform:'windows',channel:'stable',release:null}));
-if(windows){assert.throws(()=>validateWindowsDownload({schemaVersion:1,platform:'windows',channel:'development',release:{...windows,signing:'signed'}}));assert.throws(()=>validateWindowsDownload({schemaVersion:1,platform:'windows',channel:'development',release:{...windows,installerPath:'/downloads/../unsafe.exe'}}));assert.ok(downloadPage.includes(windows.installerPath)&&downloadPage.includes(windows.sha256));assert.equal((await stat(join(root,windows.installerPath))).size,windows.size);const {createHash}=await import('node:crypto');const {createReadStream}=await import('node:fs');const hash=createHash('sha256');for await(const chunk of createReadStream(join(root,windows.installerPath)))hash.update(chunk);assert.equal(hash.digest('hex'),windows.sha256);}
+if(windows){assert.throws(()=>validateWindowsDownload({schemaVersion:1,platform:'windows',channel:'development',release:{...windows,signing:'signed'}}));assert.throws(()=>validateWindowsDownload({schemaVersion:1,platform:'windows',channel:'development',release:{...windows,installerPath:'/downloads/../unsafe.exe'}}));assert.ok(downloadPage.includes(windows.installerURL??windows.installerPath)&&downloadPage.includes(windows.sha256));if(windows.installerPath){assert.equal((await stat(join(root,windows.installerPath))).size,windows.size);const {createHash}=await import('node:crypto');const {createReadStream}=await import('node:fs');const hash=createHash('sha256');for await(const chunk of createReadStream(join(root,windows.installerPath)))hash.update(chunk);assert.equal(hash.digest('hex'),windows.sha256);}}
 assert.ok(formatsPage.includes('Compatibilidad de Windows'));assert.ok((await readFile(join(root,'windows/index.html'),'utf8')).includes('No hay paridad total de formatos'));
-console.log('Windows manifest, platform disclosure and real artifact checks passed.');
+console.log('Windows download schema and platform disclosure passed; remote artifacts are verified by verify-installer-downloads.mjs.');
 const windowsSourceValue=JSON.parse(await readFile(new URL('../packages/release-manifest/windows-sources.json',import.meta.url),'utf8'));
 if(windows){const sources=validateEngineSources(windowsSourceValue);assert.equal((await stat(join(root,sources.path))).size,sources.size);assert.ok((await readFile(join(root,'windows/index.html'),'utf8')).includes(sources.sha256));}
+
+for(const [value,key,validator] of [[development,'download',validateDevelopmentDownload],[{schemaVersion:1,platform:'windows',channel:'development',release:windows},'release',validateWindowsDownload]]){if(!value[key]?.installerURL)continue;for(const url of ['https://example.com/fake.msi','http://github.com/Juanexgo/FluxDrop-Releases/releases/download/v0.4-installers/fake.pkg','https://github.com/other/repo/releases/download/v/file.msi'])assert.throws(()=>validator({...value,[key]:{...value[key],installerURL:url}}));assert.throws(()=>validator({...value,[key]:{...value[key],installerPath:'/downloads/duplicate.pkg'}}));}

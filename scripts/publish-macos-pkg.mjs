@@ -1,0 +1,11 @@
+import {readFile,writeFile,copyFile} from 'node:fs/promises';
+import {basename} from 'node:path';
+import {createHash} from 'node:crypto';
+import {validateDevelopmentDownload} from '../packages/release-manifest/validate.mjs';
+const [file,installerURL]=process.argv.slice(2);if(!file?.endsWith('.pkg'))throw Error('Usage: node scripts/publish-macos-pkg.mjs verified-installer.pkg');
+const bytes=await readFile(file);if(bytes.subarray(0,4).toString()!=='xar!')throw Error('Not a flat Apple installer package');
+const url=new URL('../packages/release-manifest/development.json',import.meta.url);const data=JSON.parse(await readFile(url,'utf8'));
+const name=basename(file);Object.assign(data.download,{...(installerURL?{installerURL}:{installerPath:'/downloads/'+name}),date:'2026-10-22',size:bytes.length,sha256:createHash('sha256').update(bytes).digest('hex'),installerSigning:'unsigned'});
+if(installerURL)delete data.download.installerPath;else delete data.download.installerURL;
+validateDevelopmentDownload(data);
+const dest=new URL('../apps/web/public/downloads/'+name,import.meta.url);if(!installerURL){await copyFile(file,dest);await writeFile(new URL(dest+'.sha256'),`${data.download.sha256}  ${name}\n`);}await writeFile(url,JSON.stringify(data,null,2)+'\n');console.log(data.download);

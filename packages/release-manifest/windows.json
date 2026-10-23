@@ -4,14 +4,14 @@
   "channel": "development",
   "release": {
     "version": "0.4.0-dev",
-    "date": "2026-10-21",
+    "date": "2026-10-22",
     "minimumWindows": "Windows 11 22H2",
     "architectures": [
       "x64"
     ],
-    "installerPath": "/downloads/FluxDrop-0.4.0-windows-x64-dev-setup.exe",
-    "size": 91605779,
-    "sha256": "338974674c8d07331ed307a3d321b080e55488263a22fb15946ac483f6a72b1c",
+    "installerURL": "https://github.com/Juanexgo/FluxDrop-Releases/releases/download/v0.4-installers/FluxDrop-0.4.0-windows-x64-dev.msi",
+    "size": 113447948,
+    "sha256": "e64ab8c04156b415cd1675c07fdc261d9d69e956cc347d4d612f9537e7ad5eca",
     "releaseNotesPath": "/windows/",
     "signing": "unsigned"
   }

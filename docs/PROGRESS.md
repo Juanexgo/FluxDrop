@@ -44,3 +44,7 @@ App nativa WPF, motores locales, instalador autocontenido y fuentes correspondie
 ## Claridad de descargas — 2026-10-22
 
 Ambas tarjetas identifican su instalador real: DMG para Mac y EXE para Windows, con instrucciones de instalación para cada sistema. Se conservan las versiones, binarios, checksums y avisos de firma existentes.
+
+## Instaladores reales — 2026-10-22
+
+Tras la aclaración del titular, se preparó PKG macOS y MSI Windows, no solo etiquetas. PKG instalado realmente en ~/Applications y comparado por SHA-256 (31 archivos). MSI aceptado en run 39877218730: instalación, 27 tests sobre app instalada, reparación, desinstalación y accesos. Wiki de pruebas y límites en INSTALLER-TEST-RESULTS.md. Nuevo repositorio público FluxDrop-Releases dedicado solo a artefactos y avisos; fuente Mac/Windows en el mismo monorepo anterior. Web ofrece los nuevos paquetes y conserva los avisos de firma pendientes.

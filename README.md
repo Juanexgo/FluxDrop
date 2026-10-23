@@ -14,7 +14,7 @@ scripts/build-macos.sh
 scripts/test-macos.sh
 npm --prefix apps/web install
 npm --prefix apps/web run build
-scripts/package-dmg.sh
+scripts/package-pkg.sh
 ```
 
 Abrir `apps/macos/Package.swift` en Xcode y seleccionar el esquema FluxDrop. El script crea el bundle completo con sus motores; ejecutar el producto SwiftPM directamente no incorpora los ejecutables multimedia. macOS 14 mínimo, compilación actual Apple Silicon. No requiere Homebrew en el equipo del usuario.
@@ -57,5 +57,5 @@ La app nativa de Windows vive en `apps/windows` dentro de este mismo monorepo. N
 - `dotnet run --project apps/windows/FluxDrop.Tests -c Release`: pruebas portables del núcleo.
 - `dotnet build apps/windows/FluxDrop.Windows -c Release`: compilación; en Mac no ejecuta WPF.
 - Workflow `Windows engines`: compila FFmpeg/LAME/Opus/WebP desde fuentes fijadas para Windows.
-- Workflow `Windows build and verification`: usa el run de motores, prueba en Windows, publica self-contained, crea EXE y comprueba instalación/ejecución/desinstalación.
-- Manifiesto independiente `packages/release-manifest/windows.json`; una descarga nula nunca se presenta como un instalador disponible. La distribución Windows de desarrollo no tiene firma Authenticode. macOS conserva su DMG y manifiestos anteriores.
+- Workflow `Windows build and verification`: usa el run de motores, prueba en Windows, publica self-contained, crea MSI y comprueba instalación, ejecución, reparación y desinstalación.
+- Manifiesto independiente `packages/release-manifest/windows.json`; una descarga nula nunca se presenta como un instalador disponible. La distribución Windows de desarrollo no tiene firma Authenticode. macOS ofrece ahora un PKG con asistente; el DMG anterior se conserva como archivo histórico. Ver docs/INSTALLER-TEST-RESULTS.md.
