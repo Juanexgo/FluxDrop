@@ -51,6 +51,6 @@ foreach($id in $ocr){[void]$builder.AppendLine('<ComponentRef Id="'+$id+'" />')}
 [void]$builder.AppendLine('<ui:WixUI Id="WixUI_FeatureTree" /><WixVariable Id="WixUILicenseRtf" Value="$(var.RepoRoot)\scripts\installer-notice.rtf" /></Package></Wix>')
 $wxs=Join-Path $out 'FluxDrop.wxs';[IO.File]::WriteAllText($wxs,$builder.ToString())
 $root=(Resolve-Path "$PSScriptRoot/..").Path
-& "$root/build/wix-tools/wix.exe" build $wxs -arch x64 -ext WixToolset.UI.wixext -culture es-ES -d "RepoRoot=$root" -o "$out/FluxDrop-0.4.0-windows-x64-dev.msi" -sval
+& "$root/build/wix-tools/wix.exe" build $wxs -arch x64 -ext WixToolset.UI.wixext -culture es-ES -d "RepoRoot=$root" -o "$out/FluxDrop-0.4.0-windows-x64-dev.msi"
 if($LASTEXITCODE -ne 0){throw 'MSI build failed'}
 Get-FileHash "$out/FluxDrop-0.4.0-windows-x64-dev.msi" -Algorithm SHA256

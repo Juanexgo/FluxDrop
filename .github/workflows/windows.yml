@@ -95,6 +95,12 @@ jobs:
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         if: always()
         with:
+          name: windows-msi-payload
+          path: build/windows-publish
+          retention-days: 1
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
           name: windows-qa
           path: |
             build/windows-qa
