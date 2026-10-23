@@ -40,3 +40,7 @@ Los motores Windows se compilan desde fuentes fijadas; se prepara instalador EXE
 ## Windows 0.4 — aceptación final, 2026-10-21
 
 App nativa WPF, motores locales, instalador autocontenido y fuentes correspondientes completados. CI Windows 39701573768 aprobó 29 pruebas de núcleo, 27 nativas y otras 27 después de instalar; cierre y desinstalación correctos. Web incorpora descarga Windows separada de Mac, matriz real y capturas del runner. Distribución de desarrollo sin firma; límites y pruebas manuales pendientes en WINDOWS-TEST-RESULTS.md.
+
+## Claridad de descargas — 2026-10-22
+
+Ambas tarjetas identifican su instalador real: DMG para Mac y EXE para Windows, con instrucciones de instalación para cada sistema. Se conservan las versiones, binarios, checksums y avisos de firma existentes.
