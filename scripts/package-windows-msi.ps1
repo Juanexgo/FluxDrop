@@ -4,6 +4,7 @@ $publish = (Resolve-Path $PublishDirectory).Path
 New-Item -ItemType Directory -Force $OutputDirectory | Out-Null
 $out = (Resolve-Path $OutputDirectory).Path
 if (!(Test-Path "$publish/FluxDrop.exe")) { throw 'Publish the self-contained app first' }
+Copy-Item "$PSScriptRoot/WiX-5.0.2-LICENSE.txt" "$publish/ThirdParty/WiX-5.0.2-LICENSE.txt" -Force
 function EscapeXml([string]$v) { [System.Security.SecurityElement]::Escape($v) }
 $builder = [System.Text.StringBuilder]::new()
 [void]$builder.AppendLine(@'
@@ -11,7 +12,8 @@ $builder = [System.Text.StringBuilder]::new()
 <Package Name="FluxDrop" Manufacturer="FluxDrop" Version="0.4.0" Language="1034" Scope="perUser" UpgradeCode="862EDC84-6A3A-42E8-BA8D-965612D535E6">
 <MajorUpgrade DowngradeErrorMessage="Ya tienes una versión más reciente de FluxDrop." />
 <MediaTemplate EmbedCab="yes" CompressionLevel="high" />
-<Launch Condition="Installed OR (VersionNT64 AND WindowsBuild &gt;= 22621)" Message="FluxDrop requiere Windows 11 22H2 o posterior, x64." />
+<Property Id="OSBUILD"><RegistrySearch Id="WindowsCurrentBuild" Root="HKLM" Key="SOFTWARE\Microsoft\Windows NT\CurrentVersion" Name="CurrentBuildNumber" Type="raw" /></Property>
+<Launch Condition="Installed OR (VersionNT64 AND OSBUILD &gt;= 22621)" Message="FluxDrop requiere Windows 11 22H2 o posterior, x64." />
 <Property Id="LEGACYEXE"><RegistrySearch Id="LegacyExe" Root="HKCU" Key="Software\Microsoft\Windows\CurrentVersion\Uninstall\{B523C2B2-C06D-4D28-A27B-220242F1E938}_is1" Name="UninstallString" Type="raw" /></Property>
 <Launch Condition="Installed OR NOT LEGACYEXE" Message="Desinstala primero la versión EXE de FluxDrop desde Configuración > Aplicaciones. Tus ajustes e historial se conservan." />
 <Property Id="ARPCOMMENTS" Value="Versión de desarrollo sin firma. Procesamiento local." />
