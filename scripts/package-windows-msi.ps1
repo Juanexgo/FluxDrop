@@ -43,11 +43,11 @@ foreach($f in (Get-ChildItem $publish -Recurse -File | Sort-Object FullName)) {
  [void]$builder.AppendLine('<DirectoryRef Id="INSTALLFOLDER"><Component Id="'+$id+'" Guid="*"'+$sub+'><File Id="File'+$index+'" Source="'+(EscapeXml $f.FullName)+'" KeyPath="yes" /></Component></DirectoryRef>')
  if($relative -like 'engines\tessdata\*'){$ocr.Add($id)}else{$core.Add($id)}
 }
-[void]$builder.AppendLine('<Feature Id="Core" Title="FluxDrop y motores locales" Level="1" Absent="disallow"><ComponentRef Id="Shortcuts" />')
+[void]$builder.AppendLine('<Feature Id="Core" Title="FluxDrop y motores locales" Level="1" AllowAbsent="no" AllowAdvertise="no"><ComponentRef Id="Shortcuts" />')
 foreach($id in $core){[void]$builder.AppendLine('<ComponentRef Id="'+$id+'" />')}
-[void]$builder.AppendLine('</Feature><Feature Id="OCR" Title="OCR local español e inglés (~8 MB)" Level="1">')
+[void]$builder.AppendLine('</Feature><Feature AllowAdvertise="no" Id="OCR" Title="OCR local español e inglés (~8 MB)" Level="1">')
 foreach($id in $ocr){[void]$builder.AppendLine('<ComponentRef Id="'+$id+'" />')}
-[void]$builder.AppendLine('</Feature><Feature Id="Desktop" Title="Acceso directo en el escritorio" Level="2"><ComponentRef Id="DesktopShortcut" /></Feature>')
+[void]$builder.AppendLine('</Feature><Feature AllowAdvertise="no" Id="Desktop" Title="Acceso directo en el escritorio" Level="2"><ComponentRef Id="DesktopShortcut" /></Feature>')
 [void]$builder.AppendLine('<ui:WixUI Id="WixUI_FeatureTree" /><WixVariable Id="WixUILicenseRtf" Value="$(var.RepoRoot)\scripts\installer-notice.rtf" /></Package></Wix>')
 $wxs=Join-Path $out 'FluxDrop.wxs';[IO.File]::WriteAllText($wxs,$builder.ToString())
 $root=(Resolve-Path "$PSScriptRoot/..").Path
